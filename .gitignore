@@ -1,0 +1,13 @@
+.env
+vicuna/
+venv/
+
+*pycache*
+*/*pycache*
+*/*/pycache*
+venv/
+.venv/
+.vscode
+*.bak
+*.ipynb
+*.log
