@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ```
 
-Note that you will need to be running your own Vicuna model in API mode and ensure your `.env` file is setup properly. See [.env-example](.env-example). Please refer to [https://github.com/oobabooga/text-generation-webui](Oobabooga Text Generation WebUI) for more information.
+Note that you will need to be running your own Vicuna model in API mode and ensure your `.env` file is setup properly. See [.env-example](.env-example). Please refer to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui) for more information.
 
 Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
 
