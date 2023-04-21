@@ -11,3 +11,6 @@ venv/
 *.bak
 *.ipynb
 *.log
+
+# Do not save index
+index.json
