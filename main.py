@@ -1,5 +1,6 @@
+import os
 from dotenv import load_dotenv
-from llama_index import GPTListIndex, SimpleDirectoryReader, PromptHelper
+from llama_index import GPTListIndex, SimpleDirectoryReader, PromptHelper, QuestionAnswerPrompt
 from llama_index import LLMPredictor, ServiceContext
 from vicuna_llm import VicunaLLM
 
@@ -31,5 +32,20 @@ else:
     documents, service_context=service_context)
   index.save_to_disk('index.json')
 
-response = index.query("What did the author do growing up?")
+# define custom QuestionAnswerPrompt
+query_str = "What did the author do growing up?"
+
+QA_PROMPT_TMPL = (
+    "We have provided context information below. \n"
+    "---------------------\n"
+    "{context_str}"
+    "\n---------------------\n"
+    "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
+    "### Instruction:\nGiven the context information, please answer the following question: {query_str}\n"
+    "### Response:\n"
+)
+QA_PROMPT = QuestionAnswerPrompt(QA_PROMPT_TMPL)
+
+
+response = index.query(query_str, text_qa_template=QA_PROMPT)
 print(response)
