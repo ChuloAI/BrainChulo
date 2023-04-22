@@ -27,13 +27,42 @@ Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has be
 
 ## Usage
 
-To start using BrainChulo, simply run the `main.py` script:
+### Oobabooga Text Generation WebUI
+
+Make sure to start the web server. In my case, this is the command I run:
+
+```bash
+python server.py --model TheBloke_vicuna-7B-1.1-GPTQ-4bit-128g --wbits 4 --groupsize 128 --model_type llama --listen --no-stream --verbose --xformers
+```
+
+### BrainChulo
+
+To start BrainChulo, simply run the `main.py` script:
 
 ```
 python main.py
 ```
 
-This will launch the BrainChulo interface, where you can start storing and retrieving memories. For more information on how to use BrainChulo, please refer to the documentation.
+This will eventually launch the BrainChulo interface, where you can start storing and retrieving memories. For now, the use-case is to simply create an index based on an essay written by Paul Graham and have our LLM successfully answer a question about him.
+
+
+## Roadmap
+
+Here's a detailed roadmap for the BrainChulo project:
+
+1. **Create an End-to-End capable of creating, persisting, and using an index which can be loaded as context to a conversation using `llama-index`.** This will allow the agent to maintain context and continuity between conversations and ensure that information is not lost over time.
+
+2. **Implement a Long-Term Memory (LTM) mechanism using a Vector Database layer with fine-tuning/training capabilities for LTM Management.** This will allow the agent to remember past conversations and information for longer periods of time, and provide a more personalized experience to the user.
+
+3. **Implement Tools for the agent (ability to browse the web, send a tweet, read a file, use the REPL).** These tools will enable the agent to perform various tasks and make it more versatile.
+
+4. **Create an Integration point for external systems.** This will allow other systems to interact with the BrainChulo agent and expand its capabilities.
+
+5. **Integrate into existing Text Generation Systems such as oobabooga and Kobold.** This will enable the BrainChulo agent to work with other text generation systems and provide a wider range of outputs to the user.
+
+Please note that this roadmap is subject to change based on community feedback and contributions. We welcome your input and ideas as we work together to add long-term memory to custom LLMs!
+
+
 
 ## Contributing
 
