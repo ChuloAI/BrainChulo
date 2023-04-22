@@ -14,9 +14,9 @@ class VicunaLLM(LLM):
             raise TypeError("stop parameter must be a list")
 
         response = webui.call_api(prompt, {
-            "max_new_tokens": 200,
-            "temperature": 0.74,
-            "stop": stop + ["Observation:", "Owner:", "Human:", "Assistant:", "AI:", "\end", "---"]
+            "max_new_tokens": 256,
+            "temperature": 0.5,
+            "stopping_strings": stop + ["\n### Human:", "\end", "<end>"]
         })
 
         return response
