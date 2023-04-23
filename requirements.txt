@@ -1,3 +1,4 @@
 llama-index
 python-dotenv
 fschat
+chromadb
