@@ -1,51 +1,30 @@
-import os
-from llama_index import GPTListIndex, SimpleDirectoryReader, PromptHelper, QuestionAnswerPrompt
-from llama_index import LLMPredictor, ServiceContext
+from langchain.document_loaders import TextLoader
+from langchain.vectorstores import Chroma
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.chains import ConversationalRetrievalChain
+from embeddings.chroma_mini_llm import ChromaMiniLM
+from chromadb.utils import embedding_functions
 from vicuna_llm import VicunaLLM
 import settings
 
 config = settings.load_config()
 
-# define prompt helper
-# set maximum input size
-max_input_size = 2048
-# set number of output tokens
-num_output = 256
-# set maximum chunk overlap
-max_chunk_overlap = 20
-prompt_helper = PromptHelper(max_input_size, num_output, max_chunk_overlap)
+loader = TextLoader('./data/paul_graham_essay.txt', encoding="utf8")
+documents = loader.load()
 
-# Define our LLM
-llm_predictor = LLMPredictor(llm=VicunaLLM())
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
+documents = text_splitter.split_documents(documents)
 
-service_context = ServiceContext.from_defaults(
-    llm_predictor=llm_predictor, prompt_helper=prompt_helper)
-
-# Create or load index
-# Check if index.json exists
-if os.path.exists(config.index_path):
-  index = GPTListIndex.load_from_disk(
-    "index.json", service_context=service_context)
-else:
-  documents = SimpleDirectoryReader('data').load_data()
-  index = GPTListIndex.from_documents(
-    documents, service_context=service_context)
-  index.save_to_disk(config.index_path)
+embeddings = ChromaMiniLM()
+vectorstore = Chroma.from_documents(documents, embeddings)
 
 # define custom QuestionAnswerPrompt
 query_str = "What did the author do growing up?"
 
-QA_PROMPT_TMPL = (
-    "We have provided context information below. \n"
-    "---------------------\n"
-    "{context_str}"
-    "\n---------------------\n"
-    "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
-    "### Instruction:\nGiven the context information, please answer the following question: {query_str}\n"
-    "### Response:\n"
-)
-QA_PROMPT = QuestionAnswerPrompt(QA_PROMPT_TMPL)
 
+qna = ConversationalRetrievalChain.from_llm(
+    VicunaLLM(), vectorstore.as_retriever())
 
-response = index.query(query_str, text_qa_template=QA_PROMPT)
+response = qna({"question": query_str, "chat_history": []})
+
 print(response)
