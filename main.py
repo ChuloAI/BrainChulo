@@ -3,7 +3,6 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from embeddings.chroma_mini_llm import ChromaMiniLM
-from chromadb.utils import embedding_functions
 from vicuna_llm import VicunaLLM
 import settings
 
@@ -19,12 +18,17 @@ embeddings = ChromaMiniLM()
 vectorstore = Chroma.from_documents(documents, embeddings)
 
 # define custom QuestionAnswerPrompt
-query_str = "What did the author do growing up?"
-
+query_str = "Where did the author grow up?"
 
 qna = ConversationalRetrievalChain.from_llm(
     VicunaLLM(), vectorstore.as_retriever())
 
-response = qna({"question": query_str, "chat_history": []})
+chat_history = []
+response = qna({"question": query_str, "chat_history": chat_history})
+
+chat_history.append((query_str, response['answer']))
+
+response = qna({"question": 'Who is the author in love with?',
+               "chat_history": chat_history})
 
 print(response)
