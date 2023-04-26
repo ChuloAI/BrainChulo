@@ -4,23 +4,23 @@ import webui
 
 
 class VicunaLLM(LLM):
-    @property
-    def _llm_type(self) -> str:
-        return "custom"
+  @property
+  def _llm_type(self) -> str:
+    return "custom"
 
-    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        stop = stop or []
-        if not isinstance(stop, list):
-            raise TypeError("stop parameter must be a list")
+  def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+    stop = stop or []
+    if not isinstance(stop, list):
+      raise TypeError("stop parameter must be a list")
 
-        response = webui.call_api(prompt, {
-            "max_new_tokens": 256,
-            "temperature": 0.5,
-            "stopping_strings": stop + ["\n### Human:", "\end", "<end>"]
-        })
+    response = webui.call_api(prompt, {
+        "max_new_tokens": 256,
+        "temperature": 0.5,
+        "stopping_strings": stop + ["### Human:", "\end", "<end>"]
+    })
 
-        return response
+    return response
 
-    @property
-    def _identifying_params(self) -> Mapping[str, Any]:
-        return {}
+  @property
+  def _identifying_params(self) -> Mapping[str, Any]:
+    return {}
