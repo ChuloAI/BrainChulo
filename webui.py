@@ -6,9 +6,9 @@ import settings
 config = settings.load_config()
 
 PARAMS = {
-    'max_new_tokens': 200,
+    'max_new_tokens': 100,
     'do_sample': True,
-    'temperature': 0.72,
+    'temperature': 0.2,
     'top_p': 0.73,
     'typical_p': 1,
     'repetition_penalty': 1.1,
@@ -37,13 +37,9 @@ def call_api(prompt_str, params={}):
   for k, v in params.items():
     _params[k] = v
 
-  payload = json.dumps([prompt_str, _params])
+  _params['prompt'] = prompt_str
 
-  response = requests.post(url, headers=headers, json={
-      "data": [
-          payload
-      ]
-  }, timeout=500)
+  response = requests.post(url, headers=headers, json=_params, timeout=500)
 
   # Check for errors in API response
   if response.status_code != 200:
@@ -51,15 +47,12 @@ def call_api(prompt_str, params={}):
     return {}
 
   # Parse generated text from API response
-  response_data = response.json()["data"]
+  response_data = response.json()["results"]
   if len(response_data) < 1:
     print("Error generating text: Empty response from API")
-    return {}
-  generated_text = response_data[0]
+    return ''
 
-  # Save generated text and return it
-  generated_text = generated_text[len(
-      prompt_str):len(generated_text)]
+  generated_text = response_data[0]['text']
 
   return generated_text
 
