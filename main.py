@@ -5,7 +5,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
-from vicuna_llm import VicunaLLM
+from llms.oobabooga_llm import OobaboogaLLM
 from prompt_templates.friendly_conversation import Template
 import settings
 
@@ -32,7 +32,7 @@ PROMPT = PromptTemplate(
 query_str = "Where did the author grow up?"
 
 convo = ConversationChain(
-    llm=VicunaLLM(),
+    llm=OobaboogaLLM(),
     prompt=PROMPT,
     memory=memory,
     verbose=False
