@@ -32,7 +32,7 @@ Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has be
 Make sure to navigate to your installation directory of Oobabooga's Text Generation WebUI, then start the web server using `--listen --no-stream`. In my case, this is the command I run:
 
 ```bash
-python server.py --model TheBloke_vicuna-7B-1.1-GPTQ-4bit-128g --wbits 4 --groupsize 128 --model_type llama --listen --no-stream --verbose --xformers
+python server.py --model TheBloke_vicuna-7B-1.1-GPTQ-4bit-128g --wbits 4 --groupsize 128 --verbose --model_type llama --xformers --api
 ```
 
 You may be running it via `start_webui.bat`. In this case, you'll need to edit it to include the two parameters mentioned above.
