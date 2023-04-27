@@ -1,4 +1,5 @@
-llama-index
+langchain
 python-dotenv
 fschat
 chromadb
+sentence_transformers
