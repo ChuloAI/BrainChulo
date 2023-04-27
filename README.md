@@ -52,7 +52,7 @@ This will eventually launch the BrainChulo interface, where you can start storin
 
 Here's a detailed roadmap for the BrainChulo project:
 
-1. **Create an End-to-End capable of creating, persisting, and using an index which can be loaded as context to a conversation using `llama-index`.** This will allow the agent to maintain context and continuity between conversations and ensure that information is not lost over time.
+1. **Create an End-to-End capable of creating, persisting, and using an index which can be loaded as context to a conversation using `langchain memory` module or `llama-index` package.** This will allow the agent to maintain context and continuity between conversations and ensure that information is not lost over time.
 
 2. **Implement a Long-Term Memory (LTM) mechanism using a Vector Database layer with fine-tuning/training capabilities for LTM Management.** This will allow the agent to remember past conversations and information for longer periods of time, and provide a more personalized experience to the user.
 
