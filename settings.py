@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 
@@ -20,3 +21,8 @@ class Settings():
 
 def load_config():
   return Settings()
+
+
+class Logger():
+  def __init__(self) -> logging.Logger:
+     return logging.getLogger(__name__)
