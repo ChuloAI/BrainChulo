@@ -2,6 +2,8 @@
 
 BrainChulo is a powerful memory management system that is inspired by the camel family's resilience and adaptability. The repository contains a custom LLM (Long-Term Memory) implementation that is based on a trained model called Vicuna, and is designed to help users store and retrieve memories for use in their Vicuna-powered LLM services.
 
+## Current Look-n-Feel
+<img width="465" alt="image" src="https://user-images.githubusercontent.com/95258328/235260559-650cfb84-a77d-45af-94c4-ac829d7621f5.png">
 
 ## Features
 
