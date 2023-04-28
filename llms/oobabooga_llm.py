@@ -2,6 +2,9 @@ import os
 import requests
 from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
+import settings
+
+config = settings.load_config()
 
 PARAMS = {
     'max_new_tokens': 100,
@@ -39,8 +42,8 @@ class OobaboogaLLM(LLM):
 
     response = self.call_api(prompt, {
         "max_new_tokens": 256,
-        "temperature": 0.72,
-        "stopping_strings": stop + ["### Human:", "\end", "<end>"]
+        "temperature": 0.5,
+        "stopping_strings": stop + ["### Human:", "\nHuman:"]
     })
 
     return response
@@ -50,11 +53,7 @@ class OobaboogaLLM(LLM):
     return {}
 
   def call_api(self, prompt_str, params={}):
-    chat_api_host = os.getenv("CHAT_API_HOST", "http://localhost")
-    chat_api_port = os.getenv("CHAT_API_PORT", 7860)
-    chat_api_path = os.getenv("CHAT_API_PATH", "/run/textgen/")
-
-    url = f"{chat_api_host}:{chat_api_port}{chat_api_path}"
+    url = f"{config.chat_api_host}:{config.chat_api_port}{config.chat_api_path}"
     headers = {"Content-Type": "application/json"}
     _params = PARAMS
 
