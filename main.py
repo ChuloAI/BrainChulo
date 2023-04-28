@@ -1,46 +1,106 @@
-from langchain.document_loaders import TextLoader
-from langchain.vectorstores import Chroma
-from langchain.memory import VectorStoreRetrieverMemory
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.chains import ConversationChain
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.prompts import PromptTemplate
-from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.friendly_conversation import Template
-import settings
+import os
+import uuid
+from tempfile import _TemporaryFileWrapper
+import gradio as gr
+from conversations.document_based import DocumentBasedConversation
 
-config = settings.load_config()
+# Load the document-based conversation by default.
+# Eventually, we'll want to load the conversation from UI selection
+convo = DocumentBasedConversation()
 
-loader = TextLoader('./data/paul_graham_essay.txt', encoding="utf8")
-documents = loader.load()
+def add_text(history, text):
+  """
+  Adds text to a history list.
 
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-documents = text_splitter.split_documents(documents)
+  Args:
+      history (list): A list of tuples containing strings and None.
+      text (str): A string to add to the history list.
 
-embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
-vectorstore = Chroma.from_documents(documents, embeddings, metadatas=[
-    {"source": str(i)} for i in range(len(documents))])
-retriever = vectorstore.as_retriever(search_kwargs=dict(k=20))
-memory = VectorStoreRetrieverMemory(retriever=retriever)
+  Returns:
+      list: The updated history list with the new text appended.
+      str: An empty string.
 
-
-PROMPT = PromptTemplate(
-    input_variables=["history", "input"], template=Template
-)
-
-# define custom QuestionAnswerPrompt
-query_str = "Where did the author grow up?"
-
-convo = ConversationChain(
-    llm=OobaboogaLLM(),
-    prompt=PROMPT,
-    memory=memory,
-    verbose=False
-)
+  Example:
+      >>> add_text([], "hello")
+      ([("hello", None)], "")
+  """
+  if text != "":
+    history = history + [(text, None)]
+  return history, ""
 
 
-response = convo.predict(input=query_str)
-print(f"Response from AI: {response}")
+def add_file(history, new_file):
+  """
+  Adds a new file to the history and returns the updated history.
 
-response = convo.predict(input="Who did the author marry?")
-print(f"Response from AI: {response}")
+  :param history: list of tuples representing the conversation history
+  :param new_file: the file to be added
+  :return: updated history
+  """
+  if isinstance(new_file, _TemporaryFileWrapper):
+    try:
+      # Save the file to disk
+      filename = f"{uuid.uuid4()}.txt"
+      filepath = os.path.join(os.getcwd(), "data", filename)
+      with open(filepath, "w") as file:
+        # Copy the contents of the file object to the new file
+        with open(new_file.name, "r") as new_file_contents:
+          for line in new_file_contents:
+            file.write(line)
+
+      # Load the document into the conversation
+      convo.load_document(filepath)
+
+      uploaded_file_name = os.path.basename(new_file.name)
+      # Do not update the history but return the event
+      return history + [(f"{uploaded_file_name} has been loaded into memory.", None)]
+    except Exception as e:
+      print(f"Error adding file to history: {e}")
+      updated_history = history
+  else:
+    updated_history = history
+
+  return updated_history
+
+
+def bot(history):
+  """
+  Given a history of conversations, predict the response for the latest input.
+
+  :param history: A list of tuples containing the input and response of previous conversations.
+  :type history: list
+
+  :return: The updated history with the predicted response added.
+  :rtype: list
+  """
+  if history and len(history) > 0:
+    response = convo.predict(input=history[-1][0])
+    history[-1][1] = response
+  return history
+
+
+with gr.Blocks() as app:
+  chatbot = gr.Chatbot([], elem_id="chatbot").style(
+    height="auto")
+
+  with gr.Row():
+    with gr.Column(scale=0.9):
+      txt = gr.Textbox(
+          show_label=False,
+          placeholder="Enter text and press enter, or upload a text file",
+      ).style(container=False)
+    with gr.Column(scale=0.05):
+      btn_submit = gr.Button("✉️").style(container=False)
+    with gr.Column(scale=0.05):
+      btn = gr.UploadButton("📁", file_types=["text"]).style(
+        container=False)
+
+  btn_submit.click(add_text, [chatbot, txt], [chatbot, txt]).then(
+      bot, chatbot, chatbot
+  )
+  txt.submit(add_text, [chatbot, txt], [chatbot, txt]).then(
+      bot, chatbot, chatbot
+  )
+  btn.upload(add_file, [chatbot, btn], [chatbot])
+
+app.launch()
