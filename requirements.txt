@@ -3,3 +3,4 @@ python-dotenv
 fschat
 chromadb
 sentence_transformers
+gradio
