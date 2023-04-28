@@ -45,7 +45,13 @@ To start BrainChulo, simply run the `main.py` script at the root of this reposit
 python main.py
 ```
 
-This will eventually launch the BrainChulo interface, where you can start storing and retrieving memories. For now, the use-case is to simply create an index based on an essay written by Paul Graham and have our LLM successfully answer a question about him.
+This will eventually launch the BrainChulo application. Point your web browser to the following default URL:
+
+```
+http://localhost:7860/
+```
+
+This interface allows you to chat or load text documents which will be used as context in the BrainChulo application.
 
 
 ## Roadmap
