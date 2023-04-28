@@ -2,6 +2,7 @@
 .chroma/
 vicuna/
 venv/
+data/
 
 *pycache*
 */*pycache*
