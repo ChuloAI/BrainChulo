@@ -74,8 +74,10 @@ def bot(history):
   :rtype: list
   """
   if history and len(history) > 0:
-    response = convo.predict(input=history[-1][0])
+    input = history[-1][0]
+    response = convo.predict(input=input)
     history[-1][1] = response
+    convo.add_exchange_to_memory({"input": input}, {"output": response})
   return history
 
 

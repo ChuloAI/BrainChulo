@@ -6,8 +6,8 @@ from langchain.chains import ConversationChain
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
 from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.friendly_conversation import Template
-from settings import Logger
+from prompt_templates.document_based_conversation import Template
+from settings import logger
 
 class DocumentBasedConversation():
   def __init__(self):
@@ -85,7 +85,13 @@ class DocumentBasedConversation():
     )
 
     if memory:
+      logger.info("Initializing memory")
       self.convo.memory = memory
+  
+  def add_exchange_to_memory(self, input, output):
+    if self.convo.memory:
+      logger.info("Adding exchange to memory")
+      self.convo.memory.save_context(input, output)
 
 
   def predict(self, input):
