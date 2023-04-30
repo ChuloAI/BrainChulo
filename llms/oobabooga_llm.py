@@ -53,7 +53,7 @@ class OobaboogaLLM(LLM):
     return {}
 
   def call_api(self, prompt_str, params={}):
-    url = f"{config.chat_api_host}:{config.chat_api_port}{config.chat_api_path}"
+    url = config.chat_api_url
     headers = {"Content-Type": "application/json"}
     _params = PARAMS
 

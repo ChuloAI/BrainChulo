@@ -4,13 +4,13 @@ import logging
 
 load_dotenv()
 
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Settings():
   def __init__(self):
     # Chat API - By default, we are assuming Oobabooga's Text Generation WebUI is running
-    self.chat_api_host = os.getenv("CHAT_API_HOST", "http://localhost")
-    self.chat_api_port = os.getenv("CHAT_API_PORT", 7860)
-    self.chat_api_path = os.getenv("CHAT_API_PATH", "/run/textgen/")
+    self.chat_api_url = os.getenv("CHAT_API_URL", "http://localhost:5000/api/v1/generate")
 
     # Where short-term memory is stored
     self.index_path = os.getenv("INDEX_PATH", "index.json")
@@ -22,7 +22,3 @@ class Settings():
 def load_config():
   return Settings()
 
-
-class Logger():
-  def __init__(self) -> logging.Logger:
-     return logging.getLogger(__name__)
