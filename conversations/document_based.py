@@ -1,99 +1,113 @@
 from langchain.document_loaders import TextLoader
-from langchain.vectorstores import Chroma
+from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
-from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
+from langchain.agents import Tool, initialize_agent, AgentType, load_tools
+from langchain.schema import OutputParserException
 from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.document_based_conversation import Template
-from settings import logger
+from prompt_templates.document_based_conversation import Template, Examples
+from settings import logger, load_config
+
+config = load_config()
+
+USE_AGENT = config.use_agent
 
 class DocumentBasedConversation():
   def __init__(self):
     """
-    Initializes the object with necessary components for conversation chain generation.
-
-    Args:
-      - self: the object itself
-
-    Returns:
-      - None
-
-    Components:
-      - llm: an instance of the OobaboogaLLM class
-      - text_splitter: an instance of the CharacterTextSplitter class, with specified chunk size and overlap
-      - embeddings: an instance of the HuggingFaceEmbeddings class, with specified model name
-      - prompt: a PromptTemplate object with input variables and template
-      - memory: None, to be initialized later
-      - convo: a ConversationChain object with specified components and verbosity level
+    Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever, 
+    conversation chain, tools, and conversation agent if USE_AGENT is True.
     """
+
     self.llm = OobaboogaLLM()
     self.text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    self.embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
+    self.vector_store = Chroma()
     self.prompt = PromptTemplate(input_variables=["history", "input"], template=Template)
-    self.refresh_store()
+    retriever = self.vector_store.get_store().as_retriever(search_kwargs=dict(top_k_docs_for_context=10))
+    memory = VectorStoreRetrieverMemory(retriever=retriever)
+
+    self.conversation_chain = ConversationChain(
+      llm=self.llm,
+      prompt=self.prompt,
+      memory=memory,
+      verbose=True
+    )
+
+    if USE_AGENT:
+      tools = load_tools([])
+
+      tools.append(
+        Tool(
+          name="FriendlyDiscussion",
+          func=self.conversation_chain.run,
+          description="useful when you need to discuss with a human based on relevant context from previous conversation",
+        )
+      )
+
+      tools.append(Tool(
+        name="SearchLongTermMemory",
+        func=self.search,
+        description="useful when you need to search for information in long-term memory",
+      ))
+
+      self.conversation_agent = initialize_agent(tools, self.llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, memory=memory, verbose=True)
 
 
   def load_document(self, document_path):
-    """Load and process a document file.
+    """
+    Load a document from a file and add its contents to the vector store.
 
     Args:
-      document_path (str): Path to the document file to load.
+      document_path: A string representing the path to the document file.
 
     Returns:
       None.
-
-    Side effects:
-      - Loads the contents of the document file located at `document_path`.
-      - Splits the loaded documents into smaller chunks using `self.text_splitter`.
-      - Creates a vector store using `Chroma.from_documents()` with the loaded documents
-        and `self.embeddings`.
-      - Creates a retriever from the vector store using `vector_store.as_retriever()`
-        with `search_kwargs=dict(k=20)`.
-      - Initializes `self.memory` with a new `VectorStoreRetrieverMemory` instance
-        using the retriever created above.
-      - Initializes `self.convo` with a new `ConversationChain` instance using
-        `self.llm`, `self.prompt`, `self.memory`, and `verbose=False`.
-
-    Raises:
-      Any exceptions raised by `TextLoader.load()` or any of the methods called during
-      processing of the loaded document (e.g. `self.text_splitter.split_documents()`).
     """
     text_loader = TextLoader(document_path, encoding="utf8")
     documents = text_loader.load()
     documents = self.text_splitter.split_documents(documents)
 
-    self.refresh_store(documents)
+    self.vector_store.add_documents(documents)
   
-  def refresh_store(self, documents = None):
-    if documents is None:
-      memory = None
+  def search(self, search_input):
+    """
+    Search for the given input in the vector store and return the top 10 most similar documents with their scores.
+    This function is used as a helper function for the SearchLongTermMemory tool
 
-    else:
-      vector_store = Chroma.from_documents(
-        documents, self.embeddings,
-        metadatas=[{"source": str(i)} for i in range(len(documents))]
-      )
-      retriever = vector_store.as_retriever(search_kwargs=dict(k=20))
-      memory = VectorStoreRetrieverMemory(retriever=retriever)
+    Args:
+      search_input (str): The input to search for in the vector store.
 
-    self.convo = ConversationChain(
-      llm=self.llm,
-      prompt=self.prompt,
-      verbose=True
-    )
-
-    if memory:
-      logger.info("Initializing memory")
-      self.convo.memory = memory
-  
-  def add_exchange_to_memory(self, input, output):
-    if self.convo.memory:
-      logger.info("Adding exchange to memory")
-      self.convo.memory.save_context(input, output)
-
+    Returns:
+      List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
+    """
+    logger.info(f"Searching for: {search_input} in LTM")
+    docs = self.vector_store.similarity_search_with_score(search_input, top_k_docs_for_context=10)
+    return docs
 
   def predict(self, input):
-    print(f"Input: {input}")
-    return self.convo.predict(input=input)
+    """
+    Predicts a response based on the given input.
+
+    Args:
+      input (str): The input string to generate a response for.
+
+    Returns:
+      str: The generated response string.
+
+    Raises:
+      OutputParserException: If the response from the conversation agent could not be parsed.
+    """
+    if USE_AGENT:
+      try:
+        response = self.conversation_agent.run(input=f"{Examples}\n{input}")
+      except OutputParserException as e:
+        response = str(e)
+        if not response.startswith("Could not parse LLM output: `"):
+          raise e
+        response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+    else:
+      response = self.conversation_chain.predict(input=input)
+
+    return response
