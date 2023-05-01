@@ -13,10 +13,15 @@ class Settings():
     self.chat_api_url = os.getenv("CHAT_API_URL", "http://localhost:5000/api/v1/generate")
 
     # Where short-term memory is stored
-    self.index_path = os.getenv("INDEX_PATH", "index.json")
+    self.memories_path = os.getenv("MEMORIES_PATH", "memories/")
+
+    # Where uploads are saved
+    self.upload_path = os.getenv("UPLOAD_PATH", "uploads/")
 
     # Default objective - If we go objective-based, this is the default
     self.default_objective = os.getenv("DEFAULT_OBJECTIVE", "Be a CEO.")
+
+    self.use_agent = False
 
 
 def load_config():
