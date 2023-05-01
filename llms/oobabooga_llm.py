@@ -43,7 +43,7 @@ class OobaboogaLLM(LLM):
     response = self.call_api(prompt, {
         "max_new_tokens": 256,
         "temperature": 0.5,
-        "stopping_strings": stop + ["### Human:", "\nHuman:"]
+        "stopping_strings": stop + ["### Human:", "\nHuman:", "\nHuman"]
     })
 
     return response
