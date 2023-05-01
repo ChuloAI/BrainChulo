@@ -3,6 +3,9 @@ import uuid
 from tempfile import _TemporaryFileWrapper
 import gradio as gr
 from conversations.document_based import DocumentBasedConversation
+from settings import load_config
+
+config = load_config()
 
 # Load the document-based conversation by default.
 # Eventually, we'll want to load the conversation from UI selection
@@ -41,7 +44,11 @@ def add_file(history, new_file):
     try:
       # Save the file to disk
       filename = f"{uuid.uuid4()}.txt"
-      filepath = os.path.join(os.getcwd(), "data", filename)
+      filepath = os.path.join(os.getcwd(), "data", config.upload_path, filename)
+
+      # Create directory if it doesn't exist
+      os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
       with open(filepath, "w") as file:
         # Copy the contents of the file object to the new file
         with open(new_file.name, "r") as new_file_contents:
@@ -77,7 +84,6 @@ def bot(history):
     input = history[-1][0]
     response = convo.predict(input=input)
     history[-1][1] = response
-    convo.add_exchange_to_memory({"input": input}, {"output": response})
   return history
 
 
