@@ -8,26 +8,28 @@ from settings import load_config, logger
 
 config = load_config()
 
+
 class Chroma(BaseMemory):
-  vector_store: Optional[Type[vectorstores.Chroma]]
-  
-  def __init__(self):
-    super().__init__()
-    embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
-    logger.info(f"Embeddings: {embeddings}")
-    persist_directory = os.path.join(os.getcwd(), "data", config.memories_path)
-    # Create directory if it doesn't exist
-    os.makedirs(persist_directory, exist_ok=True)
-    
+    vector_store: Optional[Type[vectorstores.Chroma]]
 
-    self.vector_store = vectorstores.Chroma(
-      collection_name="brainchulo",
-      embedding_function=embeddings,
-      persist_directory=persist_directory
-    )
+    def __init__(self):
+        super().__init__()
+        embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
+        persist_directory = os.path.join(
+            os.getcwd(), "data", config.memories_path)
+        # Create directory if it doesn't exist
+        os.makedirs(persist_directory, exist_ok=True)
 
-    self.setup_index()
+        self.vector_store = vectorstores.Chroma(
+            collection_name="brainchulo",
+            embedding_function=embeddings,
+            persist_directory=persist_directory
+        )
 
-  def setup_index(self):
-    self.add_texts(["Hello", "world!", "this", "is", "a", "test"], ids=["1", "2", "3", "4", "5", "6"])
+        self.setup_index()
 
+    def setup_index(self):
+        collection = self.vector_store._client.get_collection('brainchulo')
+        if len(collection.get()['ids']) < 6:
+            self.add_texts(["Hello", "world!", "this", "is", "a", "test"], ids=[
+                           "1", "2", "3", "4", "5", "6"])

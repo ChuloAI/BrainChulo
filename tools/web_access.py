@@ -5,7 +5,7 @@ config = Settings.load_config()
 
 
 class WebAccess(BaseTool):
-  url: str
+    url: str
 
-  def commands(self):
-    return {}
+    def commands(self):
+        return {}

@@ -39,7 +39,8 @@ def select_model_from_default_options():
     print("Input> ", end='')
     choice = input()[0].strip().upper()
     if choice == char:
-        print("""\nThen type the name of your desired Hugging Face model in the format organization/name.
+        print(
+            """\nThen type the name of your desired Hugging Face model in the format organization/name.
 
 Examples:
 facebook/opt-1.3b
@@ -98,17 +99,24 @@ def get_download_links_from_huggingface(model, branch, text_only=False):
 
         for i in range(len(dict)):
             fname = dict[i]['path']
-            if not is_lora and fname.endswith(('adapter_config.json', 'adapter_model.bin')):
+            if not is_lora and fname.endswith(
+                    ('adapter_config.json', 'adapter_model.bin')):
                 is_lora = True
 
-            is_pytorch = re.match("(pytorch|adapter)_model.*\.bin", fname)
-            is_safetensors = re.match(".*\.safetensors", fname)
-            is_pt = re.match(".*\.pt", fname)
-            is_ggml = re.match("ggml.*\.bin", fname)
-            is_tokenizer = re.match("tokenizer.*\.model", fname)
-            is_text = re.match(".*\.(txt|json|py|md)", fname) or is_tokenizer
+            is_pytorch = re.match("(pytorch|adapter)_model.*\\.bin", fname)
+            is_safetensors = re.match(".*\\.safetensors", fname)
+            is_pt = re.match(".*\\.pt", fname)
+            is_ggml = re.match("ggml.*\\.bin", fname)
+            is_tokenizer = re.match("tokenizer.*\\.model", fname)
+            is_text = re.match(".*\\.(txt|json|py|md)", fname) or is_tokenizer
 
-            if any((is_pytorch, is_safetensors, is_pt, is_ggml, is_tokenizer, is_text)):
+            if any(
+                (is_pytorch,
+                 is_safetensors,
+                 is_pt,
+                 is_ggml,
+                 is_tokenizer,
+                 is_text)):
                 if 'lfs' in dict[i]:
                     sha256.append([fname, dict[i]['lfs']['oid']])
                 if is_text:
@@ -183,12 +191,29 @@ def get_single_file(url, output_folder, start_from_scratch=False):
                 f.write(data)
 
 
-def start_download_threads(file_list, output_folder, start_from_scratch=False, threads=1):
-    thread_map(lambda url: get_single_file(url, output_folder,
-               start_from_scratch=start_from_scratch), file_list, max_workers=threads, disable=True)
+def start_download_threads(
+        file_list,
+        output_folder,
+        start_from_scratch=False,
+        threads=1):
+    thread_map(
+        lambda url: get_single_file(
+            url,
+            output_folder,
+            start_from_scratch=start_from_scratch),
+        file_list,
+        max_workers=threads,
+        disable=True)
 
 
-def download_model_files(model, branch, links, sha256, output_folder, start_from_scratch=False, threads=1):
+def download_model_files(
+        model,
+        branch,
+        links,
+        sha256,
+        output_folder,
+        start_from_scratch=False,
+        threads=1):
     # Creating the folder and writing the metadata
     if not output_folder.exists():
         output_folder.mkdir()
@@ -206,7 +231,10 @@ def download_model_files(model, branch, links, sha256, output_folder, start_from
     # Downloading the files
     print(f"Downloading the model to {output_folder}")
     start_download_threads(
-        links, output_folder, start_from_scratch=start_from_scratch, threads=threads)
+        links,
+        output_folder,
+        start_from_scratch=start_from_scratch,
+        threads=threads)
 
 
 def check_model_files(model, branch, links, sha256, output_folder):

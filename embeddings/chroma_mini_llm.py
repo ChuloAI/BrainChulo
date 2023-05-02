@@ -6,25 +6,27 @@ from chromadb.utils import embedding_functions
 
 
 class ChromaMiniLM(BaseModel, Embeddings):
-  # Per https://huggingface.co/blog/mteb all-MiniLM-L6-v2 provides a good balance between speed and performance
-  # The model will be downloaded on first run
-  client: Any = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2")
+    # Per https://huggingface.co/blog/mteb all-MiniLM-L6-v2 provides a good balance between speed and performance
+    # The model will be downloaded on first run
+    client: Any = embedding_functions.SentenceTransformerEmbeddingFunction(
+        model_name="all-MiniLM-L6-v2")
 
-  class Config:
-    """Configuration for this pydantic object."""
+    class Config:
+        """Configuration for this pydantic object."""
 
-    extra = Extra.forbid
+        extra = Extra.forbid
 
-  @root_validator()
-  def validate_environment(cls, values: Dict) -> Dict:
-    values = {**values, "client": embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name="all-MiniLM-L6-v2")}
+    @root_validator()
+    def validate_environment(cls, values: Dict) -> Dict:
+        values = {
+            **values,
+            "client": embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2")}
 
-    return values
+        return values
 
-  def embed_documents(self, texts: List[str]) -> List[List[float]]:
-    return self.client(texts)
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return self.client(texts)
 
-  def embed_query(self, text: str) -> List[float]:
-    return self.client([text])[0]
+    def embed_query(self, text: str) -> List[float]:
+        return self.client([text])[0]
