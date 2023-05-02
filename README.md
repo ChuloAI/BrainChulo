@@ -78,5 +78,8 @@ Please note that this roadmap is subject to change based on community feedback a
 
 We welcome contributions to BrainChulo from the open source community! If you would like to contribute to the project, please fork the repository and submit a pull request. For more information on how to contribute, please see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
+
+<a href="https://discord.gg/9prDPY2rpU" target="_blank" title="Join us on Discord"><img src="https://user-images.githubusercontent.com/95258328/235766839-47336cbb-f338-4939-b2ec-b33363020f95.png" width="150" alt="Join BrainChulo on Discord" /></a>
+
 ## License
 BrainChulo is licensed under the MIT license. See [LICENSE.md](LICENSE.md) for more information.
