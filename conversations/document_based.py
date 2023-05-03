@@ -3,11 +3,9 @@ from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
-from langchain.prompts import PromptTemplate
-from langchain.embeddings import SentenceTransformerEmbeddings
 from langchain.schema import OutputParserException
 from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.document_based_conversation import Template, Examples
+from prompt_templates.document_based_conversation import Examples
 from prompt_templates.document_based_conversation_v2 import ConversationWithDocumentTemplate
 from settings import logger, load_config
 
