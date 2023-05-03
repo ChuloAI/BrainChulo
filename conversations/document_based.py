@@ -4,10 +4,11 @@ from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
-from langchain.agents import Tool, initialize_agent, AgentType, load_tools
+from langchain.embeddings import SentenceTransformerEmbeddings
 from langchain.schema import OutputParserException
 from llms.oobabooga_llm import OobaboogaLLM
 from prompt_templates.document_based_conversation import Template, Examples
+from prompt_templates.document_based_conversation_v2 import ConversationWithDocumentTemplate
 from settings import logger, load_config
 
 config = load_config()
@@ -25,46 +26,28 @@ class DocumentBasedConversation():
         self.llm = OobaboogaLLM()
         self.text_splitter = CharacterTextSplitter(
             chunk_size=1000, chunk_overlap=0)
-        self.vector_store = Chroma()
-        self.prompt = PromptTemplate(
-            input_variables=[
-                "history",
-                "input"],
-            template=Template)
-        retriever = self.vector_store.get_store().as_retriever(
+        self.vector_store_docs = Chroma()
+        self.vector_store_convs = Chroma()
+
+        convs_retriever = self.vector_store_convs.get_store().as_retriever(
             search_kwargs=dict(top_k_docs_for_context=10))
-        memory = VectorStoreRetrieverMemory(retriever=retriever)
+
+        convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
+
+        self.prompt = ConversationWithDocumentTemplate(
+            input_variables=[
+                "input",
+                "history",
+            ],
+            document_store=self.vector_store_docs,
+        )
 
         self.conversation_chain = ConversationChain(
             llm=self.llm,
             prompt=self.prompt,
-            memory=memory,
+            memory=convs_memory,
             verbose=True
         )
-
-        if USE_AGENT:
-            tools = load_tools([])
-
-            tools.append(
-                Tool(
-                    name="FriendlyDiscussion",
-                    func=self.conversation_chain.run,
-                    description="useful when you need to discuss with a human based on relevant context from previous conversation",
-                ))
-
-            tools.append(
-                Tool(
-                    name="SearchLongTermMemory",
-                    func=self.search,
-                    description="useful when you need to search for information in long-term memory",
-                ))
-
-            self.conversation_agent = initialize_agent(
-                tools,
-                self.llm,
-                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                memory=memory,
-                verbose=True)
 
     def load_document(self, document_path):
         """
@@ -80,7 +63,7 @@ class DocumentBasedConversation():
         documents = text_loader.load()
         documents = self.text_splitter.split_documents(documents)
 
-        self.vector_store.add_documents(documents)
+        self.vector_store_docs.add_documents(documents)
 
     def search(self, search_input):
         """
@@ -94,7 +77,7 @@ class DocumentBasedConversation():
           List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
         """
         logger.info(f"Searching for: {search_input} in LTM")
-        docs = self.vector_store.similarity_search_with_score(
+        docs = self.vector_store_docs.similarity_search_with_score(
             search_input, top_k_docs_for_context=10)
         return docs
 
@@ -113,8 +96,10 @@ class DocumentBasedConversation():
         """
         if USE_AGENT:
             try:
+
                 response = self.conversation_agent.run(
-                    input=f"{Examples}\n{input}")
+                    input=f"{Examples}\n{input}",
+                )
             except OutputParserException as e:
                 response = str(e)
                 if not response.startswith("Could not parse LLM output: `"):
