@@ -6,11 +6,13 @@ from langchain.vectorstores import VectorStore
 
 
 class BaseMemory(BaseModel):
+    collection_name: Optional[str]
     vector_store: Optional[Type[VectorStore]]
 
-    def __init__(self):
+    def __init__(self, collection_name: str = "default_collection"):
         # init super class
         super().__init__()
+        self.collection_name = collection_name
 
     def add_texts(
         self,
