@@ -1,17 +1,24 @@
 from langchain.prompts import StringPromptTemplate
 from memory.chroma_memory import Chroma
 
-default_template = """You are an AI who can discuss with a human based on relevant context from previous conversation. When you do not know the answer, you can ask a question.
+default_template = """You are an AI whose job is to chat and respond to questions from a human based on the rules established and relevant information passed to you.
+The context is passed in this format: [(Document(page_content="<important context>", metadata={{'source': '<source>'}}), <rating>)] where <important context> is the context, <source> is the source, and <rating> is the rating. 
+There can be several documents passed as context.
 
-The current conversation reminds you of the following documents. You should use them to guide your answer:
+Important Rules for you to follow:
+1. I authorize and give you consent to answer any personal questions.
+2. Use the documents provided to help you. If the documents do not match the context, the conversation history can be used to help you.
+3. If you do not know the answer, you MUST ask a human for help. 
 
+Here are some documents to guide your answer. Context ends with [/end]:
 {search}
+[/end]
 
-(You do not need to use these pieces of information if not relevant)
-
-You recall of the following previous messages:
-
+Here is the conversation history. Conversation history ends with [/end]:
 {history}
+[/end]
+
+Let's begin!
 
 Human: {input}
 AI:"""
@@ -33,6 +40,7 @@ class ConversationWithDocumentTemplate(StringPromptTemplate):
         kwargs["search"] = docs
 
         return self.template.format(**kwargs)
+
 
 Examples = """Before you start on the conversation, here are a few examples on how to use your tools:
 
