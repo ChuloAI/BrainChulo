@@ -3,10 +3,10 @@ from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
+from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.schema import OutputParserException
 from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.document_based_conversation import Examples
-from prompt_templates.document_based_conversation_v2 import ConversationWithDocumentTemplate
+from prompt_templates.document_based_conversation import Examples, ConversationWithDocumentTemplate
 from settings import logger, load_config
 
 config = load_config()
@@ -24,7 +24,7 @@ class DocumentBasedConversation():
         self.llm = OobaboogaLLM()
         self.text_splitter = CharacterTextSplitter(
             chunk_size=1000, chunk_overlap=0)
-        self.vector_store_docs = Chroma()
+        self.vector_store_docs = Chroma
         self.vector_store_convs = Chroma()
 
         convs_retriever = self.vector_store_convs.get_store().as_retriever(
@@ -46,6 +46,31 @@ class DocumentBasedConversation():
             memory=convs_memory,
             verbose=True
         )
+
+        if USE_AGENT:
+            tools = load_tools([])
+
+            tools.append(
+                Tool(
+                    name="FriendlyDiscussion",
+                    func=self.conversation_chain.run,
+                    description="useful when you need to discuss with a human based on relevant context from previous conversation",
+                ))
+
+            tools.append(
+                Tool(
+                    name="SearchLongTermMemory",
+                    func=self.search,
+                    description="useful when you need to search for information in long-term memory",
+                ))
+
+            self.conversation_agent = initialize_agent(
+                tools,
+                self.llm,
+                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                memory=convs_memory,
+                verbose=True)
+
 
     def load_document(self, document_path):
         """
