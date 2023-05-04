@@ -11,8 +11,9 @@ config = load_config()
 
 class Chroma(BaseMemory):
     vector_store: Optional[Type[vectorstores.Chroma]]
+    collection_name: Optional[str]
 
-    def __init__(self):
+    def __init__(self, **kwargs: Any):
         super().__init__()
         embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
         persist_directory = os.path.join(
@@ -21,7 +22,7 @@ class Chroma(BaseMemory):
         os.makedirs(persist_directory, exist_ok=True)
 
         self.vector_store = vectorstores.Chroma(
-            collection_name="brainchulo",
+            collection_name=self.collection_name,
             embedding_function=embeddings,
             persist_directory=persist_directory
         )

@@ -23,9 +23,16 @@ class Settings():
         # Where uploads are saved
         self.upload_path = os.getenv("UPLOAD_PATH", "uploads/")
 
+        # Document store name
+        self.document_store_name = os.getenv(
+            "DOCUMENT_STORE_NAME", "brainchulo_docs")
+        self.conversation_store_name = os.getenv(
+            "CONVERSATION_STORE_NAME", "brainchulo_convos")
+
         # Default objective - If we go objective-based, this is the default
         self.default_objective = os.getenv("DEFAULT_OBJECTIVE", "Be a CEO.")
 
+        # The agent can use tools and come up with a response via REaCT prompt framework
         self.use_agent = False
 
 
