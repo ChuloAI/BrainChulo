@@ -30,7 +30,6 @@ class ConversationWithDocumentTemplate(StringPromptTemplate):
         docs = self.document_store.similarity_search_with_score(
             input_question, top_k_docs_for_context=10
         )
-
         kwargs["search"] = docs
 
         return self.template.format(**kwargs)

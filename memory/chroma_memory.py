@@ -14,7 +14,7 @@ class Chroma(BaseMemory):
     collection_name: Optional[str]
 
     def __init__(self, **kwargs: Any):
-        super().__init__()
+        super().__init__(**kwargs)
         embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
         persist_directory = os.path.join(
             os.getcwd(), "data", config.memories_path)
@@ -30,7 +30,7 @@ class Chroma(BaseMemory):
         self.setup_index()
 
     def setup_index(self):
-        collection = self.vector_store._client.get_collection('brainchulo')
+        collection = self.vector_store._client.get_collection(self.collection_name)
         if len(collection.get()['ids']) < 6:
             self.add_texts(["Hello", "world!", "this", "is", "a", "test"], ids=[
                            "1", "2", "3", "4", "5", "6"])

@@ -24,8 +24,8 @@ class DocumentBasedConversation():
         self.llm = OobaboogaLLM()
         self.text_splitter = CharacterTextSplitter(
             chunk_size=1000, chunk_overlap=0)
-        self.vector_store_docs = Chroma
-        self.vector_store_convs = Chroma()
+        self.vector_store_docs = Chroma(collection_name="docs_collection")
+        self.vector_store_convs = Chroma(collection_name="convos_collection")
 
         convs_retriever = self.vector_store_convs.get_store().as_retriever(
             search_kwargs=dict(top_k_docs_for_context=10))
@@ -35,7 +35,7 @@ class DocumentBasedConversation():
         self.prompt = ConversationWithDocumentTemplate(
             input_variables=[
                 "input",
-                "history",
+                "history"
             ],
             document_store=self.vector_store_docs,
         )
