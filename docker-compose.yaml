@@ -6,5 +6,5 @@ services:
       - "7865:7865"
     network_mode: "host"
     volumes:
-      - .:/app
+      - ./app:/code/app
 

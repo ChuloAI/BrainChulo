@@ -1,16 +1,14 @@
 FROM python:3.10
 
 # Set the working directory to /app
-WORKDIR /app
+WORKDIR /code
+ENV PYTHONPATH "${PYTHONPATH}:/code"
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+COPY ./requirements.txt /code/requirements.txt
 
-# Install the dependencies
-RUN pip install -r requirements.txt
+RUN pip install -r /code/requirements.txt
 
-# Expose the port that the app will run on
-EXPOSE 7860
+COPY ./app /code/app
 
-# Set the entrypoint to the main Python file
-CMD ["gradio", "main.py"]
+# Set the entrypoint
+CMD ["gradio", "app/main.py"]
