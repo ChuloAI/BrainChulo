@@ -1,5 +1,5 @@
 from langchain.prompts import StringPromptTemplate
-from memory.chroma_memory import Chroma
+from app.memory.chroma_memory import Chroma
 
 default_template = """You are an AI whose job is to chat and respond to questions from a human based on the rules established and relevant information passed to you.
 The context is passed in this format: [(Document(page_content="<important context>", metadata={{'source': '<source>'}}), <rating>)] where <important context> is the context, <source> is the source, and <rating> is the rating. 

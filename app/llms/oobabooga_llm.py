@@ -2,7 +2,7 @@ import os
 import requests
 from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
-from settings import load_config, logger
+from app.settings import load_config, logger
 
 config = load_config()
 
