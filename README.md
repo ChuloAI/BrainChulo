@@ -71,7 +71,7 @@ Run the Docker container:
 
 DEVELOPERS: If you wish to mount the BrainChulo local repository to the running container, run the following command:
 
-`docker run -p 7865:7860 -v /path/to/local/code:/app brainchulo`
+`docker run -p 7860:7860 -v /path/to/local/code:/app brainchulo`
 
 
 ## Roadmap
