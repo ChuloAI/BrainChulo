@@ -55,6 +55,24 @@ http://localhost:7860/
 
 This interface allows you to chat or load text documents which will be used as context in the BrainChulo application.
 
+### &#9888; WARNING &#9888;
+As we develop BrainChulo the application is gaining abilities which allow it to access and change files on the filesystem. This is a major security risk. We strongly recommend that you run BrainChulo in a Docker container, using the provided `Dockerfile`.
+
+To run BrainChulo in a Docker container, follow these steps:
+
+Build the Docker image: 
+
+`docker build -t brainchulo .`
+
+Run the Docker container: 
+
+`docker run -p 7865:7860 brainchulo`
+
+
+DEVELOPERS: If you wish to mount the BrainChulo local repository to the running container, run the following command:
+
+`docker run -p 7865:7860 -v /path/to/local/code:/app brainchulo`
+
 
 ## Roadmap
 
