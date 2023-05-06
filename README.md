@@ -44,13 +44,14 @@ You may be running it via `start_webui.bat`. In this case, you'll need to edit i
 To start BrainChulo, simply run the `main.py` script at the root of this repository:
 
 ```
-python main.py
+python app/main.py
 ```
+
 
 This will eventually launch the BrainChulo application. Point your web browser to the following default URL:
 
 ```
-http://localhost:7860/
+http://localhost:7865/
 ```
 
 This interface allows you to chat or load text documents which will be used as context in the BrainChulo application.
@@ -110,3 +111,8 @@ Run the Docker container:
 If you wish to mount the BrainChulo local repository to the running container, run the following command:
 
 `docker run -p 7865:7865 -v /path/to/local/code:/app brainchulo`
+
+If you want hot reloading when coding, start the app with the following command:
+```
+gradio app/main.py
+```
