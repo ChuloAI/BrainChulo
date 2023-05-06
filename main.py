@@ -119,5 +119,4 @@ with gr.Blocks() as app:
     )
     btn.upload(add_file, [chatbot, btn], [chatbot])
 
-print('ta race')
 app.launch(debug=True, server_name="0.0.0.0", server_port=7865)
