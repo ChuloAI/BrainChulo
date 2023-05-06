@@ -13,4 +13,4 @@ RUN pip install -r requirements.txt
 EXPOSE 7860
 
 # Set the entrypoint to the main Python file
-CMD ["python", "main.py"]
+CMD ["gradio", "main.py"]
