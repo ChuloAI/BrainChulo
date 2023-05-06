@@ -1,0 +1,8 @@
+version: '3'
+services:
+  brainchulo:
+    build: .
+    ports:
+      - "7865:7865"
+    network_mode: "host"
+

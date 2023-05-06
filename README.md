@@ -58,20 +58,13 @@ This interface allows you to chat or load text documents which will be used as c
 ### &#9888; WARNING &#9888;
 As we develop BrainChulo the application is gaining abilities which allow it to access and change files on the filesystem. This is a major security risk. We strongly recommend that you run BrainChulo in a Docker container, using the provided `Dockerfile`.
 
-To run BrainChulo in a Docker container, follow these steps:
+To run BrainChulo in a Docker container, you just need to run:
 
-Build the Docker image: 
+`docker-compose up`
 
-`docker build -t brainchulo .`
+To shut down the container:
 
-Run the Docker container: 
-
-`docker run -p 7865:7860 brainchulo`
-
-
-DEVELOPERS: If you wish to mount the BrainChulo local repository to the running container, run the following command:
-
-`docker run -p 7860:7860 -v /path/to/local/code:/app brainchulo`
+`docker-compose down`
 
 
 ## Roadmap
@@ -101,3 +94,19 @@ We welcome contributions to BrainChulo from the open source community! If you wo
 
 ## License
 BrainChulo is licensed under the MIT license. See [LICENSE.md](LICENSE.md) for more information.
+
+
+## Notes for developers
+More commands are available on Docker. They are not necessary but can help developers
+Build the Docker image: 
+
+`docker build -t brainchulo .`
+
+Run the Docker container: 
+
+`docker run -p 7865:7865 --name brainchulo brainchulo`
+
+
+If you wish to mount the BrainChulo local repository to the running container, run the following command:
+
+`docker run -p 7865:7865 -v /path/to/local/code:/app brainchulo`
