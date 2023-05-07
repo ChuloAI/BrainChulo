@@ -1,10 +1,10 @@
 import os
 from typing import Any, Iterable, List, Optional, Type
-from memory.base import BaseMemory
+from app.memory.base import BaseMemory
 from langchain import vectorstores
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.docstore.document import Document
-from settings import load_config, logger
+from app.settings import load_config, logger
 
 config = load_config()
 

@@ -2,8 +2,8 @@ import os
 import uuid
 from tempfile import _TemporaryFileWrapper
 import gradio as gr
-from conversations.document_based import DocumentBasedConversation
-from settings import load_config, logger
+from app.conversations.document_based import DocumentBasedConversation
+from app.settings import load_config, logger
 
 config = load_config()
 
@@ -119,4 +119,4 @@ with gr.Blocks() as app:
     )
     btn.upload(add_file, [chatbot, btn], [chatbot])
 
-app.launch(debug=True)
+app.launch(server_port=7865, server_name="0.0.0.0", debug=True)

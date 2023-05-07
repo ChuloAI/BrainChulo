@@ -1,13 +1,13 @@
 from langchain.document_loaders import TextLoader
-from memory.chroma_memory import Chroma
+from app.memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
 from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.schema import OutputParserException
-from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.document_based_conversation import Examples, ConversationWithDocumentTemplate
-from settings import logger, load_config
+from app.llms.oobabooga_llm import OobaboogaLLM
+from app.prompt_templates.document_based_conversation import Examples, ConversationWithDocumentTemplate
+from app.settings import logger, load_config
 
 config = load_config()
 
