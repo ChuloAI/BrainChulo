@@ -116,3 +116,7 @@ If you want hot reloading when coding, start the app with the following command:
 ```
 gradio app/main.py
 ```
+
+
+## Credits
+[Streamlit](https://streamlit.io) UI highly inspired by [CatGDP](https://github.com/tipani86/CatGDP/tree/master)

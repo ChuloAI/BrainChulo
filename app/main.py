@@ -90,14 +90,20 @@ def bot(history):
     if history and len(history) > 0:
         input = history[-1][0]
         response = convo.predict(input=input)
-        history[-1][1] = response
+        history[-1][1] = response +  f"<button onclick='fn_map.get(\"upvote\")({len(history)-1})'>👍</button><button onclick='fn_map.get(\"downvoted\")({len(history)-1})'>👎</button>"
     return history
+
+def upvote(i):
+    history[i] = history[i] + " (👍)"
+
+def downvote(i):
+    history[i] = history[i] + " (👎)"
 
 
 with gr.Blocks() as app:
     chatbot = gr.Chatbot([], elem_id="chatbot").style(
         height="auto")
-
+    
     with gr.Row():
         with gr.Column(scale=0.9):
             txt = gr.Textbox(
@@ -118,5 +124,5 @@ with gr.Blocks() as app:
         bot, chatbot, chatbot
     )
     btn.upload(add_file, [chatbot, btn], [chatbot])
-
-app.launch(server_port=7865, server_name="0.0.0.0", debug=True)
+    
+app.launch(server_port=7865, server_name="0.0.0.0")

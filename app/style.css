@@ -1,0 +1,66 @@
+
+/* Set a fixed height for the chat window */
+.appview-container .main .block-container {
+    padding-top: 3rem;
+    padding-bottom: 0rem;
+    height: 400px;
+    overflow-y: scroll;
+}
+
+/* Add some spacing and a background color to the prompt box */
+.appview-container {
+    padding: 2rem;
+    background-color: #f9f9f9;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Style the user's chat bubbles */
+.human-line {
+    display: flex;
+    font-family: "Source Sans Pro", sans-serif, "Segoe UI", "Roboto", sans-serif;
+    height: auto;
+    margin: 5px;
+    width: 100%;
+    flex-direction: row-reverse;
+}
+
+.human-line .chat-bubble {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 5px;
+    max-width: 70%;
+    background-color: #f1f1f1;
+}
+
+.human-line .chat-icon {
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+/* Style the AI's chat bubbles */
+.AI-line {
+    display: flex;
+    font-family: "Source Sans Pro", sans-serif, "Segoe UI", "Roboto", sans-serif;
+    height: auto;
+    margin: 5px;
+    width: 100%;
+}
+
+.AI-line .chat-bubble {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 5px;
+    max-width: 70%;
+    background-color: #fff;
+}
+
+.AI-line .chat-icon {
+    border-radius: 5px;
+    margin-left: 5px;
+}
