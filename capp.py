@@ -9,21 +9,19 @@ from app.conversations.document_based import DocumentBasedConversation
 from app.settings import load_config, logger
 from datetime import datetime
 
-config = load_config()
-
-# Load the document-based conversation by default.
-# Eventually, we'll want to load the conversation from UI selection
-convo = DocumentBasedConversation()
-
 # Set global variables
-
 ROOT_DIR = './'
 DEBUG = False
 INITIAL_PROMPT = "Hello"
 
-# Check environment variables
-
 errors = []
+config = load_config()
+
+@st.cache_resource(show_spinner=False)
+def conversation():
+    # Load the document-based conversation by default.
+    return DocumentBasedConversation()
+
 
 @st.cache_data(show_spinner=False)
 def get_local_img(file_path: str) -> str:
@@ -100,7 +98,7 @@ async def main(human_prompt: str) -> dict:
             file_path = os.path.join(ROOT_DIR, "app", "assets", "loading.gif")
             writing_animation.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;<img src='data:image/gif;base64,{get_local_img(file_path)}' width=30 height=10>", unsafe_allow_html=True)
 
-            reply_text = convo.predict(human_prompt)
+            reply_text = conversation().predict(human_prompt)
             
             reply_box.markdown(get_chat_message(reply_text), unsafe_allow_html=True)
 
@@ -139,7 +137,6 @@ if "DEBUG" in st.session_state and st.session_state.DEBUG:
 st.spinner("Initializing App...")
 
 ### MAIN STREAMLIT UI STARTS HERE ###
-
 
 # Define main layout
 st.title("BrainChulo")
