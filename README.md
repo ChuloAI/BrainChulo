@@ -44,7 +44,7 @@ You may be running it via `start_webui.bat`. In this case, you'll need to edit i
 To start BrainChulo, simply run the `main.py` script at the root of this repository:
 
 ```
-python app/main.py
+python main.py
 ```
 
 
@@ -114,5 +114,5 @@ If you wish to mount the BrainChulo local repository to the running container, r
 
 If you want hot reloading when coding, start the app with the following command:
 ```
-gradio app/main.py
+gradio main.py
 ```

@@ -5,10 +5,11 @@ WORKDIR /code
 ENV PYTHONPATH "${PYTHONPATH}:/code"
 
 COPY ./requirements.txt /code/requirements.txt
+COPY main.py /code/main.py
 
 RUN pip install -r /code/requirements.txt
 
 COPY ./app /code/app
 
 # Set the entrypoint
-CMD ["gradio", "app/main.py"]
+CMD ["gradio", "main.py"]
