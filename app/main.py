@@ -1,9 +1,10 @@
 import os
+import uuid
 from tempfile import _TemporaryFileWrapper
 import gradio as gr
 from app.conversations.document_based import DocumentBasedConversation
 from app.settings import load_config, logger
-
+import shutil  
 config = load_config()
 
 # Load the document-based conversation by default.
@@ -54,11 +55,8 @@ def add_file(history, new_file):
             # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-            with open(filepath, "wb") as file:
-                # Copy the contents of the file object to the new file
-                with open(new_file.name, "rb") as new_file_contents:
-                    for line in new_file_contents:
-                        file.write(line)
+            # Copy the contents of the file object to the new file
+            shutil.copyfile(new_file.name, filepath)  # Use shutil.copyfile() instead of manual copying
 
             # Load the document into the conversation
             convo.load_document(filepath)
@@ -91,6 +89,7 @@ def bot(history):
         response = convo.predict(input=input)
         history[-1][1] = response
     return history
+
 
 def launch_app():
     with gr.Blocks() as app:
