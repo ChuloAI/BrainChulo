@@ -91,29 +91,33 @@ def bot(history):
     return history
 
 
-with gr.Blocks() as app:
-    chatbot = gr.Chatbot([], elem_id="chatbot").style(
-        height="auto")
+def launch_app():
+    with gr.Blocks() as app:
+        chatbot = gr.Chatbot([], elem_id="chatbot").style(
+            height="auto")
 
-    with gr.Row():
-        with gr.Column(scale=0.9):
-            txt = gr.Textbox(
-                show_label=False,
-                placeholder="Enter text and press enter, or upload a text file",
-            ).style(
-                container=False)
-        with gr.Column(scale=0.05):
-            btn_submit = gr.Button("✉️").style(container=False)
-        with gr.Column(scale=0.05):
-            btn = gr.UploadButton("📁", file_types=["text"]).style(
-                container=False)
+        with gr.Row():
+            with gr.Column(scale=0.9):
+                txt = gr.Textbox(
+                    show_label=False,
+                    placeholder="Enter text and press enter, or upload a text file",
+                ).style(
+                    container=False)
+            with gr.Column(scale=0.05):
+                btn_submit = gr.Button("✉️").style(container=False)
+            with gr.Column(scale=0.05):
+                btn = gr.UploadButton("📁", file_types=["text"]).style(
+                    container=False)
 
-    btn_submit.click(add_text, [chatbot, txt], [chatbot, txt]).then(
-        bot, chatbot, chatbot
-    )
-    txt.submit(add_text, [chatbot, txt], [chatbot, txt]).then(
-        bot, chatbot, chatbot
-    )
-    btn.upload(add_file, [chatbot, btn], [chatbot])
+        btn_submit.click(add_text, [chatbot, txt], [chatbot, txt]).then(
+            bot, chatbot, chatbot
+        )
+        txt.submit(add_text, [chatbot, txt], [chatbot, txt]).then(
+            bot, chatbot, chatbot
+        )
+        btn.upload(add_file, [chatbot, btn], [chatbot])
 
-app.launch(server_port=7865, server_name="0.0.0.0", debug=True)
+    app.launch(server_port=7865, server_name="0.0.0.0", debug=True)
+
+if __name__ == "__main__":
+    launch_app()
