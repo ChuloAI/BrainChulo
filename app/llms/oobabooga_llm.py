@@ -2,7 +2,7 @@ import os
 import requests
 from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
-from app.settings import load_config, logger
+from settings import load_config, logger
 
 config = load_config()
 
@@ -66,7 +66,9 @@ class OobaboogaLLM(LLM):
 
         _params["prompt"] = prompt_str
 
-        response = requests.post(url, headers=headers, json=_params, timeout=500)
+        response = requests.post(
+            url, headers=headers, json=_params, timeout=500
+        )
 
         # Check for errors in API response
         if response.status_code != 200:

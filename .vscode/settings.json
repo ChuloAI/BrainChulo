@@ -1,14 +1,21 @@
 {
-  "python.formatting.autopep8Args": [
-    "--ignore=E121"
-  ],
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none",
-  "editor.defaultFormatter": "ms-python.black-formatter",
-  "black-formatter.args": [
-    "--line-length=80",
-    "--skip-string-normalization"
-  ]
+    "python.formatting.autopep8Args": [
+        "--ignore=E121"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none",
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "black-formatter.args": [
+        "--line-length=80",
+        "--skip-string-normalization"
+    ],
+    "files.associations": {
+        "*.rsh": "javascript"
+    },
+    "javascript.suggest.completeFunctionCalls": true,
+    "[vue]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

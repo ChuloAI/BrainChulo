@@ -1,7 +1,9 @@
 langchain
 python-dotenv
-fschat
 chromadb
 sentence_transformers
-gradio
 bs4
+fastapi[all]
+uvicorn
+pydantic
+pyparsing

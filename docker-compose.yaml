@@ -1,10 +1,41 @@
 version: '3'
 services:
-  brainchulo:
-    build: .
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
     ports:
       - "7865:7865"
     network_mode: "host"
     volumes:
-      - ./app:/code/app
-
+      - ./app:/code
+    # Add the "restart: unless-stopped" option to automatically restart the container unless explicitly stopped
+    restart: unless-stopped
+    # Add the "labels" section to set the container to remove itself on shutdown
+    labels:
+      - "com.docker.compose.container-name=backend"
+      - "com.docker.compose.service=backend"
+      - "com.docker.compose.oneoff=False"
+      - "com.docker.compose.project=brainchulo-backend"
+    # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
+    stop_signal: SIGINT
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/code
+    depends_on:
+      - backend
+    # Add the "restart: unless-stopped" option to automatically restart the container unless explicitly stopped
+    restart: unless-stopped
+    # Add the "labels" section to set the container to remove itself on shutdown
+    labels:
+      - "com.docker.compose.container-name=frontend"
+      - "com.docker.compose.service=frontend"
+      - "com.docker.compose.oneoff=False"
+      - "com.docker.compose.project=brainchulo-frontend"
+    # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
+    stop_signal: SIGINT

@@ -1,20 +1,23 @@
 from langchain.document_loaders import TextLoader
-from app.memory.chroma_memory import Chroma
+from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
 from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.schema import OutputParserException
-from app.llms.oobabooga_llm import OobaboogaLLM
-from app.prompt_templates.document_based_conversation import Examples, ConversationWithDocumentTemplate
-from app.settings import logger, load_config
+from llms.oobabooga_llm import OobaboogaLLM
+from prompt_templates.document_based_conversation import (
+    Examples,
+    ConversationWithDocumentTemplate,
+)
+from settings import logger, load_config
 
 config = load_config()
 
 USE_AGENT = config.use_agent
 
 
-class DocumentBasedConversation():
+class DocumentBasedConversation:
     def __init__(self):
         """
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
@@ -23,28 +26,24 @@ class DocumentBasedConversation():
 
         self.llm = OobaboogaLLM()
         self.text_splitter = CharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=0)
+            chunk_size=1000, chunk_overlap=0
+        )
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
         convs_retriever = self.vector_store_convs.get_store().as_retriever(
-            search_kwargs=dict(top_k_docs_for_context=10))
+            search_kwargs=dict(top_k_docs_for_context=10)
+        )
 
         convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
 
         self.prompt = ConversationWithDocumentTemplate(
-            input_variables=[
-                "input",
-                "history"
-            ],
+            input_variables=["input", "history"],
             document_store=self.vector_store_docs,
         )
 
         self.conversation_chain = ConversationChain(
-            llm=self.llm,
-            prompt=self.prompt,
-            memory=convs_memory,
-            verbose=True
+            llm=self.llm, prompt=self.prompt, memory=convs_memory, verbose=True
         )
 
         if USE_AGENT:
@@ -55,22 +54,24 @@ class DocumentBasedConversation():
                     name="FriendlyDiscussion",
                     func=self.conversation_chain.run,
                     description="useful when you need to discuss with a human based on relevant context from previous conversation",
-                ))
+                )
+            )
 
             tools.append(
                 Tool(
                     name="SearchLongTermMemory",
                     func=self.search,
                     description="useful when you need to search for information in long-term memory",
-                ))
+                )
+            )
 
             self.conversation_agent = initialize_agent(
                 tools,
                 self.llm,
                 agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
                 memory=convs_memory,
-                verbose=True)
-
+                verbose=True,
+            )
 
     def load_document(self, document_path):
         """
@@ -101,7 +102,8 @@ class DocumentBasedConversation():
         """
         logger.info(f"Searching for: {search_input} in LTM")
         docs = self.vector_store_docs.similarity_search_with_score(
-            search_input, top_k_docs_for_context=10)
+            search_input, top_k_docs_for_context=10
+        )
         return docs
 
     def predict(self, input):
@@ -119,7 +121,6 @@ class DocumentBasedConversation():
         """
         if USE_AGENT:
             try:
-
                 response = self.conversation_agent.run(
                     input=f"{Examples}\n{input}",
                 )
@@ -128,7 +129,8 @@ class DocumentBasedConversation():
                 if not response.startswith("Could not parse LLM output: `"):
                     raise e
                 response = response.removeprefix(
-                    "Could not parse LLM output: `").removesuffix("`")
+                    "Could not parse LLM output: `"
+                ).removesuffix("`")
         else:
             response = self.conversation_chain.predict(input=input)
 
