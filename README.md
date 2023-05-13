@@ -116,3 +116,14 @@ If you want hot reloading when coding, start the app with the following command:
 ```
 gradio main.py
 ```
+
+## Further resources
+
+### Medium Articles
+
+#### Introduction to Langchain
+https://medium.com/@paolorechia/creating-my-first-ai-agent-with-vicuna-and-langchain-376ed77160e3
+#### Q/A with Sentence Transformer + Vicuna
+https://medium.com/@paolorechia/building-a-question-answer-bot-with-langchain-vicuna-and-sentence-transformers-b7f80428eadc
+#### Fine tuning for Python REPL
+https://medium.com/@paolorechia/fine-tuning-my-first-wizardlm-lora-ca75aa35363d
