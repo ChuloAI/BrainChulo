@@ -120,4 +120,5 @@ def launch_app():
     app.launch(server_port=7865, server_name="0.0.0.0", debug=True)
 
 if __name__ == "__main__":
+    gr.close_all()
     launch_app()
