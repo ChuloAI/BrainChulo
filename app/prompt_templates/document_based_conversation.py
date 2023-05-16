@@ -18,8 +18,8 @@ Here is the conversation history. Use it to help you:
 
 Let's begin!
 
-USER: {input}
-ASSISTANT:"""
+{input}
+### Response:"""
 
 
 # Set up a prompt template
