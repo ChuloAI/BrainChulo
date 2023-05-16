@@ -71,6 +71,7 @@
       // if this.conversation_id is null get the id from the newly created conversation
       if (!this.conversation_id) {
         this.conversation_id = this.conversation.id;
+        localStorage.setItem('conversation_id', this.conversation_id);
       }
 
       this.messages = JSON.parse(localStorage.getItem('messages')) || [];
