@@ -49,6 +49,7 @@
 <script>
   import ChatBubble from './ChatBubble.vue';
   import NavbarDropdown from './NavbarDropdown.vue';
+  import InternalService from '../services/internal';
 
   export default {
     components: {
@@ -63,7 +64,15 @@
         messageInput: '',
       };
     },
-    created() {
+    async created() {
+      this.conversation_id = localStorage.getItem('conversation_id');
+      this.conversation = await InternalService.getConversation(this.conversation_id);
+
+      // if this.conversation_id is null get the id from the newly created conversation
+      if (!this.conversation_id) {
+        this.conversation_id = this.conversation.id;
+      }
+
       this.messages = JSON.parse(localStorage.getItem('messages')) || [];
       this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
     },
@@ -104,7 +113,7 @@
         this.messages.push(loadingMessage);
 
         // Make API call to LLM endpoint
-        const url = 'http://localhost:5000/api/v1/generate';
+        const url = 'http://localhost:8165/conversations';
         fetch(url, {
           method: 'POST',
           mode: 'no-cors',

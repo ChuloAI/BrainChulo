@@ -7,3 +7,4 @@ fastapi[all]
 uvicorn
 pydantic
 pyparsing
+sqlmodel
