@@ -23,7 +23,7 @@ class DocumentBasedConversation():
 
         self.llm = OobaboogaLLM()
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=600, chunk_overlap=20, length_function=len)
+            chunk_size=500, chunk_overlap=20, length_function=len)
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
