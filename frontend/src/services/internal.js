@@ -28,7 +28,7 @@ class InternalService {
         const response = await fetch(fullPath, {
             method: method,
             body: payload,
-            mode: 'no-cors',
+            mode: 'cors',
             headers: Object.assign({}, defaultHeaders, headers),
         });
 
