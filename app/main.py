@@ -4,6 +4,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from models.all import Conversation, Message
 from typing import List
 from conversations.document_based import DocumentBasedConversation
+from datetime import datetime
 
 sqlite_database_url = "sqlite:///data/brainchulo.db"
 connect_args = {"check_same_thread": False}
@@ -64,21 +65,25 @@ def get_conversation(conversation_id: int, session: Session = Depends(get_sessio
     """
     Get a conversation by id.
     """
-    return session.get(Conversation, conversation_id)
+    conversation = session.get(Conversation, conversation_id)
 
-@app.post("/conversations/{conversation_id}/messages")
+    return conversation
+
+@app.post("/conversations/{conversation_id}/messages", response_model=Message)
 def create_message(*, session: Session = Depends(get_session), conversation_id: int, message: Message):
     """
     Create a new message. Then query for a response
     """
     message = Message.from_orm(message)
     session.add(message)
+
+    response = convo.predict(message.text)
+    response_message = Message(text=response, is_user=False, conversation_id=conversation_id, created_at=datetime.utcnow())
+    session.add(response_message)
     session.commit()
-    session.refresh(message)
+    session.refresh(response_message)
 
-    response = convo.predict(message.content)
-
-    return response
+    return response_message
 
 
 
