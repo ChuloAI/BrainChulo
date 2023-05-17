@@ -72,19 +72,21 @@ def get_conversation(conversation_id: int, session: Session = Depends(get_sessio
 @app.post("/conversations/{conversation_id}/messages", response_model=Message)
 def create_message(*, session: Session = Depends(get_session), conversation_id: int, message: Message):
     """
-    Create a new message. Then query for a response
+    Create a new message.
     """
     message = Message.from_orm(message)
     session.add(message)
-
-    response = convo.predict(message.text)
-    response_message = Message(text=response, is_user=False, conversation_id=conversation_id, created_at=datetime.utcnow())
-    session.add(response_message)
     session.commit()
-    session.refresh(response_message)
+    session.refresh(message)
 
-    return response_message
+    return message
 
+@app.post('/llm', response_model=str)
+def llm(*, query: str):
+    """
+    Query the LLM
+    """
+    return convo.predict(query)
 
 
 if __name__ == "__main__":

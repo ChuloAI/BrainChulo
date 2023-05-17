@@ -17,8 +17,12 @@ class InternalService {
 
     /* Send a message to a conversation */
     async sendMessage(conversationId, message) {
-        console.log(message)
         return await this.request(`/conversations/${conversationId}/messages`, 'POST', message);
+    }
+
+    /* Query the LLM */
+    async queryLLM(query) {
+        return await this.request(`/llm`, 'POST', {}, {}, {query: query});
     }
 
     async request(url, method, payload = {}, headers = {}, params = { }) {
