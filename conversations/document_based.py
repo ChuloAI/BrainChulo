@@ -37,44 +37,24 @@ class DocumentBasedConversation():
         """
 
         self.llm = OobaboogaLLM()
-        # self.text_splitter = CharacterTextSplitter(
-        #     chunk_size=1000, chunk_overlap=0)
-        # self.vector_store_docs = Chroma(collection_name="docs_collection")
-        # self.vector_store_convs = Chroma(collection_name="convos_collection")
-
-        # convs_retriever = self.vector_store_convs.get_store().as_retriever(
-        #     search_kwargs=dict(top_k_docs_for_context=10))
-
-        # convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
-
-        # self.prompt = ConversationWithDocumentTemplate(
-        #     input_variables=[
-        #         "input",
-        #         "history"
-        #     ],
-        #     document_store=self.vector_store_docs,
-        # )
-
-        # self.conversation_chain = ConversationChain(
-        #     llm=self.llm,
-        #     prompt=self.prompt,
-        #     memory=convs_memory,
-        #     verbose=True
-        # )
+        self.text_splitter = CharacterTextSplitter(
+            chunk_size=1000, chunk_overlap=0)
+        self.vector_store_docs = Chroma(collection_name="docs_collection")
+        self.vector_store_convs = Chroma(collection_name="convos_collection")
 
         if USE_AGENT:
             tools = [
                 Tool(
-                    name="SearchLongTermMemory",
+                    name="SearchDocuments",
                     func=self.search,
-                    description="""useful when you need to search very specific information in long-term memory.
-Note that your long-term memory is limited, so more often than the information is NOT available in your memory.
+                    description="""useful when you need to search very specific information in documents.
+Note that your documents is limited, so more often than not the information is NOT available in your memory.
 Examples of use:
 
 Example 1:
 Question: What is the author's name?
 Thought: I need to check my long-term memory
-Action: SearchLongTermMemory
+Action: SearchDocuments
 Action Input: "Author Name"
 Observation: "Jack Black"
 Thought: I now know the answer.
@@ -83,7 +63,7 @@ Final Answer: The author's name is Jack Black.
 Example 2:
 Question: Who is the author?
 Thought: I need to check my long-term memory
-Action: SearchLongTermMemory
+Action: SearchDocuments
 Action Input: "Author Name"
 Observation: Document[]
 Thought:  
@@ -110,10 +90,10 @@ Final Answer: Hello, world!
             prompt = CustomAgentPromptTemplate(
                 template=template,
                 tools=tools,
-                input_variables=["input", "intermediate_steps"],
+                input_variables=["input", "intermediate_steps", "history"],
             )
 
-            output_parser = CustomAgentOutputParser()
+            output_parser = CustomAgentOutputParser(tools=tools)
             llm_chain = LLMChain(llm=self.llm, prompt=prompt)
 
             tool_names = [tool.name for tool in tools]
@@ -148,6 +128,7 @@ Final Answer: Hello, world!
 
         self.vector_store_docs.add_documents(documents)
 
+
     def search(self, search_input):
         """
         Search for the given input in the vector store and return the top 10 most similar documents with their scores.
@@ -164,7 +145,7 @@ Final Answer: Hello, world!
             search_input, top_k_docs_for_context=10)
         return docs
 
-    def predict(self, input):
+    def predict(self, input, history):
         """
         Predicts a response based on the given input.
 
@@ -178,10 +159,12 @@ Final Answer: Hello, world!
           OutputParserException: If the response from the conversation agent could not be parsed.
         """
         if USE_AGENT:
+            print("History ", history)
             try:
 
                 response = self.conversation_agent.run(
-                    input=input
+                    input=input,
+                    history=history[0:-2]
                 )
             except OutputParserException as e:
                 response = str(e)

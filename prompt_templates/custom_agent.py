@@ -11,7 +11,9 @@ from typing import List, Union
 
 template = """You're am AI that helps a human. You should follow all instructions to the best of your abilities.
 
-The human may have told you things in the past.
+The human may have told you things in the past. Here are the most recent messages you remember:
+
+{history}
 
 You should ALWAYS think what to do next, step-by-step.
 
@@ -56,11 +58,21 @@ class CustomAgentPromptTemplate(StringPromptTemplate):
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
         # Format them in a particular way
+        print("input kwargs ", kwargs)
         intermediate_steps = kwargs.pop("intermediate_steps")
         thoughts = ""
         for action, observation in intermediate_steps:
             thoughts += action.log
             thoughts += f"\nObservation: {observation}\nThought: "
+
+        raw_history = kwargs.pop("history")
+        history = ""
+        for item in raw_history:
+            history += f"Human: {item[0]}\n"
+            if item[1]:
+                history += f"AI: {item[1]}\n"
+
+        kwargs["history"] = history
 
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
@@ -82,13 +94,16 @@ def parse_action(llm_output):
 
 
 class CustomAgentOutputParser(AgentOutputParser):
+    tools: List[Tool]
+
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         print("llm output: ", llm_output, "end of llm ouput")
 
         # Parse out the action and action input
         action, action_input = parse_action(llm_output)
         print(f"Parsed Action: '{action}'")
-        if action == "Say":
+        tools_names = [tool.name for tool in self.tools]
+        if action == "Say" or action not in tools_names:
             if "Observation" in action_input:
                 action_input = action_input.split("Observation")[0]
             return AgentFinish(

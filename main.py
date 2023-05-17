@@ -89,7 +89,7 @@ def bot(history):
     """
     if history and len(history) > 0:
         input = history[-1][0]
-        response = convo.predict(input=input)
+        response = convo.predict(input=input, history=history)
         history[-1][1] = response
     return history
 
