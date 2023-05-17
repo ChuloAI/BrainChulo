@@ -1,4 +1,4 @@
-<template>
+<template :class="{'dark': isDarkMode}">
   <div class="h-screen flex flex-col">
     <!-- toolbar -->
     <nav class="bg-gray-800">
@@ -19,29 +19,32 @@
       </div>
     </nav>
     <!-- main body -->
-    <div class="flex-grow flex flex-col">
-      <div class="flex-grow overflow-y-auto">
+    <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
+      <div class="flex-grow overflow-y-auto" ref="messageContainer">
         <div class="mx-auto max-w-2xl mt-5">
           <chat-bubble
             v-for="message, index in messages"
             :key="index"
             :message="message"
-            :class="{
-              'ml-auto': message.is_user,
-              'mr-auto': !message.is_user,
-            }"></chat-bubble>
+            @onRendered="onRendered"
+          ></chat-bubble>
         </div>
       </div>
-      <form @submit.prevent="sendMessage" class="bg-gray-200 px-4 py-2">
-        <div class="flex items-center">
-          <input v-model="messageInput" type="text" class="form-input flex-1" placeholder="Type your message..." />
-          <button
-            type="submit"
-            class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-            Send
-          </button>
-        </div>
-      </form>
+      <div class="absolute bottom-0 left-0 w-full border-t md:border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white pt-4">
+        <form @submit.prevent="sendMessage" class="px-4 py-2 w-3/4 mx-auto">
+          <div class="flex items-center">
+            <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
+            <button
+              type="submit"
+              class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+              Send
+            </button>
+          </div>
+          <div class="flex items-center mt-2">
+            <!-- TODO: add a document uploader -->
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +65,7 @@
         avatarUrl: new URL('../assets/user_icon.png', import.meta.url).href,
         messages: [],
         messageInput: '',
+        isDarkMode: localStorage.getItem('isDarkMode', 'false') === 'true',
       };
     },
     async created() {
@@ -77,6 +81,9 @@
       this.messages = JSON.parse(localStorage.getItem('messages')) || [];
       this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
     },
+    mounted() {
+      this.$refs.messageInput.focus();
+    },
     methods: {
       updateUsername(newValue) {
         console.log(newValue);
@@ -87,12 +94,12 @@
         this.messages = [];
         localStorage.removeItem('messages');
       },
-      sendMessage() {
+      async sendMessage() {
         if (!this.messageInput || this.messageInput.length === 0) {
           return;
         }
 
-        const message = {
+        const userMessage = {
           created_at: Date.now(),
           text: this.messageInput,
           is_user: true,
@@ -100,7 +107,11 @@
         };
 
         this.messageInput = '';
-        this.messages.push(message);
+
+        const userMessageResponse = await InternalService.sendMessage(this.conversation_id, userMessage);
+        userMessage.id = userMessageResponse.id;
+
+        this.messages.push(userMessage);
 
         localStorage.setItem('messages', JSON.stringify(this.messages));
 
@@ -114,20 +125,24 @@
 
         this.messages.push(loadingMessage);
 
-        InternalService.sendMessage(this.conversation_id, message).then((data) => {
-          // Remove the loading message
-          this.messages = this.messages.filter((m) => !m.isLoading);
+        const aiMessageText = await InternalService.queryLLM(userMessage.text);
+        const aiMessage = {
+          text: aiMessageText,
+          is_user: false,
+          conversation_id: this.conversation_id,
+        };
 
-          // Add the AI response message
-          const aiMessage = {
-            created_at: new Date(data.created_at),
-            text: data.text,
-            is_user: false,
-            conversation_id: data.conversation_id
-          };
-          this.messages.push(aiMessage);
-          localStorage.setItem('messages', JSON.stringify(this.messages));
-        }).catch((error) => console.error(error));;
+        const aiMessageResponse = await InternalService.sendMessage(this.conversation_id, aiMessage);
+        aiMessage.id = aiMessageResponse.id;
+
+        // Remove the loading message
+        this.messages = this.messages.filter((message) => !message.isLoading);
+        this.messages.push(aiMessage);
+
+        localStorage.setItem('messages', JSON.stringify(this.messages));
+      },
+      onRendered() {
+        this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
       },
       logout() {
         localStorage.removeItem('user');
@@ -136,3 +151,10 @@
     },
   };
 </script>
+
+<style scoped>
+.overflow-y-auto {
+  overflow-y: scroll; /* add a scrollbar when the content overflows */
+  height: 80%;
+}
+</style>
