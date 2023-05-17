@@ -18,17 +18,17 @@
         </div>
       </div>
     </nav>
-    <!-- main content -->
+    <!-- main body -->
     <div class="flex-grow flex flex-col">
       <div class="flex-grow overflow-y-auto">
         <div class="mx-auto max-w-2xl mt-5">
           <chat-bubble
-            v-for="message in messages"
-            :key="message.id"
+            v-for="message, index in messages"
+            :key="index"
             :message="message"
             :class="{
-              'ml-auto': message.isMe,
-              'mr-auto': !message.isMe,
+              'ml-auto': message.is_user,
+              'mr-auto': !message.is_user,
             }"></chat-bubble>
         </div>
       </div>
@@ -93,57 +93,41 @@
         }
 
         const message = {
-          id: this.messages.length + 1,
-          createdAt: Date.now(),
-          content: this.messageInput,
-          isMe: true,
+          created_at: Date.now(),
+          text: this.messageInput,
+          is_user: true,
+          conversation_id: this.conversation_id,
         };
 
         this.messageInput = '';
         this.messages.push(message);
+
         localStorage.setItem('messages', JSON.stringify(this.messages));
 
         // Show the loading message
         const loadingMessage = {
-          id: this.messages.length + 1,
-          createdAt: Date.now(),
-          content: '',
-          isMe: false,
+          created_at: Date.now(),
+          text: '',
+          is_user: false,
           isLoading: true,
         };
+
         this.messages.push(loadingMessage);
 
-        // Make API call to LLM endpoint
-        const url = 'http://localhost:8165/conversations';
-        fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            prompt: message.content,
-            parameters: {
-              temperature: 0.8,
-            },
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // Remove the loading message
-            this.messages = this.messages.filter((m) => !m.isLoading);
+        InternalService.sendMessage(this.conversation_id, message).then((data) => {
+          // Remove the loading message
+          this.messages = this.messages.filter((m) => !m.isLoading);
 
-            // Add the AI response message
-            const aiMessage = {
-              id: this.messages.length + 1,
-              createdAt: Date.now(),
-              content: data.response,
-              isMe: false,
-            };
-            this.messages.push(aiMessage);
-            localStorage.setItem('messages', JSON.stringify(this.messages));
-          })
-          .catch((error) => console.error(error));
+          // Add the AI response message
+          const aiMessage = {
+            created_at: new Date(data.created_at),
+            text: data.text,
+            is_user: false,
+            conversation_id: data.conversation_id
+          };
+          this.messages.push(aiMessage);
+          localStorage.setItem('messages', JSON.stringify(this.messages));
+        }).catch((error) => console.error(error));;
       },
       logout() {
         localStorage.removeItem('user');
