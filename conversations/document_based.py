@@ -77,7 +77,7 @@ Final Answer: Hello, friend! How can I help you?
             , Tool(
                 name="Say",
                 func=echo,
-                description="""Use to talk back to the human.
+                description="""Use this tool to answer back.
 Example:
 Action: Say
 Action Input:
