@@ -3,5 +3,7 @@ python-dotenv
 fschat
 chromadb
 sentence_transformers
+InstructorEmbedding
 gradio
 bs4
+protobuf==3.20
