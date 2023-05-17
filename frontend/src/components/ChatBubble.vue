@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-start mb-4 w-full gap-2">
+  <div class="flex items-start mb-4 w-full gap-2" data-id="{{ message.id }}" data-created-at="{{ message.created_at }}" data-conversation-id="{{ message.conversation_id }}">
     <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-400 text-white flex-shrink-0 ml-4">
       <img :src="avatarUrl" alt="Avatar" class="object-cover rounded-full w-full h-full" />
     </div>
@@ -25,5 +25,8 @@
         return new URL(path, import.meta.url).href;
       },
     },
+    mounted() {
+      this.$emit('onRendered');
+    }
   };
 </script>
