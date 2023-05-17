@@ -33,7 +33,7 @@ class Settings():
         self.default_objective = os.getenv("DEFAULT_OBJECTIVE", "Be a CEO.")
 
         # The agent can use tools and come up with a response via REaCT prompt framework
-        self.use_agent = False
+        self.use_agent = True
 
 
 def load_config():

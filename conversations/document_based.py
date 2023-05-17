@@ -3,11 +3,23 @@ from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationChain
-from langchain.agents import Tool, initialize_agent, AgentType, load_tools
+from langchain.agents import Tool
 from langchain.schema import OutputParserException
 from llms.oobabooga_llm import OobaboogaLLM
 from prompt_templates.document_based_conversation import Examples, ConversationWithDocumentTemplate
 from settings import logger, load_config
+from langchain.agents import (
+    AgentExecutor,
+    LLMSingleActionAgent,
+    Tool,
+)
+from prompt_templates.custom_agent import (
+    CustomAgentPromptTemplate,
+    CustomAgentOutputParser,
+    template
+)
+from langchain import LLMChain
+
 
 config = load_config()
 
@@ -22,54 +34,87 @@ class DocumentBasedConversation():
         """
 
         self.llm = OobaboogaLLM()
-        self.text_splitter = CharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=0)
-        self.vector_store_docs = Chroma(collection_name="docs_collection")
-        self.vector_store_convs = Chroma(collection_name="convos_collection")
+        # self.text_splitter = CharacterTextSplitter(
+        #     chunk_size=1000, chunk_overlap=0)
+        # self.vector_store_docs = Chroma(collection_name="docs_collection")
+        # self.vector_store_convs = Chroma(collection_name="convos_collection")
 
-        convs_retriever = self.vector_store_convs.get_store().as_retriever(
-            search_kwargs=dict(top_k_docs_for_context=10))
+        # convs_retriever = self.vector_store_convs.get_store().as_retriever(
+        #     search_kwargs=dict(top_k_docs_for_context=10))
 
-        convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
+        # convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
 
-        self.prompt = ConversationWithDocumentTemplate(
-            input_variables=[
-                "input",
-                "history"
-            ],
-            document_store=self.vector_store_docs,
-        )
+        # self.prompt = ConversationWithDocumentTemplate(
+        #     input_variables=[
+        #         "input",
+        #         "history"
+        #     ],
+        #     document_store=self.vector_store_docs,
+        # )
 
-        self.conversation_chain = ConversationChain(
-            llm=self.llm,
-            prompt=self.prompt,
-            memory=convs_memory,
-            verbose=True
-        )
+        # self.conversation_chain = ConversationChain(
+        #     llm=self.llm,
+        #     prompt=self.prompt,
+        #     memory=convs_memory,
+        #     verbose=True
+        # )
 
         if USE_AGENT:
-            tools = load_tools([])
-
-            tools.append(
-                Tool(
-                    name="FriendlyDiscussion",
-                    func=self.conversation_chain.run,
-                    description="useful when you need to discuss with a human based on relevant context from previous conversation",
-                ))
-
-            tools.append(
+            tools = [
                 Tool(
                     name="SearchLongTermMemory",
                     func=self.search,
-                    description="useful when you need to search for information in long-term memory",
-                ))
+                    description="""useful when you need to search very specific information in long-term memory.
+Note that your long-term memory is limited, so more often than the information is NOT available in your memory.
+Examples of use:
 
-            self.conversation_agent = initialize_agent(
-                tools,
-                self.llm,
-                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                memory=convs_memory,
-                verbose=True)
+Example 1:
+Question: What is the author's name?
+Thought: I need to check my long-term memory
+Action: SearchLongTermMemory
+Action Input: "Author Name"
+Observation: "Jack Black"
+Thought: I now know the answer.
+Final Answer: The author's name is Jack Black.
+
+Example 2:
+Question: Who is the author?
+Thought: I need to check my long-term memory
+Action: SearchLongTermMemory
+Action Input: "Author Name"
+Observation: Document[]
+Thought:  
+Example 3:
+Question: Hi
+Thought: This is not a question.
+Final Answer: Hello, friend! How can I help you?
+
+""",
+                )
+            ]
+            prompt = CustomAgentPromptTemplate(
+                template=template,
+                tools=tools,
+                input_variables=["input", "intermediate_steps"],
+            )
+
+            output_parser = CustomAgentOutputParser()
+            llm_chain = LLMChain(llm=self.llm, prompt=prompt)
+
+            tool_names = [tool.name for tool in tools]
+            agent = LLMSingleActionAgent(
+                llm_chain=llm_chain,
+                output_parser=output_parser,
+                stop=["\nObservation:"],
+                allowed_tools=tool_names,
+            )
+
+            agent_executor = AgentExecutor.from_agent_and_tools(
+                agent=agent, tools=tools, verbose=True
+            )
+
+            self.conversation_agent = agent_executor
+
 
 
     def load_document(self, document_path):
