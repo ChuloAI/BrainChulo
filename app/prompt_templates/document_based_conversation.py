@@ -1,22 +1,22 @@
 from langchain.prompts import StringPromptTemplate
 from memory.chroma_memory import Chroma
 
-default_template = """As an AI designed to chat and respond to questions, my goal is to provide you with helpful and accurate information based on the context you provide. 
+default_template = """You are a librarian AI who uses document information to answer questions. Documents as formatted as follows: [(Document(page_content="<important context>", metadata={{'source': '<source>'}}), <rating>)] where <important context> is the context, <source> is the source, and <rating> is the rating. 
+There can be several documents in a conversation.
 
 To assist me in this task, I have access to a vector database that contains various documents related to different topics. Here are some documents that match your query:
 
+Here are some documents to guide your answer:
 {search}
 
-Please note that the context of these documents may vary, and some information may not be relevant to your specific question. If you need more information, feel free to ask follow-up questions or provide additional context.
 
-In addition to the documents, I also have access to our conversation history. Here is a record of our previous exchanges:
-
+Here is the conversation history. Use it to help you:
 {history}
 
 Based on this information, how may I assist you today?
 
-User: {input}
-AI:"""
+{input}
+### Response:"""
 
 
 # Set up a prompt template

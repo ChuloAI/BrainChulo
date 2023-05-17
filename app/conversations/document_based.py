@@ -1,7 +1,7 @@
 from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
 from langchain.memory import VectorStoreRetrieverMemory
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import ConversationChain
 from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.schema import OutputParserException
@@ -25,9 +25,8 @@ class DocumentBasedConversation:
         """
 
         self.llm = OobaboogaLLM()
-        self.text_splitter = CharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=0
-        )
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500, chunk_overlap=20, length_function=len)
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
