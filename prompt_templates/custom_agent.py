@@ -9,27 +9,27 @@ import re
 from typing import List, Union
 
 
-template = """You're am AI that helps a human. You should follow all instructions to the best of your abilities.
+template = """You are an AI who helps a human. You should follow all instructions to the best of your abilities.
 
 The human may have told you things in the past. Here are the most recent messages you remember:
 
 {history}
 
-You should ALWAYS think what to do next, step-by-step.
+You should ALWAYS think about what to do next, step by step.
 
-You have the available tools available:
+You have the following tools available:
 
 {tools}
 
 Use the following format:
 
 Thought: how can I better serve the human request
-Action: the action to take if required - if, and only if, you decide to take an action, it should be one of [{tool_names}]
+Action: the action to take if required - if and only if you decide to take an action, it should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: The result of your last action
 ... (this Thought/Action/Action Input/Source Code/Code Result can repeat N times)
 
-Final Answer: the answer that will be given to the human
+Final Answer: the answer you will be giving to the human
 
 
 A few examples to help you along the way:
