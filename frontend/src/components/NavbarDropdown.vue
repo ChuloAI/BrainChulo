@@ -1,5 +1,5 @@
 <template>
-  <div class="relative ml-3">
+  <div class="relative ml-3 z-10">
     <div>
       <button @click="open = !open" type="button" class="flex text-sm rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu" aria-haspopup="true">
         <span class="sr-only">Open user menu</span>
