@@ -3,10 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session
 from models.all import Conversation, Message
 from typing import List
+from conversations.document_based import DocumentBasedConversation
 
 sqlite_database_url = "sqlite:///data/brainchulo.db"
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args)
+
+convo = DocumentBasedConversation()
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -37,6 +40,9 @@ def on_startup():
 
 @app.post("/conversations", response_model=Conversation)
 def create_conversation(*, session: Session = Depends(get_session), conversation: Conversation):
+    """
+    Create a new conversation.
+    """
     conversation = Conversation.from_orm(conversation)
     session.add(conversation)
     session.commit()
@@ -44,13 +50,36 @@ def create_conversation(*, session: Session = Depends(get_session), conversation
 
     return conversation
 
+
 @app.get("/conversations", response_model=List[Conversation])
 def get_conversations(session: Session = Depends(get_session)):
+    """
+    Get all conversations.
+    """
     return session.query(Conversation).all()
+
 
 @app.get("/conversations/{conversation_id}", response_model=Conversation)
 def get_conversation(conversation_id: int, session: Session = Depends(get_session)):
+    """
+    Get a conversation by id.
+    """
     return session.get(Conversation, conversation_id)
+
+@app.post("/conversations/{conversation_id}/messages")
+def create_message(*, session: Session = Depends(get_session), conversation_id: int, message: Message):
+    """
+    Create a new message. Then query for a response
+    """
+    message = Message.from_orm(message)
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    response = convo.predict(message.content)
+
+    return response
+
 
 
 if __name__ == "__main__":
