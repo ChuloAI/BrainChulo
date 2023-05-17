@@ -174,6 +174,5 @@ Final Answer: Hello, world!
                     "Could not parse LLM output: `").removesuffix("`")
         else:
             raise ValueError("Agent is the only option :)")
-            # response = self.conversation_chain.predict(input=input)
 
         return response
