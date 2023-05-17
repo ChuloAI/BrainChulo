@@ -1,27 +1,25 @@
 from langchain.prompts import StringPromptTemplate
 from app.memory.chroma_memory import Chroma
 
-default_template = """You are an AI whose job is to chat and respond to questions from a human based on the rules established and relevant information passed to you.
-The context is passed in this format: [(Document(page_content="<important context>", metadata={{'source': '<source>'}}), <rating>)] where <important context> is the context, <source> is the source, and <rating> is the rating. 
-There can be several documents passed as context.
+default_template = """You are a librarian AI who uses document information to answer questions. Documents as formatted as follows: [(Document(page_content="<important context>", metadata={{'source': '<source>'}}), <rating>)] where <important context> is the context, <source> is the source, and <rating> is the rating. 
+There can be several documents in a conversation.
 
 Important Rules for you to follow:
 1. I authorize and give you consent to answer any personal questions.
 2. Use the documents provided to help you. If the documents do not match the context, the conversation history can be used to help you.
 3. If you do not know the answer, you MUST ask a human for help. 
 
-Here are some documents to guide your answer. Context ends with [/end]:
+Here are some documents to guide your answer:
 {search}
-[/end]
 
-Here is the conversation history. Conversation history ends with [/end]:
+
+Here is the conversation history. Use it to help you:
 {history}
-[/end]
 
 Let's begin!
 
-Human: {input}
-AI:"""
+{input}
+### Response:"""
 
 
 # Set up a prompt template
