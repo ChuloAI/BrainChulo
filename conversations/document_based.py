@@ -25,6 +25,9 @@ config = load_config()
 
 USE_AGENT = config.use_agent
 
+def echo(in_):
+    return in_
+
 
 class DocumentBasedConversation():
     def __init__(self):
@@ -91,7 +94,19 @@ Final Answer: Hello, friend! How can I help you?
 
 """,
                 )
-            ]
+            , Tool(
+                name="Say",
+                func=echo,
+                description="""Use to talk back to the human.
+Example:
+Action: Say
+Action Input:
+Hello, world!
+
+Observation: Hello, world!
+Final Answer: Hello, world!
+""",
+            )]
             prompt = CustomAgentPromptTemplate(
                 template=template,
                 tools=tools,
@@ -166,7 +181,7 @@ Final Answer: Hello, friend! How can I help you?
             try:
 
                 response = self.conversation_agent.run(
-                    input=f"{Examples}\n{input}",
+                    input=input
                 )
             except OutputParserException as e:
                 response = str(e)
@@ -175,6 +190,7 @@ Final Answer: Hello, friend! How can I help you?
                 response = response.removeprefix(
                     "Could not parse LLM output: `").removesuffix("`")
         else:
-            response = self.conversation_chain.predict(input=input)
+            raise ValueError("Agent is the only option :)")
+            # response = self.conversation_chain.predict(input=input)
 
         return response

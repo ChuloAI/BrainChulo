@@ -13,11 +13,11 @@ template = """You're am AI that helps a human. You should follow all instruction
 
 The human may have told you things in the past.
 
-Things in the recent past that you recall:
-
-{recent_messages}
-
 You should ALWAYS think what to do next, step-by-step.
+
+You have the available tools available:
+
+{tools}
 
 Use the following format:
 
@@ -29,12 +29,21 @@ Observation: The result of your last action
 
 Final Answer: the answer that will be given to the human
 
-Now we serve a real human request
 
-Human: {input}
+A few examples to help you along the way:
+
+Human: Hi, how are you doing?
+Thought: I should answer the human with a polite greeting.
+Action: Say
+Action Input:
+I'm well, how about you?
+Observation:
+
+Now we begin for real!
 
 {agent_scratchpad}
 
+Human: {input}
 Thought:"""
 
 
@@ -62,25 +71,32 @@ class CustomAgentPromptTemplate(StringPromptTemplate):
         return self.template.format(**kwargs)
 
 
+def parse_action(llm_output):
+    regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
+    match = re.search(regex, llm_output, re.DOTALL)
+    if not match:
+        raise ValueError(f"Could not parse LLM output: `{llm_output}`")
+    action = match.group(1).strip()
+    action_input = match.group(2)
+    return action, action_input
+
 
 class CustomAgentOutputParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         print("llm output: ", llm_output, "end of llm ouput")
-        # Check if agent should finish
-        if "Final Answer:" in llm_output:
+
+        # Parse out the action and action input
+        action, action_input = parse_action(llm_output)
+        print(f"Parsed Action: '{action}'")
+        if action == "Say":
+            if "Observation" in action_input:
+                action_input = action_input.split("Observation")[0]
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output},
+                return_values={"output": action_input},
                 log=llm_output,
             )
-        # Parse out the action and action input
-        regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
-        match = re.search(regex, llm_output, re.DOTALL)
-        if not match:
-            raise ValueError(f"Could not parse LLM output: `{llm_output}`")
-        action = match.group(1).strip()
-        action_input = match.group(2)
         # Return the action and action input
         return AgentAction(
             tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output
