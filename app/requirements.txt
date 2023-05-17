@@ -8,6 +8,4 @@ uvicorn
 pydantic
 pyparsing
 sqlmodel
-InstructorEmbedding
 bs4
-protobuf==3.20

@@ -15,8 +15,9 @@ class Settings:
         # Chat API - By default, we are assuming Oobabooga's Text Generation
         # WebUI is running
         self.embeddings_model = os.getenv(
-            "EMBEDDINGS_MODEL", "hkunlp/instructor-xl")
-        
+            "EMBEDDINGS_MODEL", "all-MiniLM-L6-v2"
+        )
+
         self.chat_api_url = os.getenv(
             "CHAT_API_URL", "http://localhost:5000/api/v1/generate"
         )
