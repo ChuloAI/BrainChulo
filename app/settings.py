@@ -19,7 +19,7 @@ class Settings:
         )
 
         self.chat_api_url = os.getenv(
-            "CHAT_API_URL", "http://localhost:5000/api/v1/generate"
+            "CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate"
         )
 
         # Where all data is stored
