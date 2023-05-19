@@ -27,6 +27,7 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/code
+      - /code/node_modules
     depends_on:
       - backend
     # Add the "restart: unless-stopped" option to automatically restart the container unless explicitly stopped
