@@ -36,9 +36,22 @@
             <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
             <button
               type="submit"
-              class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+              class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
               Send
             </button>
+            <file-upload
+              extensions="txt"
+              accept="text/plain"
+              class="flex-shrink-0 h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+              :multiple="false"
+              :drop="false"
+              :drop-directory="false"
+              v-model="files"
+              @input-file="onInputFile"
+              aria-label="Upload a Text Document (.txt)"
+              ref="upload">
+              📁
+            </file-upload>
           </div>
           <div class="flex items-center mt-2">
             <div class="upload">
@@ -51,23 +64,6 @@
                   <span v-else></span>
                 </li>
               </ul>
-
-              <div class="file-upload-btn">
-                <file-upload
-                  extensions="txt"
-                  accept="text/plain"
-                  class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-                  post-action="/upload/post"
-                  :multiple="false"
-                  :drop="false"
-                  :drop-directory="false"
-                  v-model="files"
-                  @input-file="onInputFile"
-                  ref="upload">
-                  Upload a Text Document (.txt)
-                </file-upload>
-              </div>
-
             </div>
           </div>
         </form>
@@ -182,7 +178,7 @@
 
         const message = {
           created_at: Date.now(),
-          text: response.text,
+          text: `<span style="color: brown; font-weight: bold;">${response.text}</span>`,
           is_user: false,
           conversation_id: this.conversation_id,
         }

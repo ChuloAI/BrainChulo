@@ -4,13 +4,25 @@
       <img :src="avatarUrl" alt="Avatar" class="object-cover rounded-full w-full h-full" />
     </div>
     <div class="rounded-lg py-2 mx-5">
-      <div class="text-gray-900 text-md max-w-xl">{{ message.text }}</div>
+      <div v-html="fromMarkdown(this.message.text)" class="text-md max-w-xl"></div>
     </div>
   </div>
   <hr class="w-full mb-4" />
 </template>
 
 <script>
+  import { marked } from 'marked';
+  import {markedHighlight} from "marked-highlight";
+  import hljs from 'highlight.js';
+
+  marked.use(markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight: (code, lang) => {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+  }));
+
   export default {
     props: {
       message: {
@@ -27,6 +39,11 @@
     },
     mounted() {
       this.$emit('onRendered');
+    },
+    methods: {
+      fromMarkdown(markdown) {
+        return marked.parse(markdown);
+      }
     }
-  };
+  }
 </script>
