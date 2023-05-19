@@ -20,6 +20,15 @@ class InternalService {
         return await this.request(`/conversations/${conversationId}/messages`, 'POST', message);
     }
 
+    /* Upload file */
+    async uploadFile(conversationId, file) {
+        const formData = new FormData();
+        formData.append("conversation_id", conversationId);
+        formData.append("file", file);
+
+        return await this.request(`/conversations/${conversationId}/files`, 'POST', formData);
+    }
+
     /* Query the LLM */
     async queryLLM(query) {
         return await this.request(`/llm`, 'POST', {}, {}, {query: query});

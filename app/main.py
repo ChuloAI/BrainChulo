@@ -1,10 +1,15 @@
-from fastapi import FastAPI, Depends
+import os
+import shutil
+from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session
 from models.all import Conversation, Message
 from typing import List
 from conversations.document_based import DocumentBasedConversation
 from datetime import datetime
+from settings import load_config, logger
+
+config = load_config()
 
 sqlite_database_url = "sqlite:///data/brainchulo.db"
 connect_args = {"check_same_thread": False}
@@ -22,7 +27,9 @@ def get_session():
 app = FastAPI()
 
 origins = [
+    "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "http://0.0.0.0:5173",
 ]
 
 app.add_middleware(
@@ -80,6 +87,29 @@ def create_message(*, session: Session = Depends(get_session), conversation_id: 
     session.refresh(message)
 
     return message
+
+@app.post("/conversations/{conversation_id}/files", response_model=str)
+def upload_file(*, conversation_id: int, file: UploadFile):
+    """
+    Upload a file.
+    """
+    try:
+        uploaded_file_name = file.filename
+        filepath = os.path.join(
+            os.getcwd(), "data", config.upload_path, uploaded_file_name
+        )
+
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+        with open(filepath, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+        convo.load_document(filepath, conversation_id)
+
+        return f"{uploaded_file_name} has been loaded into memory for this conversation."
+    except Exception as e:
+        logger.error(f"Error adding file to history: {e}")
+        return f"Error adding file to history: {e}"
 
 @app.post('/llm', response_model=str)
 def llm(*, query: str):
