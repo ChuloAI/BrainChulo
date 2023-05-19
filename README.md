@@ -34,24 +34,40 @@ Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has be
 Make sure to navigate to your installation directory of Oobabooga's Text Generation WebUI, then start the web server using `--api`. In my case, this is the command I run:
 
 ```bash
-python server.py --model TheBloke_vicuna-7B-1.1-GPTQ-4bit-128g --wbits 4 --groupsize 128 --verbose --model_type llama --xformers --api
+python server.py --model TheBloke_wizardLM-7B-GPTQ-4bit-128g --wbits 4 --groupsize 128 --verbose --model_type llama --xformers --api
 ```
 
 You may be running it via `start_webui.bat`. In this case, you'll need to edit it to include the two parameters mentioned above.
 
 ### BrainChulo
 
-To start BrainChulo, simply run the `main.py` script at the root of this repository:
+The easiest way to start BrainChulo is using Docker with `docker-compose`:
 
 ```
+# from the root directory of the project, start with:
+docker-compose up
+
+# To shut it down
+docker compose down
+```
+
+
+**Developers:** While you may use the container-based approach since it is a development container with hot reloading you may also wish to start BrainChulo's services manually. To do so, run the `main.py` script from within the `app` directory, then start the frontend:
+
+```
+cd ./app
 python main.py
+
+# if within the ./app directory
+cd ../frontend
+npm run dev
 ```
 
 
 This will eventually launch the BrainChulo application. Point your web browser to the following default URL:
 
 ```
-http://localhost:7865/
+http://localhost:5173/
 ```
 
 This interface allows you to chat or load text documents which will be used as context in the BrainChulo application.
