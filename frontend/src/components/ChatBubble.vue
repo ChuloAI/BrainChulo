@@ -4,7 +4,8 @@
       <img :src="avatarUrl" alt="Avatar" class="object-cover rounded-full w-full h-full" />
     </div>
     <div class="rounded-lg py-2 mx-5">
-      <div v-html="fromMarkdown(this.message.text)" class="text-md max-w-xl"></div>
+      <div v-if="message.isLoading" class="loading-animation"> </div>
+      <div v-else v-html="fromMarkdown(this.message.text)" class="text-md max-w-xl"></div>
     </div>
   </div>
   <hr class="w-full mb-4" />
@@ -47,3 +48,15 @@
     }
   }
 </script>
+
+<style>
+.loading-animation {
+  margin-top: 10px;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  background-image: url('../assets/loading.gif');
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+</style>
