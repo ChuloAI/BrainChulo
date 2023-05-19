@@ -175,12 +175,14 @@
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
       },
       async onInputFile(newFile) {
+        if(!newFile) return;
+
         // implement file upload
-        const responseText = await InternalService.uploadFile(this.conversation_id, newFile);
+        const response = await InternalService.uploadFile(this.conversation_id, newFile);
 
         const message = {
           created_at: Date.now(),
-          text: responseText,
+          text: response.text,
           is_user: false,
           conversation_id: this.conversation_id,
         }

@@ -24,9 +24,17 @@ class InternalService {
     async uploadFile(conversationId, file) {
         const formData = new FormData();
         formData.append("conversation_id", conversationId);
-        formData.append("file", file);
+        formData.append("file", file.file, file.file.name);
 
-        return await this.request(`/conversations/${conversationId}/files`, 'POST', formData);
+        const response = await fetch(`${this.baseUrl}/conversations/${conversationId}/files`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "accept": "application/json"
+            }
+        });
+
+        return response.json();
     }
 
     /* Query the LLM */
@@ -36,9 +44,7 @@ class InternalService {
 
     async request(url, method, payload = {}, headers = {}, params = { }) {
         if(method.toLowerCase() == "get") payload = undefined;
-        else {
-            payload = JSON.stringify(payload);
-        }
+        else payload = JSON.stringify(payload);
         
         const defaultHeaders = {
             'Access-Control-Request-Method': 'GET, DELETE, HEAD, POST, OPTIONS',

@@ -88,7 +88,7 @@ def create_message(*, session: Session = Depends(get_session), conversation_id: 
 
     return message
 
-@app.post("/conversations/{conversation_id}/files", response_model=str)
+@app.post("/conversations/{conversation_id}/files", response_model=dict)
 def upload_file(*, conversation_id: int, file: UploadFile):
     """
     Upload a file.
@@ -106,7 +106,7 @@ def upload_file(*, conversation_id: int, file: UploadFile):
 
         convo.load_document(filepath, conversation_id)
 
-        return f"{uploaded_file_name} has been loaded into memory for this conversation."
+        return {"text": f"{uploaded_file_name} has been loaded into memory for this conversation."}
     except Exception as e:
         logger.error(f"Error adding file to history: {e}")
         return f"Error adding file to history: {e}"
