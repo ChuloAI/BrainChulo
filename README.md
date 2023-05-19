@@ -18,7 +18,7 @@ To use BrainChulo, simply clone the repository to your local machine and install
 
 ```bash
 git clone https://github.com/your-username/BrainChulo.git
-cd BrainChulo
+cd BrainChulo/app
 pip install -r requirements.txt
 
 ```
