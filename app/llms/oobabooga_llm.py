@@ -73,7 +73,7 @@ class OobaboogaLLM(LLM):
         # Check for errors in API response
         if response.status_code != 200:
             logger.error(f"Error generating text: {response.text}")
-            return {}
+            response.raise_for_status()
 
         # Parse generated text from API response
         response_data = response.json()["results"]
