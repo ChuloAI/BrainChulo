@@ -26,7 +26,7 @@
             v-for="message, index in messages"
             :key="index"
             :message="message"
-            @onRendered="onRendered"
+            @messageRendered="onMessageRendered"
           ></chat-bubble>
         </div>
       </div>
@@ -167,7 +167,7 @@
 
         localStorage.setItem('messages', JSON.stringify(this.messages));
       },
-      onRendered() {
+      onMessageRendered() {
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
       },
       async onInputFile(newFile) {

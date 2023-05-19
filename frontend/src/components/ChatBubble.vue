@@ -25,6 +25,7 @@
   }));
 
   export default {
+    emits: ['messageRendered'],
     props: {
       message: {
         type: Object,
@@ -39,11 +40,12 @@
       },
     },
     mounted() {
-      this.$emit('onRendered');
+      this.$emit('messageRendered');
     },
     methods: {
       fromMarkdown(markdown) {
-        return marked.parse(markdown);
+        return marked.parse(markdown, {headerIds: false,
+    mangle: false});
       }
     }
   }
