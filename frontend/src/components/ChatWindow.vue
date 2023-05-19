@@ -41,7 +41,34 @@
             </button>
           </div>
           <div class="flex items-center mt-2">
-            <!-- TODO: add a document uploader -->
+            <div class="upload">
+              <ul v-if="files.length">
+                <li v-for="file in files" :key="file.id">
+                  <span>{{file.name}}</span>
+                  <span v-if="file.error">{{file.error}}</span>
+                  <span v-else-if="file.success">success</span>
+                  <span v-else-if="file.active">active</span>
+                  <span v-else></span>
+                </li>
+              </ul>
+
+              <div class="file-upload-btn">
+                <file-upload
+                  extensions="txt"
+                  accept="text/plain"
+                  class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                  post-action="/upload/post"
+                  :multiple="false"
+                  :drop="false"
+                  :drop-directory="false"
+                  v-model="files"
+                  @input-file="onInputFile"
+                  ref="upload">
+                  Upload a Text Document (.txt)
+                </file-upload>
+              </div>
+
+            </div>
           </div>
         </form>
       </div>
@@ -53,17 +80,20 @@
   import ChatBubble from './ChatBubble.vue';
   import NavbarDropdown from './NavbarDropdown.vue';
   import InternalService from '../services/internal';
+  import FileUpload from 'vue-upload-component';
 
   export default {
     components: {
       ChatBubble,
       NavbarDropdown,
+      FileUpload,
     },
     data() {
       return {
         username: '',
         avatarUrl: new URL('../assets/user_icon.png', import.meta.url).href,
         messages: [],
+        files: [],
         messageInput: '',
         isDarkMode: localStorage.getItem('isDarkMode', 'false') === 'true',
       };
@@ -143,6 +173,22 @@
       },
       onRendered() {
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
+      },
+      async onInputFile(newFile) {
+        // implement file upload
+        const responseText = await InternalService.uploadFile(this.conversation_id, newFile);
+
+        const message = {
+          created_at: Date.now(),
+          text: responseText,
+          is_user: false,
+          conversation_id: this.conversation_id,
+        }
+
+        const messageResponse = await InternalService.sendMessage(this.conversation_id, message);
+
+        this.messages.push(messageResponse);
+        this.files = [];
       },
       logout() {
         localStorage.removeItem('user');
