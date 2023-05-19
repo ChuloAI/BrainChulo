@@ -11,8 +11,6 @@
             </div>
           </div>
           <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <div class="text-white">{{ username }}</div>
-
             <navbar-dropdown :username="username" :avatar-url="avatarUrl" @update-username="updateUsername" @clear-messages="clearMessages"></navbar-dropdown>
           </div>
         </div>
@@ -36,8 +34,8 @@
             <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
             <button
               type="submit"
-              class="h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-              Send
+              class="send-button h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+              <img src="../assets/send-message.svg" alt="Send" />
             </button>
             <file-upload
               extensions="txt"
@@ -200,5 +198,26 @@
 .overflow-y-auto {
   overflow-y: scroll; /* add a scrollbar when the content overflows */
   height: 80%;
+}
+
+.send-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.send-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.send-button:hover {
+  background-color: #0056b3;
 }
 </style>
