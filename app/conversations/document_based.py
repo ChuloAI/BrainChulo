@@ -72,7 +72,7 @@ class DocumentBasedConversation:
                 verbose=True,
             )
 
-    def load_document(self, document_path):
+    def load_document(self, document_path, conversation_id=None):
         """
         Load a document from a file and add its contents to the vector store.
 
@@ -86,9 +86,13 @@ class DocumentBasedConversation:
         documents = text_loader.load()
         documents = self.text_splitter.split_documents(documents)
 
+        if conversation_id is not None:
+            for doc in documents:
+                doc.metadata["conversation_id"] = conversation_id
+
         self.vector_store_docs.add_documents(documents)
 
-    def search(self, search_input):
+    def search(self, search_input, conversation_id=None):
         """
         Search for the given input in the vector store and return the top 10 most similar documents with their scores.
         This function is used as a helper function for the SearchLongTermMemory tool
@@ -99,9 +103,14 @@ class DocumentBasedConversation:
         Returns:
           List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
         """
+        if conversation_id is not None:
+            filter = {"conversation_id": conversation_id}
+        else:
+            filter = {}
+
         logger.info(f"Searching for: {search_input} in LTM")
         docs = self.vector_store_docs.similarity_search_with_score(
-            search_input, top_k_docs_for_context=10
+            search_input, k=5, filter=filter
         )
         return docs
 
