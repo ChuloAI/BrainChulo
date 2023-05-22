@@ -114,9 +114,17 @@
         localStorage.setItem('username', newValue);
         this.username = newValue;
       },
-      clearMessages() {
+      async clearMessages() {
+        if(!window.confirm('Are you sure?'))
+          return;
+        
         this.messages = [];
         localStorage.removeItem('messages');
+        localStorage.removeItem('conversation_id');
+
+        await InternalService.resetDatabase();
+
+        await this.created();
       },
       async sendMessage() {
         if (!this.messageInput || this.messageInput.length === 0) {

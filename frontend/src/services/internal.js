@@ -42,6 +42,10 @@ class InternalService {
         return await this.request(`/llm`, 'POST', {}, {}, {query: query});
     }
 
+    /* Reset the Database */
+    async resetDatabase() {
+        return await this.request(`/reset`, 'POST');
+    }
     async request(url, method, payload = {}, headers = {}, params = { }) {
         if(method.toLowerCase() == "get") payload = undefined;
         else payload = JSON.stringify(payload);
