@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Set the entrypoint
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7865"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7865", "--reload"]
