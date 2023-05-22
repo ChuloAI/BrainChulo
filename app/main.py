@@ -118,6 +118,16 @@ def llm(*, query: str):
     """
     return convo.predict(query)
 
+@app.post("/reset", response_model=dict)
+def reset_all():
+    """
+    Reset the database.
+    """
+    SQLModel.metadata.drop_all(engine)
+    print("Database has been reset.")
+    SQLModel.metadata.create_all(engine)
+
+    return {"text": "Database has been reset."}
 
 if __name__ == "__main__":
     import uvicorn
