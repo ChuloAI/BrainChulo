@@ -94,6 +94,8 @@
     },
     async created() {
       this.conversation_id = localStorage.getItem('conversation_id');
+
+      // Get or create conversation
       this.conversation = await InternalService.getConversation(this.conversation_id);
 
       // if this.conversation_id is null get the id from the newly created conversation
@@ -102,7 +104,7 @@
         localStorage.setItem('conversation_id', this.conversation_id);
       }
 
-      this.messages = JSON.parse(localStorage.getItem('messages')) || [];
+      this.messages = this.conversation.messages || [];
       this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
     },
     mounted() {
@@ -119,7 +121,6 @@
           return;
         
         this.messages = [];
-        localStorage.removeItem('messages');
         localStorage.removeItem('conversation_id');
 
         await InternalService.resetDatabase();
@@ -145,8 +146,6 @@
 
         this.messages.push(userMessage);
 
-        localStorage.setItem('messages', JSON.stringify(this.messages));
-
         // Show the loading message
         const loadingMessage = {
           created_at: Date.now(),
@@ -170,8 +169,6 @@
         // Remove the loading message
         this.messages = this.messages.filter((message) => !message.isLoading);
         this.messages.push(aiMessage);
-
-        localStorage.setItem('messages', JSON.stringify(this.messages));
       },
       onMessageRendered() {
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
