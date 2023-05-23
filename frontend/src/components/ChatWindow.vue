@@ -152,6 +152,8 @@
           text: '',
           is_user: false,
           isLoading: true,
+          rating: 0,
+          conversation_id: this.conversation_id,
         };
 
         this.messages.push(loadingMessage);

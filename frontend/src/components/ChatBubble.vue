@@ -8,11 +8,11 @@
       <div v-else v-html="fromMarkdown(this.msg.text)" class="text-md max-w-xl"></div>
     </div>
   </div>
-  <div v-if="!msg.is_user && msg.rating == 0" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
+  <div v-if="!msg.isLoading && !msg.is_user && msg.rating == 0" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
     <span class="cursor-pointer mr-1 py-1 px-2 rounded-full bg-gray-400 hover:bg-gray-500" @click="upvote">👍</span>
     <span class="cursor-pointer py-1 px-2 rounded-full bg-gray-400 hover:bg-gray-500" @click="downvote">👎</span>
   </div>
-  <div v-else-if="!msg.is_user" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
+  <div v-else-if="!msg.isLoading && !msg.is_user" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
     <span v-if="msg.rating > 0" class="cursor-pointer mr-1 py-1 px-2 rounded-full bg-green-700 hover:bg-green-800" @click="resetVote">👍</span>
     <span v-else class="cursor-pointer mr-1 py-1 px-2 rounded-full py-1 px-2 rounded-full bg-red-700" @click="resetVote">👎</span>
   </div>
