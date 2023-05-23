@@ -3,7 +3,7 @@ import shutil
 from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session
-from models.all import Conversation, Message
+from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
 from datetime import datetime
@@ -67,7 +67,7 @@ def get_conversations(session: Session = Depends(get_session)):
     return session.query(Conversation).all()
 
 
-@app.get("/conversations/{conversation_id}", response_model=Conversation)
+@app.get("/conversations/{conversation_id}", response_model=ConversationWithMessages)
 def get_conversation(conversation_id: int, session: Session = Depends(get_session)):
     """
     Get a conversation by id.
@@ -118,6 +118,55 @@ def llm(*, query: str):
     """
     return convo.predict(query)
 
+@app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
+def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Upvote a message.
+    """
+    message = session.get(Message, message_id)
+    message.rating = 1
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
+@app.post("/conversations/{conversation_id}/messages/{message_id}/downvote", response_model=Message)
+def downvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Downvote a message.
+    """
+    message = session.get(Message, message_id)
+    message.rating = -1
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
+@app.post("/conversations/{conversation_id}/messages/{message_id}/resetVote", response_model=Message)
+def reset_message_vote(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Reset a message vote.
+    """
+    message = session.get(Message, message_id)
+    message.rating = 0
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
+@app.post("/reset", response_model=dict)
+def reset_all():
+    """
+    Reset the database.
+    """
+    SQLModel.metadata.drop_all(engine)
+    print("Database has been reset.")
+    SQLModel.metadata.create_all(engine)
+
+    return {"text": "Database has been reset."}
 
 if __name__ == "__main__":
     import uvicorn

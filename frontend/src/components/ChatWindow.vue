@@ -94,6 +94,8 @@
     },
     async created() {
       this.conversation_id = localStorage.getItem('conversation_id');
+
+      // Get or create conversation
       this.conversation = await InternalService.getConversation(this.conversation_id);
 
       // if this.conversation_id is null get the id from the newly created conversation
@@ -102,7 +104,7 @@
         localStorage.setItem('conversation_id', this.conversation_id);
       }
 
-      this.messages = JSON.parse(localStorage.getItem('messages')) || [];
+      this.messages = this.conversation.messages || [];
       this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
     },
     mounted() {
@@ -114,9 +116,16 @@
         localStorage.setItem('username', newValue);
         this.username = newValue;
       },
-      clearMessages() {
+      async clearMessages() {
+        if(!window.confirm('Are you sure?'))
+          return;
+        
         this.messages = [];
-        localStorage.removeItem('messages');
+        localStorage.removeItem('conversation_id');
+
+        await InternalService.resetDatabase();
+
+        await this.created();
       },
       async sendMessage() {
         if (!this.messageInput || this.messageInput.length === 0) {
@@ -137,23 +146,25 @@
 
         this.messages.push(userMessage);
 
-        localStorage.setItem('messages', JSON.stringify(this.messages));
-
         // Show the loading message
         const loadingMessage = {
           created_at: Date.now(),
           text: '',
           is_user: false,
           isLoading: true,
+          rating: 0,
+          conversation_id: this.conversation_id,
         };
 
         this.messages.push(loadingMessage);
 
         const aiMessageText = await InternalService.queryLLM(userMessage.text);
         const aiMessage = {
+          created_at: Date.now(),
           text: aiMessageText,
           is_user: false,
           conversation_id: this.conversation_id,
+          rating: 0,
         };
 
         const aiMessageResponse = await InternalService.sendMessage(this.conversation_id, aiMessage);
@@ -162,8 +173,6 @@
         // Remove the loading message
         this.messages = this.messages.filter((message) => !message.isLoading);
         this.messages.push(aiMessage);
-
-        localStorage.setItem('messages', JSON.stringify(this.messages));
       },
       onMessageRendered() {
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
