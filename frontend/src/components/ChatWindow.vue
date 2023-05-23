@@ -158,9 +158,11 @@
 
         const aiMessageText = await InternalService.queryLLM(userMessage.text);
         const aiMessage = {
+          created_at: Date.now(),
           text: aiMessageText,
           is_user: false,
           conversation_id: this.conversation_id,
+          rating: 0,
         };
 
         const aiMessageResponse = await InternalService.sendMessage(this.conversation_id, aiMessage);

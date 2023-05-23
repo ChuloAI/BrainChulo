@@ -118,6 +118,45 @@ def llm(*, query: str):
     """
     return convo.predict(query)
 
+@app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
+def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Upvote a message.
+    """
+    message = session.get(Message, message_id)
+    message.rating = 1
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
+@app.post("/conversations/{conversation_id}/messages/{message_id}/downvote", response_model=Message)
+def downvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Downvote a message.
+    """
+    message = session.get(Message, message_id)
+    message.rating = -1
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
+@app.post("/conversations/{conversation_id}/messages/{message_id}/resetVote", response_model=Message)
+def reset_message_vote(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
+    """
+    Reset a message vote.
+    """
+    message = session.get(Message, message_id)
+    message.rating = 0
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+
+    return message
+
 @app.post("/reset", response_model=dict)
 def reset_all():
     """

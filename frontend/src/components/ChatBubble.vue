@@ -1,20 +1,30 @@
 <template>
-  <div class="flex items-start mb-4 w-full gap-2" data-id="{{ message.id }}" data-created-at="{{ message.created_at }}" data-conversation-id="{{ message.conversation_id }}">
+  <div class="flex items-start mb-4 w-full gap-2">
     <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-400 text-white flex-shrink-0 ml-4">
       <img :src="avatarUrl" alt="Avatar" class="object-cover rounded-full w-full h-full" />
     </div>
     <div class="rounded-lg py-2 mx-5">
-      <div v-if="message.isLoading" class="loading-animation"> </div>
-      <div v-else v-html="fromMarkdown(this.message.text)" class="text-md max-w-xl"></div>
+      <div v-if="msg.isLoading" class="loading-animation"> </div>
+      <div v-else v-html="fromMarkdown(this.msg.text)" class="text-md max-w-xl"></div>
     </div>
+  </div>
+  <div v-if="!msg.is_user && msg.rating == 0" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
+    <span class="cursor-pointer mr-1 py-1 px-2 rounded-full bg-gray-400 hover:bg-gray-500" @click="upvote">👍</span>
+    <span class="cursor-pointer py-1 px-2 rounded-full bg-gray-400 hover:bg-gray-500" @click="downvote">👎</span>
+  </div>
+  <div v-else-if="!msg.is_user" class="flex align-right justify-end text-xs text-gray-400 flex-row flex-shrink-0 m-4">
+    <span v-if="msg.rating > 0" class="cursor-pointer mr-1 py-1 px-2 rounded-full bg-green-700 hover:bg-green-800" @click="resetVote">👍</span>
+    <span v-else class="cursor-pointer mr-1 py-1 px-2 rounded-full py-1 px-2 rounded-full bg-red-700" @click="resetVote">👎</span>
   </div>
   <hr class="w-full mb-4" />
 </template>
+
 
 <script>
   import { marked } from 'marked';
   import {markedHighlight} from "marked-highlight";
   import hljs from 'highlight.js';
+  import InternalService from '../services/internal';
 
   marked.use(markedHighlight({
     langPrefix: 'hljs language-',
@@ -32,6 +42,16 @@
         required: true,
       },
     },
+    data: function () {
+      return {
+        msg: this.message,
+      }
+    },
+    watch: {
+      message: function () {
+        this.msg = this.message;
+      }
+    },
     computed: {
       avatarUrl() {
         const path = this.message.is_user ? '../assets/user_icon.png' : '../assets/AI_icon.png';
@@ -44,8 +64,16 @@
     },
     methods: {
       fromMarkdown(markdown) {
-        return marked.parse(markdown, {headerIds: false,
-    mangle: false});
+        return marked.parse(markdown, {headerIds: false, mangle: false});
+      },
+      async upvote() {
+        this.msg = await InternalService.upvoteMessage(this.message.conversation_id, this.message.id);
+      },
+      async downvote() {
+        this.msg = await InternalService.downvoteMessage(this.message.conversation_id, this.message.id);
+      },
+      async resetVote() {
+        this.msg = await InternalService.resetMessageVote(this.message.conversation_id, this.message.id);
       }
     }
   }

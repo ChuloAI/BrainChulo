@@ -42,10 +42,26 @@ class InternalService {
         return await this.request(`/llm`, 'POST', {}, {}, {query: query});
     }
 
+    /* Upvote a message */
+    async upvoteMessage(conversationId, messageId) {
+        return await this.request(`/conversations/${conversationId}/messages/${messageId}/upvote`, 'POST');
+    }
+
+    /* Downvote a message */
+    async downvoteMessage(conversationId, messageId) {
+        return await this.request(`/conversations/${conversationId}/messages/${messageId}/downvote`, 'POST');
+    }
+
+    /* Reset a message vote */
+    async resetMessageVote(conversationId, messageId) {
+        return await this.request(`/conversations/${conversationId}/messages/${messageId}/resetVote`, 'POST');
+    }
+
     /* Reset the Database */
     async resetDatabase() {
         return await this.request(`/reset`, 'POST');
     }
+
     async request(url, method, payload = {}, headers = {}, params = { }) {
         if(method.toLowerCase() == "get") payload = undefined;
         else payload = JSON.stringify(payload);
