@@ -1,6 +1,6 @@
 # BrainChulo: Harnessing the Memory Power of the Camelids
 
-BrainChulo is a powerful memory management system that is inspired by the camel family's resilience and adaptability. The repository contains a custom LLM (Long-Term Memory) implementation that is based on a trained model called Vicuna, and is designed to help users store and retrieve memories for use in their Vicuna-powered LLM services.
+BrainChulo is a powerful Chat application with an emphasis on its memory management system. Our work is inspired by the camel family's resilience and adaptability. The repository contains a custom LTM (Long-Term Memory) approach for Llama-based LLMs (Large Language Models), and is designed to help users enhance their experience when using Open-Source LLMs.
 
 ## Current Look-n-Feel
 
@@ -9,10 +9,13 @@ BrainChulo is a powerful memory management system that is inspired by the camel 
 
 ## Features
 
-- Custom LLM implementation based on the Vicuna model
+- Custom LTM implementation based on Open Source Large Language Models
 - Memory retrieval algorithms for quick recall
 - Easy-to-use interface for storing and managing memories
-- Integration with other memory systems for seamless data transfer
+- Modern User Interface
+- One-Shot, Few-Shot, and Tool-Capable Agents with Full Vector-Based Memory Integration
+- Ability to handle multiple conversations
+- Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
 
