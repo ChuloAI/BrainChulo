@@ -100,25 +100,29 @@
       };
     },
     async created() {
-      this.conversation_id = localStorage.getItem('conversation_id');
-
-      // Get or create conversation
-      this.conversation = await InternalService.getConversation(this.conversation_id);
-
-      // if this.conversation_id is null get the id from the newly created conversation
-      if (!this.conversation_id) {
-        this.conversation_id = this.conversation.id;
-        localStorage.setItem('conversation_id', this.conversation_id);
-      }
-
-      this.messages = this.conversation.messages || [];
-      this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
-      this.conversations = await InternalService.getConversations();
+      await this.onSetup();
     },
     mounted() {
       this.$refs.messageInput.focus();
     },
     methods: {
+      async onSetup() {
+        this.conversation_id = localStorage.getItem('conversation_id');
+
+        // Get or create conversation
+        this.conversation = await InternalService.getConversation(this.conversation_id);
+
+        // if this.conversation_id is null get the id from the newly created conversation
+        if (!this.conversation_id) {
+          this.conversation_id = this.conversation.id;
+          localStorage.setItem('conversation_id', this.conversation_id);
+        }
+
+        this.messages = this.conversation.messages || [];
+        this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
+        this.conversations = await InternalService.getConversations();
+      },
+
       updateUsername(newValue) {
         console.log(newValue);
         localStorage.setItem('username', newValue);
@@ -133,7 +137,7 @@
 
         await InternalService.resetDatabase();
 
-        await this.created();
+        await this.onSetup();
       },
       async sendMessage() {
         if (!this.messageInput || this.messageInput.length === 0) {
