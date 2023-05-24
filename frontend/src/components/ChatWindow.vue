@@ -18,7 +18,7 @@
     </nav>
     <div class="overflow-hidden w-full h-full relative flex z-0">
       <!-- sidebar -->
-      <Sidebar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation"></Sidebar>
+      <SideBar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation"></SideBar>
       <!-- main body -->
       <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
         <div class="flex-grow overflow-y-auto" ref="messageContainer">
@@ -75,7 +75,7 @@
 </template>
 
 <script>
-  import Sidebar from './Sidebar.vue';
+  import SideBar from './SideBar.vue';
   import ChatBubble from './ChatBubble.vue';
   import NavbarDropdown from './NavbarDropdown.vue';
   import InternalService from '../services/internal';
@@ -83,7 +83,7 @@
 
   export default {
     components: {
-      Sidebar,
+      SideBar,
       ChatBubble,
       NavbarDropdown,
       FileUpload,
