@@ -50,7 +50,7 @@ The easiest way to start BrainChulo is using Docker with `docker-compose`:
 
 ```
 # from the root directory of the project, start with:
-docker-compose up
+docker-compose up --build
 
 # To shut it down
 docker compose down
