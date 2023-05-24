@@ -18,7 +18,7 @@
     </nav>
     <div class="overflow-hidden w-full h-full relative flex z-0">
       <!-- sidebar -->
-      <SideBar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation"></SideBar>
+      <SideBar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation" @rename-conversation="onRenameConversation" @delete-conversation="onDeleteConversation"></SideBar>
       <!-- main body -->
       <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
         <div class="flex-grow overflow-y-auto" ref="messageContainer">
@@ -109,8 +109,13 @@
       async onSetup() {
         this.conversation_id = localStorage.getItem('conversation_id');
 
-        // Get or create conversation
-        this.conversation = await InternalService.getConversation(this.conversation_id);
+        try {
+          // Get or create conversation
+          this.conversation = await InternalService.getConversation(this.conversation_id);
+        } catch (e) {
+          this.conversation_id = null;
+          localStorage.removeItem('conversation_id');
+        }
 
         // if this.conversation_id is null get the id from the newly created conversation
         if (!this.conversation_id) {
@@ -209,6 +214,7 @@
       },
       async onAddConversation() {
         const conversation = await InternalService.createConversation();
+        this.conversation_id = conversation.id;
         localStorage.setItem('conversation_id', conversation.id);
         this.messages = [];
         this.conversations = await InternalService.getConversations();
@@ -218,6 +224,25 @@
         localStorage.setItem('conversation_id', conversation_id);
         this.conversation = await InternalService.getConversation(conversation_id);
         this.messages = this.conversation.messages || [];
+      },
+      async onRenameConversation(conversation_id, newTitle) {
+        await InternalService.renameConversation(conversation_id, newTitle);
+      },
+      async onDeleteConversation(conversation_id) {
+        await InternalService.deleteConversation(conversation_id);
+        this.conversation_id = null;
+        localStorage.removeItem('conversation_id');
+
+        this.conversations = await InternalService.getConversations();
+
+        if(this.conversations.length === 0) {
+          await this.onSetup();
+        } else {
+          this.conversation_id = this.conversations[0].id;
+          this.conversation = await InternalService.getConversation(this.conversation_id);
+          localStorage.setItem('conversation_id', this.conversation_id);
+          this.messages = this.conversation.messages || [];
+        }
       },
       logout() {
         localStorage.removeItem('user');

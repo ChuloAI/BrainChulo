@@ -19,7 +19,10 @@
               <div class="flex flex-row" @click="onSelectConversation(conversation.id)" v-if="!isEditing(conversation.id)">
                 <span class="flexjustify-items-start mr-2">💬</span>
                 <span class="flex flex-grow justify-items-start">{{ conversation.title || 'New Conversation' }}</span>
-                <a v-show="conversation.id === Number(selectedConversationId)" @click="toggleEdit(conversation.id)" title="Edit" class="ml-2 flex flex-col justify-items-end">✏️</a>
+                <span v-show="conversation.id === Number(selectedConversationId)" class="ml-2 flex justify-items-end">
+                  <a @click="toggleEdit(conversation.id)" title="Edit" class="mr-2">✏️</a>
+                  <a @click="deleteConversation(conversation.id)" title="Delete">🗑️</a>
+                </span>
               </div>
               <input
                 v-show="isEditing(conversation.id)"
@@ -39,7 +42,7 @@
 <script>
   import { nextTick } from 'vue';
   export default {
-    emits: ['add-conversation', 'select-conversation'],
+    emits: ['add-conversation', 'select-conversation', 'rename-conversation', 'delete-conversation'],
     props: {
       conversations: {
         type: Array,
@@ -76,6 +79,11 @@
         this.$emit('rename-conversation', id, title);
         this.editingConversationId = null;
       },
+      deleteConversation(id) {
+        if(!confirm('Are you sure you want to delete this conversation?')) return;
+
+        this.$emit('delete-conversation', id);
+      }
     },
   };
 </script>

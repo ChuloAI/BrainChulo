@@ -25,6 +25,16 @@ class InternalService {
         return await this.request('/conversations', 'POST', {});
     }
 
+    /* Rename a conversation */
+    async renameConversation(id, name) {
+        return await this.request(`/conversations/${id}`, 'PUT', {title: name});
+    }
+
+    /* Delete a conversation */
+    async deleteConversation(id) {
+        return await this.request(`/conversations/${id}`, 'DELETE');
+    }
+
     /* Send a message to a conversation */
     async sendMessage(conversationId, message) {
         return await this.request(`/conversations/${conversationId}/messages`, 'POST', message);
