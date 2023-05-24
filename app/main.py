@@ -2,7 +2,7 @@ import os
 import shutil
 from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import SQLModel, create_engine, Session, desc
 from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
@@ -64,7 +64,7 @@ def get_conversations(session: Session = Depends(get_session)):
     """
     Get all conversations.
     """
-    return session.query(Conversation).all()
+    return session.query(Conversation).order_by(desc(Conversation.id)).all()
 
 
 @app.get("/conversations/{conversation_id}", response_model=ConversationWithMessages)

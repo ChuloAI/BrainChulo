@@ -16,61 +16,66 @@
         </div>
       </div>
     </nav>
-    <!-- main body -->
-    <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
-      <div class="flex-grow overflow-y-auto" ref="messageContainer">
-        <div class="mx-auto max-w-2xl mt-5">
-          <chat-bubble
-            v-for="message, index in messages"
-            :key="index"
-            :message="message"
-            @messageRendered="onMessageRendered"
-          ></chat-bubble>
+    <div class="overflow-hidden w-full h-full relative flex z-0">
+      <!-- sidebar -->
+      <Sidebar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation"></Sidebar>
+      <!-- main body -->
+      <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
+        <div class="flex-grow overflow-y-auto" ref="messageContainer">
+          <div class="mx-auto max-w-2xl mt-5">
+            <chat-bubble
+              v-for="message, index in messages"
+              :key="index"
+              :message="message"
+              @messageRendered="onMessageRendered"
+            ></chat-bubble>
+          </div>
         </div>
-      </div>
-      <div class="absolute bottom-0 left-0 w-full border-t md:border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white pt-4">
-        <form @submit.prevent="sendMessage" class="px-4 py-2 w-3/4 mx-auto">
-          <div class="flex items-center">
-            <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
-            <button
-              type="submit"
-              class="send-button h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-              <img src="../assets/send-message.svg" alt="Send" />
-            </button>
-            <file-upload
-              extensions="txt"
-              accept="text/plain"
-              class="flex-shrink-0 h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-              :multiple="false"
-              :drop="false"
-              :drop-directory="false"
-              v-model="files"
-              @input-file="onInputFile"
-              aria-label="Upload a Text Document (.txt)"
-              ref="upload">
-              📁
-            </file-upload>
-          </div>
-          <div class="flex items-center mt-2">
-            <div class="upload">
-              <ul v-if="files.length">
-                <li v-for="file in files" :key="file.id">
-                  <span>{{file.name}}</span>
-                  <span v-if="file.error">{{file.error}}</span>
-                  <span v-else-if="file.success">success</span>
-                  <span v-else-if="file.active">active</span>
-                  <span v-else></span>
-                </li>
-              </ul>
+        <div class="absolute bottom-0 left-0 w-full border-t md:border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white pt-4">
+          <form @submit.prevent="sendMessage" class="px-4 py-2 w-3/4 mx-auto">
+            <div class="flex items-center">
+              <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
+              <button
+                type="submit"
+                class="send-button h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                <img src="../assets/send-message.svg" alt="Send" />
+              </button>
+              <file-upload
+                extensions="txt"
+                accept="text/plain"
+                class="flex-shrink-0 h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                :multiple="false"
+                :drop="false"
+                :drop-directory="false"
+                v-model="files"
+                @input-file="onInputFile"
+                aria-label="Upload a Text Document (.txt)"
+                ref="upload">
+                📁
+              </file-upload>
             </div>
-          </div>
-        </form>
+            <div class="flex items-center mt-2">
+              <div class="upload">
+                <ul v-if="files.length">
+                  <li v-for="file in files" :key="file.id">
+                    <span>{{file.name}}</span>
+                    <span v-if="file.error">{{file.error}}</span>
+                    <span v-else-if="file.success">success</span>
+                    <span v-else-if="file.active">active</span>
+                    <span v-else></span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+  import Sidebar from './Sidebar.vue';
   import ChatBubble from './ChatBubble.vue';
   import NavbarDropdown from './NavbarDropdown.vue';
   import InternalService from '../services/internal';
@@ -78,6 +83,7 @@
 
   export default {
     components: {
+      Sidebar,
       ChatBubble,
       NavbarDropdown,
       FileUpload,
@@ -87,6 +93,7 @@
         username: '',
         avatarUrl: new URL('../assets/user_icon.png', import.meta.url).href,
         messages: [],
+        conversations: [],
         files: [],
         messageInput: '',
         isDarkMode: localStorage.getItem('isDarkMode', 'false') === 'true',
@@ -106,6 +113,7 @@
 
       this.messages = this.conversation.messages || [];
       this.username = localStorage.getItem('username') ? localStorage.getItem('username') : 'Anonymous';
+      this.conversations = await InternalService.getConversations();
     },
     mounted() {
       this.$refs.messageInput.focus();
@@ -194,6 +202,18 @@
 
         this.messages.push(messageResponse);
         this.files = [];
+      },
+      async onAddConversation() {
+        const conversation = await InternalService.createConversation();
+        localStorage.setItem('conversation_id', conversation.id);
+        this.messages = [];
+        this.conversations = await InternalService.getConversations();
+      },
+      async onSelectConversation(conversation_id) {
+        this.conversation_id = conversation_id;
+        localStorage.setItem('conversation_id', conversation_id);
+        this.conversation = await InternalService.getConversation(conversation_id);
+        this.messages = this.conversation.messages || [];
       },
       logout() {
         localStorage.removeItem('user');

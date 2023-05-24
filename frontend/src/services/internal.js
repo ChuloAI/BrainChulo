@@ -15,6 +15,16 @@ class InternalService {
         }
     }
 
+    /* Get all conversations */
+    async getConversations() {
+        return await this.request('/conversations', 'GET');
+    }
+
+    /* Create a new conversation */
+    async createConversation() {
+        return await this.request('/conversations', 'POST', {});
+    }
+
     /* Send a message to a conversation */
     async sendMessage(conversationId, message) {
         return await this.request(`/conversations/${conversationId}/messages`, 'POST', message);
