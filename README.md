@@ -4,7 +4,7 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 
 ## Current Look-n-Feel
 
-![image](https://github.com/iGavroche/BrainChulo/assets/95258328/b407dddf-7be2-4649-a879-2c6e5d5e1984)
+![image](https://github.com/iGavroche/BrainChulo/assets/95258328/448c7b0e-1dbd-4ee7-9bfd-da66e2c7bf9c)
 
 
 ## Features

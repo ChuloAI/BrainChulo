@@ -59,6 +59,32 @@ def create_conversation(*, session: Session = Depends(get_session), conversation
     return conversation
 
 
+@app.put('/conversations/{conversation_id}', response_model=Conversation)
+def update_conversation(*, session: Session = Depends(get_session), conversation_id: int, payload: dict):
+    """
+    Update the title of a conversation.
+    """
+    conversation = session.get(Conversation, conversation_id)
+    conversation.title = payload["title"]
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+
+    return conversation
+
+
+@app.delete("/conversations/{conversation_id}")
+def delete_conversation(*, session: Session = Depends(get_session), conversation_id: int):
+    """
+    Delete a conversation.
+    """
+    conversation = session.get(Conversation, conversation_id)
+    session.delete(conversation)
+    session.commit()
+
+    return conversation
+
+
 @app.get("/conversations", response_model=List[Conversation])
 def get_conversations(session: Session = Depends(get_session)):
     """
