@@ -73,7 +73,6 @@ def update_conversation(*, session: Session = Depends(get_session), conversation
     return conversation
 
 
-# TODO: Delete a conversation
 @app.delete("/conversations/{conversation_id}")
 def delete_conversation(*, session: Session = Depends(get_session), conversation_id: int):
     """
