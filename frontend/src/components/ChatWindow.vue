@@ -11,7 +11,7 @@
             </div>
           </div>
           <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <navbar-dropdown :username="username" :avatar-url="avatarUrl" @update-username="updateUsername" @clear-messages="clearMessages"></navbar-dropdown>
+            <navbar-dropdown :username="username" :avatar-url="avatarUrl" @update-profile="updateProfile" @clear-messages="clearMessages"></navbar-dropdown>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@
     data() {
       return {
         username: '',
-        avatarUrl: new URL('../assets/user_icon.png', import.meta.url).href,
+        avatarUrl: localStorage.getItem('avatarUrl') || new URL('../assets/user_icon.png', import.meta.url).href,
         messages: [],
         conversations: [],
         files: [],
@@ -128,10 +128,15 @@
         this.conversations = await InternalService.getConversations();
       },
 
-      updateUsername(newValue) {
-        console.log(newValue);
-        localStorage.setItem('username', newValue);
-        this.username = newValue;
+      updateProfile(data) {
+        localStorage.setItem('username', data['username']);
+        localStorage.setItem('avatarUrl', data['avatarUrl']);
+
+        this.username = data['username'];
+        this.avatarUrl = data['avatarUrl'];
+
+        // refresh the conversation messages to include new avatar
+        this.onSelectConversation(this.conversation_id)
       },
       async clearMessages() {
         if(!window.confirm('Are you sure?'))
