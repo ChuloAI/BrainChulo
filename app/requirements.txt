@@ -11,3 +11,4 @@ sqlmodel
 bs4
 colorama
 guidance
+safetensors
