@@ -2,7 +2,7 @@
 
 We define a global model Singleton here...
 """
-from app.settings import Settings
+from settings import Settings
 import guidance
 
 llama = None

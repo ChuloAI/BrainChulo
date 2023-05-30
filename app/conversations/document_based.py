@@ -11,7 +11,6 @@ import guidance
 
 config = load_config()
 
-USE_AGENT = config.use_agent
 
 class DocumentBasedConversation:
     def __init__(self):

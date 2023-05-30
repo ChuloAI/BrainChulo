@@ -13,7 +13,7 @@ valid_tools = ["Chroma Search", "Check Question"]
 
 class CustomAgentGuidance:
     def __init__(
-        self, guidance: guidance, tools: Dict[str, Callable[[str]], str], num_iter=3
+        self, guidance: guidance, tools: Dict[str, Callable[[str], str]], num_iter=3
     ):
         self.guidance = guidance
         self.tools = tools
