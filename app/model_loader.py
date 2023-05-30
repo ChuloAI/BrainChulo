@@ -1,13 +1,11 @@
-import time
+"""Quantization is not yet integrated."""
+
 import torch
-import torch.nn as nn
 from .gptq.gptq import *
 from .gptq.modelutils import *
 from .gptq.quant import *
 
 from transformers import AutoTokenizer
-import safetensors
-import os
 
 def get_llama(model):
     import torch

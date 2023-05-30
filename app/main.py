@@ -1,13 +1,13 @@
 import os
 import shutil
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session, desc
 from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
-from datetime import datetime
 from settings import load_config, logger
+from model_singleton import load_model_into_guidance
 
 config = load_config()
 
@@ -43,6 +43,7 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    load_model_into_guidance(config)    
 
 
 @app.post("/conversations", response_model=Conversation)

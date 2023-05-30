@@ -32,6 +32,7 @@ class Settings:
         self.chat_api_url = os.getenv(
             "CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate"
         )
+        self.model_path = os.getenv("MODEL_PATH", "../oobabooga_linux/text-generation-webui/models/TheBloke_wizardLM-7B-HF")
 
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{os.getcwd()}/data/")
@@ -58,8 +59,6 @@ class Settings:
         # Default objective - If we go objective-based, this is the default
         self.default_objective = os.getenv("DEFAULT_OBJECTIVE", "Be a CEO.")
 
-        # The agent can use tools and come up with a response via REaCT prompt framework
-        self.use_agent = False
 
 
 def load_config():
