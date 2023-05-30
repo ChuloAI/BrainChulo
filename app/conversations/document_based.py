@@ -11,11 +11,11 @@ from prompt_templates.document_based_conversation import (
     ConversationWithDocumentTemplate,
 )
 from settings import logger, load_config
+import guidance
 
 config = load_config()
 
 USE_AGENT = config.use_agent
-
 
 class DocumentBasedConversation:
     def __init__(self):
@@ -23,6 +23,9 @@ class DocumentBasedConversation:
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
+        global llama
+        llama = guidance.llms.Transformers(MODEL_PATH, device_map="auto", load_in_8bit=True)
+        dict_tools = load_tools(llama)
 
         self.llm = OobaboogaLLM()
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -127,7 +130,17 @@ class DocumentBasedConversation:
         Raises:
           OutputParserException: If the response from the conversation agent could not be parsed.
         """
-        if USE_AGENT:
+        if USE_GUIDANCE:
+            custom_agent = CustomAgentGuidance(guidance, dict_tools)
+            final_answer = custom_agent(input)
+            if isinstance(final_answer, dict):
+                return {'answer': str(final_answer), 'function': str(final_answer['fn'])}
+            else:
+                # Handle the case when final_answer is not a dictionary.
+                return {'answer': str(final_answer)}
+                    
+
+        elif USE_AGENT:
             try:
                 response = self.conversation_agent.run(
                     input=f"{Examples}\n{input}",

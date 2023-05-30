@@ -40,7 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
@@ -71,7 +70,6 @@ def update_conversation(*, session: Session = Depends(get_session), conversation
     session.refresh(conversation)
 
     return conversation
-
 
 @app.delete("/conversations/{conversation_id}")
 def delete_conversation(*, session: Session = Depends(get_session), conversation_id: int):

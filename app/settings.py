@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import logging
+from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceInstructEmbeddings
 
 load_dotenv()
 
@@ -10,10 +11,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+
 class Settings:
     def __init__(self):
         # Chat API - By default, we are assuming Oobabooga's Text Generation
         # WebUI is running
+        
+        # Guidance new settings
+        self.test_file = os.getenv("TEST_FILE", "")
+        self.embeddings_map = {
+            **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
+            **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl"]}
+        }
+        self.persist_directory = os.getenv("PERSIST_DIRECTORY", "./persist_directory")
+
         self.embeddings_model = os.getenv(
             "EMBEDDINGS_MODEL", "all-MiniLM-L6-v2"
         )
