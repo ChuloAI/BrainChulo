@@ -1,15 +1,13 @@
-from langchain.chains import RetrievalQA
-from langchain.embeddings import HuggingFaceInstructEmbeddings
-from colorama import Fore, Style
-import re
-from langchain.vectorstores import Chroma
-from langchain.docstore.document import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
+import re
 
-import guidance
-
-guidance.llm
+from colorama import Fore
+from colorama import Style
+from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
+from langchain.embeddings import HuggingFaceInstructEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
 
 
 def clean_text(text):

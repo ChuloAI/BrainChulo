@@ -1,8 +1,10 @@
 # import the necessary libraries
-from colorama import Fore, Style
-from guidance_templates import guidance_basic_prompts
-from typing import Dict, Callable
+from typing import Callable, Dict
+
+from colorama import Fore
+from colorama import Style
 import guidance
+from guidance_templates import guidance_basic_prompts
 
 
 valid_answers = ["Action", "Final Answer", "Failed Check"]
