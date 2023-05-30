@@ -18,7 +18,7 @@ class Settings:
         # WebUI is running
         
         # Guidance new settings
-        self.test_file = os.getenv("TEST_FILE", "")
+        self.test_file = os.getenv("TEST_FILE", "/data/uploads/the_trial.txt")
         self.embeddings_map = {
             **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
             **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl"]}
@@ -32,7 +32,7 @@ class Settings:
         self.chat_api_url = os.getenv(
             "CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate"
         )
-        self.model_path = os.getenv("MODEL_PATH", "../oobabooga_linux/text-generation-webui/models/TheBloke_wizardLM-7B-HF")
+        self.model_path = os.getenv("MODEL_PATH", "/models/wizardLM-7B-HF")
 
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{os.getcwd()}/data/")

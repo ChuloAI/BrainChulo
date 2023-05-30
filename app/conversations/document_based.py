@@ -24,8 +24,8 @@ class DocumentBasedConversation:
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
-        dict_tools = load_tools(llama, config)
-        self.custom_agent = CustomAgentGuidance(guidance, dict_tools)
+        self.dict_tools = load_tools(llama, config, filepath=None)
+        self.custom_agent = CustomAgentGuidance(guidance, self.dict_tools)
 
 
     def load_document(self, document_path, conversation_id=None):

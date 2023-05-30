@@ -69,37 +69,38 @@ Question: Are there any elements related to ""{question}"" in the context?
     return answerable[-3:]
 
 
-def load_tools(llm_model, settings):
-    def ingest_file(file_path):
-        # Load unstructured document
-        documents = load_unstructured_document(file_path)
+def load_tools(llm_model, settings, filepath=False):
 
-        # Split documents into chunks
-        documents = split_documents(documents, chunk_size=100, chunk_overlap=20)
+    if filepath:
+        def ingest_file(file_path_arg):
+            # Load unstructured document
+            documents = load_unstructured_document(file_path_arg)
 
-        # Determine the embedding model to use
-        EmbeddingsModel = settings.embeddings_map.get(settings.embeddings_model)
-        if EmbeddingsModel is None:
-            raise ValueError(f"Invalid embeddings model: {settings.embeddings_model}")
+            # Split documents into chunks
+            documents = split_documents(documents, chunk_size=100, chunk_overlap=20)
 
-        model_kwargs = (
-            {"device": "cuda:0"}
-            if EmbeddingsModel == HuggingFaceInstructEmbeddings
-            else {}
-        )
-        embedding = EmbeddingsModel(
-            model_name=settings.embeddings_model, model_kwargs=model_kwargs
-        )
+            # Determine the embedding model to use
+            EmbeddingsModel = settings.embeddings_map.get(settings.embeddings_model)
+            if EmbeddingsModel is None:
+                raise ValueError(f"Invalid embeddings model: {settings.embeddings_model}")
 
-        # Store embeddings from the chunked documents
-        vectordb = Chroma.from_documents(documents=documents, embedding=embedding)
+            model_kwargs = (
+                {"device": "cuda:0"}
+                if EmbeddingsModel == HuggingFaceInstructEmbeddings
+                else {}
+            )
+            embedding = EmbeddingsModel(
+                model_name=settings.embeddings_model, model_kwargs=model_kwargs
+            )
 
-        retriever = vectordb.as_retriever(search_kwargs={"k": 4})
+            # Store embeddings from the chunked documents
+            vectordb = Chroma.from_documents(documents=documents, embedding=embedding)
 
-        return retriever, file_path
+            retriever = vectordb.as_retriever(search_kwargs={"k": 4})
 
-    file_path = settings.test_file
-    retriever, _ = ingest_file(file_path)
+            return retriever, file_path_arg
+
+        retriever, _ = ingest_file(filepath)
 
     def searchChroma(key_word):
         qa = RetrievalQA.from_chain_type(
@@ -116,10 +117,11 @@ def load_tools(llm_model, settings):
 
     dict_tools = {
         "Chroma Search": searchChroma,
-        "File Ingestion": ingest_file,
         "Check Question": lambda question: checkQuestion(
             llm_model, question, retriever
         ),
     }
+    if filepath:
+        dict_tools["File Ingestion"] = ingest_file
 
     return dict_tools
