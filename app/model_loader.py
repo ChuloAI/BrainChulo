@@ -6,6 +6,7 @@ from .gptq.modelutils import *
 from .gptq.quant import *
 
 from transformers import AutoTokenizer
+import safetensors
 import os
 
 def get_llama(model):
@@ -51,6 +52,7 @@ def load_quant(model, checkpoint, wbits, groupsize):
     print('Done.')
 
     return model
+
 
 def load_model_main(model_para, checkpoint_para, device):
     model = load_quant(model_para, checkpoint_para, 4, 128)
