@@ -9,3 +9,5 @@ pydantic
 pyparsing
 sqlmodel
 bs4
+colorama
+guidance
