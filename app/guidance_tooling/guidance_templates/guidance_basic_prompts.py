@@ -54,16 +54,35 @@ Thought: {{gen 't1' stop='\\n'}}
     output_vars=["t1","answer"],
 )
 
+PROMPT_CHOOSE_ACTION_TEMPLATE = GuidancePrompt(
+    prompt_template = """{{history}}
+Action: {{select 'tool_name' options=valid_tools}}
+""",
+    guidance_kwargs={},
+    input_vars=["valid_tools"],
+    output_vars=["tool_name"],
+)
 
-PROMPT_MID_TEMPLATE = GuidancePrompt(
-    prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
+
+PROMPT_ACTION_INPUT_TEMPLATE = GuidancePrompt(
+    prompt_template = """{{history}}
 Action Input: {{gen 'actInput' stop='\\n'}}
-Observation: {{do_tool tool_name actInput}}
+Observation:
+""",
+    guidance_kwargs={},
+    input_vars=["history"],
+    output_vars=["actInput"],
+)
+
+
+PROMPT_THOUGHT_TEMPLATE = GuidancePrompt(
+    prompt_template = """{{history}}
+Observation: {{observation}}
 Thought: {{gen 'thought' stop='\\n'}}
 {{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
     guidance_kwargs={},
-    input_vars=["history"],
-    output_vars=["tool_name", "thought", "answer"],
+    input_vars=["history", "observation"],
+    output_vars=["thought", "answer"],
 )
 
 
@@ -75,5 +94,5 @@ Thought: {{gen 'thought' stop='\\n'}}
 {{select 'answer' options=valid_answers}}: {{gen 'fn' stop='\\n'}}""",
     guidance_kwargs={},
     input_vars=["input"],
-    output_vars=["output", "tool_name", ""],
+    output_vars=["output", "tool_name"],
 )

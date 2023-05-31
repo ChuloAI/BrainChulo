@@ -21,7 +21,11 @@ class DocumentBasedConversation:
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
-        self.dict_tools = load_tools(config, filepath=None)
+        docs_retriever = self.vector_store_docs.get_store().as_retriever(
+            search_kwargs=dict(top_k_docs_for_context=4)
+        )
+
+        self.dict_tools = load_tools(docs_retriever)
         self.custom_agent = CustomAgentGuidance(self.dict_tools)
 
 

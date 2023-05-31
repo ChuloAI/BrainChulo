@@ -3,7 +3,7 @@ import logging
 import guidance
 from guidance import Program
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict, List, Any
 import torch
 
 from transformers import BitsAndBytesConfig
@@ -22,7 +22,7 @@ logger.setLevel(logging.DEBUG)
 
 
 class Request(BaseModel):
-    input_vars: Dict[str, str]
+    input_vars: Dict[str, Any]
     output_vars: List[str]
     guidance_kwargs: Dict[str, str]
     prompt_template: str

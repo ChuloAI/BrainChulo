@@ -1,7 +1,18 @@
+from guidance_tooling.guidance_prompt import GuidancePrompt
 import requests
 
+
+def run_guidance_prompt(prompt: GuidancePrompt, input_vars):
+    return _call_guidance(
+        prompt_template=prompt.prompt_template,
+        input_vars=input_vars,
+        output_vars=prompt.output_vars,
+        guidance_kwargs=prompt.guidance_kwargs
+    )
+
+
 guidance_url = "http://0.0.0.0:9000"
-def call_guidance(prompt_template, output_vars, input_vars=None, guidance_kwargs=None):
+def _call_guidance(prompt_template, output_vars, input_vars=None, guidance_kwargs=None):
     """
     This function calls a guidance API with the given parameters and returns the response.
     
