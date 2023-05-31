@@ -12,3 +12,5 @@ bs4
 colorama
 guidance
 safetensors
+accelerate
+bitsandbytes
