@@ -2,8 +2,8 @@ from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from guidance_agent.agent import CustomAgentGuidance
-from guidance_agent.tools import load_tools
+from guidance_tooling.guidance_agent.agent import CustomAgentGuidance
+from guidance_tooling.guidance_agent.tools import load_tools
 
 from settings import logger, load_config
 
@@ -16,13 +16,12 @@ class DocumentBasedConversation:
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
-        self.llm = llama
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
-        self.dict_tools = load_tools(llama, config, filepath=None)
+        self.dict_tools = load_tools(config, filepath=None)
         self.custom_agent = CustomAgentGuidance(self.dict_tools)
 
 

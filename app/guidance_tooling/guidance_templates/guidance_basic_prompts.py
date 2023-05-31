@@ -1,6 +1,8 @@
+from guidance_tooling.guidance_prompt import GuidancePrompt
 
-PROMPT_START_TEMPLATE = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
+PROMPT_START_TEMPLATE = GuidancePrompt(
+    prompt_template="""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
 Answer the following questions as best you can. You have access to the following tools:
 
@@ -46,16 +48,32 @@ Final Answer: Anupama Nadella is 50 years old.
 ### Response:
 Question: {{question}}
 Thought: {{gen 't1' stop='\\n'}}
-{{select 'answer' logprobs='logprobs' options=valid_answers}}: """
+{{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
+    guidance_kwargs={},
+    input_vars=["question"],
+    output_vars=["t1","answer"],
+)
 
-PROMPT_MID_TEMPLATE = """{{history}}{{select 'tool_name' options=valid_tools}}
+
+PROMPT_MID_TEMPLATE = GuidancePrompt(
+    prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
 Action Input: {{gen 'actInput' stop='\\n'}}
 Observation: {{do_tool tool_name actInput}}
 Thought: {{gen 'thought' stop='\\n'}}
-{{select 'answer' logprobs='logprobs' options=valid_answers}}: """
+{{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
+    guidance_kwargs={},
+    input_vars=["history"],
+    output_vars=["tool_name", "thought", "answer"],
+)
 
-PROMPT_FINAL_TEMPLATE = """{{history}}{{select 'tool_name' options=valid_tools}}
+
+PROMPT_FINAL_TEMPLATE = GuidancePrompt(
+    prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
 Action Input: {{gen 'actInput' stop='\\n'}}
 Observation: {{do_tool tool_name actInput}}
 Thought: {{gen 'thought' stop='\\n'}}
-{{select 'answer' options=valid_answers}}: {{gen 'fn' stop='\\n'}}"""
+{{select 'answer' options=valid_answers}}: {{gen 'fn' stop='\\n'}}""",
+    guidance_kwargs={},
+    input_vars=["input"],
+    output_vars=["output", "tool_name", ""],
+)

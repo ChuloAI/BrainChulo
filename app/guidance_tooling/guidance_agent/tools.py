@@ -69,9 +69,10 @@ Question: Are there any elements related to ""{question}"" in the context?
     return answerable[-3:]
 
 
-def load_tools(llm_model, settings, filepath=False):
+def load_tools(settings, filepath=False):
 
     if filepath:
+
         def ingest_file(file_path_arg):
             # Load unstructured document
             documents = load_unstructured_document(file_path_arg)
@@ -82,7 +83,9 @@ def load_tools(llm_model, settings, filepath=False):
             # Determine the embedding model to use
             EmbeddingsModel = settings.embeddings_map.get(settings.embeddings_model)
             if EmbeddingsModel is None:
-                raise ValueError(f"Invalid embeddings model: {settings.embeddings_model}")
+                raise ValueError(
+                    f"Invalid embeddings model: {settings.embeddings_model}"
+                )
 
             model_kwargs = (
                 {"device": "cuda:0"}
