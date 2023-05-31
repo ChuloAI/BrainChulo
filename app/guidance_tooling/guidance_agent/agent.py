@@ -72,18 +72,14 @@ class CustomAgentGuidance:
             result_final = "I cannot answer this question given the context"
 
         elif result_mid["answer"] != "Final Answer":
-            history = result_mid.__str__()
-            prompt_mid = self.guidance(guidance_basic_prompts.PROMPT_FINAL_TEMPLATE)
-            result_final = prompt_mid(
-                history=history,
-                do_tool=self.do_tool,
-                valid_answers=["Final Answer"],
-                valid_tools=valid_tools,
-            )
-
+            print("I broke something here")
+            result_final = "I'm broke, sorry"
         else:
             history = result_mid.__str__()
-            prompt_mid = self.guidance(history + "{{gen 'fn' stop='\\n'}}")
-            result_final = prompt_mid()
+            prompt_mid = history + "{{gen 'fn' stop='\\n'}}"
+            result_final = run_guidance_prompt(
+                prompt_mid,
+                {}
+            )
 
         return result_final
