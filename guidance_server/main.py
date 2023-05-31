@@ -27,6 +27,12 @@ class Request(BaseModel):
     guidance_kwargs: Dict[str, str]
     prompt_template: str
 
+class RawRequest(BaseModel):
+    prompt: str
+    max_new_tokens: int
+    temperature: float
+    stop: str
+
 
 app = FastAPI()
 
@@ -63,3 +69,39 @@ def call_llama(request: Request):
     for output_var in output_vars:
         output[output_var] = program_result[output_var]
     return output
+
+
+@app.post("/raw")
+def call_raw_llm(request: RawRequest):
+    print("Raw request: ", request)
+
+    prompt = request.prompt + "{{"
+    if request.stop:
+        prompt += "gen 'output' temperature={} max_tokens={} stop='{}'".format(
+            request.temperature,
+            request.max_new_tokens,
+            request.stop
+        )
+
+    else:
+        prompt += "gen 'output' temperature={} max_tokens={}".format(
+            request.temperature,
+            request.max_new_tokens
+        )
+
+
+    prompt += "}}"
+
+    print("Modified prompt", prompt)
+
+    guidance_program = guidance(prompt)
+
+    program_result = guidance_program(
+        stream=False,
+        async_mode=False,
+        caching=False,
+        llm=llama,
+    )
+
+    print("Result: ", program_result)
+    return {"output": program_result["output"]}
