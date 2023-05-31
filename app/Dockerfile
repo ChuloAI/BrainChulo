@@ -4,6 +4,9 @@ FROM python:3.10
 WORKDIR /code
 ENV PYTHONPATH "${PYTHONPATH}:/code"
 
+# Install PyTorch with GPU support
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 

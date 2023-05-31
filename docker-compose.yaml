@@ -21,6 +21,13 @@ services:
       - "com.docker.compose.project=brainchulo-backend"
     # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
     stop_signal: SIGINT
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
   frontend:
     build:
       context: ./frontend

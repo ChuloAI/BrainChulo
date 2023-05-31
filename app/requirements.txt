@@ -1,7 +1,6 @@
 langchain
 python-dotenv
 chromadb
-sentence_transformers
 bs4
 fastapi[all]
 uvicorn
@@ -11,6 +10,8 @@ sqlmodel
 bs4
 colorama
 guidance
+transformers
+sentence_transformers
 safetensors
 accelerate
 bitsandbytes
