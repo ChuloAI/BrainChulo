@@ -7,7 +7,6 @@ from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
 from settings import load_config, logger
-from model_singleton import load_model_into_guidance
 
 config = load_config()
 
@@ -43,7 +42,6 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-    load_model_into_guidance(config)    
 
 
 @app.post("/conversations", response_model=Conversation)

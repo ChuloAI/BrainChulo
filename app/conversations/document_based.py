@@ -4,10 +4,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from guidance_agent.agent import CustomAgentGuidance
 from guidance_agent.tools import load_tools
-from model_singleton import llama
 
 from settings import logger, load_config
-import guidance
 
 config = load_config()
 
@@ -25,7 +23,7 @@ class DocumentBasedConversation:
         self.vector_store_convs = Chroma(collection_name="convos_collection")
 
         self.dict_tools = load_tools(llama, config, filepath=None)
-        self.custom_agent = CustomAgentGuidance(guidance, self.dict_tools)
+        self.custom_agent = CustomAgentGuidance(self.dict_tools)
 
 
     def load_document(self, document_path, conversation_id=None):

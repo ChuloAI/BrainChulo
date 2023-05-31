@@ -3,7 +3,6 @@ from typing import Callable, Dict
 
 from colorama import Fore
 from colorama import Style
-import guidance
 from guidance_templates import guidance_basic_prompts
 
 
@@ -13,8 +12,9 @@ valid_tools = ["Chroma Search", "Check Question"]
 
 class CustomAgentGuidance:
     def __init__(
-        self, guidance: guidance, tools: Dict[str, Callable[[str], str]], num_iter=3
+        self, llm, guidance: guidance, tools: Dict[str, Callable[[str], str]], num_iter=3
     ):
+        self.llm = llm
         self.guidance = guidance
         self.tools = tools
         self.num_iter = num_iter
@@ -26,7 +26,7 @@ class CustomAgentGuidance:
         return result
 
     def __call__(self, query):
-        prompt_start = self.guidance(guidance_basic_prompts.PROMPT_START_TEMPLATE)
+        prompt_start = self.guidance(guidance_basic_prompts.PROMPT_START_TEMPLATE, llm=self.llm)
         result_start = prompt_start(question=query, valid_answers=valid_answers)
         result_mid = result_start
 
