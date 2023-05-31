@@ -19,5 +19,9 @@ COPY . .
 # Expose library path to dynamic library linking
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/cuda-12/targets/x86_64-linux/lib
 
+# Tell bitsandbytes to use CUDA 121
+RUN ln -s /usr/local/cuda-12/targets/x86_64-linux/lib/libcudart.so.12 /usr/local/cuda-12/targets/x86_64-linux/lib/libcudart.so 
+
+
 # Set the entrypoint
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7865", "--reload"]
