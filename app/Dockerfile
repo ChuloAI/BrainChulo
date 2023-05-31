@@ -16,6 +16,8 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
+# Expose library path to dynamic library linking
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/cuda-12/targets/x86_64-linux/lib
 
 # Set the entrypoint
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7865", "--reload"]

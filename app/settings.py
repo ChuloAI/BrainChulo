@@ -21,12 +21,12 @@ class Settings:
         self.test_file = os.getenv("TEST_FILE", "/data/uploads/the_trial.txt")
         self.embeddings_map = {
             **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
-            **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl"]}
+            **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl", "/models/all-MiniLM-L6-v2"]}
         }
         self.persist_directory = os.getenv("PERSIST_DIRECTORY", "./persist_directory")
 
         self.embeddings_model = os.getenv(
-            "EMBEDDINGS_MODEL", "all-MiniLM-L6-v2"
+            "EMBEDDINGS_MODEL", "/models/all-MiniLM-L6-v2"
         )
 
         self.chat_api_url = os.getenv(

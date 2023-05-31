@@ -83,7 +83,7 @@ class DocumentBasedConversation:
         Raises:
           OutputParserException: If the response from the conversation agent could not be parsed.
         """
-        final_answer = self.custom_guidance_agent(input)
+        final_answer = self.custom_agent(input)
         if isinstance(final_answer, dict):
             final_answer = {'answer': str(final_answer), 'function': str(final_answer['fn'])}
         else:
