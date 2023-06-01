@@ -65,7 +65,7 @@ def call_llama(request: Request):
         **input_vars,
         llm=llama,
     )
-    output = {}
+    output = {"__main__": str(program_result)}
     for output_var in output_vars:
         output[output_var] = program_result[output_var]
     return output

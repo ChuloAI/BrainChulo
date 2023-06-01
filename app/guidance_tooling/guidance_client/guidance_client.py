@@ -1,8 +1,9 @@
 from guidance_tooling.guidance_prompt import GuidancePrompt
 import requests
 from copy import deepcopy
+from typing import Dict
 
-def run_guidance_prompt(guidance_prompt: GuidancePrompt, input_vars, macro_values=None):
+def run_guidance_prompt(guidance_prompt: GuidancePrompt, input_vars, macro_values=None) -> Dict[str, str]:
     print("[GUIDANCE CALL]: ", guidance_prompt.name)
 
     # Macro variables are generaly currently not necessary
