@@ -49,11 +49,11 @@ Final Answer: Anupama Nadella is 50 years old.
 ### Response:
 Question: {{question}}
 Thought: {{gen 't1' stop='\\n'}}
-{{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
+{{select 'answer' logprobs='logprobs' options=valid_options}}: """,
     guidance_kwargs={},
-    input_vars=["question", "valid_answers"],
+    input_vars=["question", "valid_options"],
     output_vars=["t1","answer"],
-)
+ )
 
 PROMPT_CHOOSE_ACTION_TEMPLATE = GuidancePrompt(
     name="cot_choose_action",

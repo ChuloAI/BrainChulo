@@ -16,7 +16,7 @@ class CustomAgentGuidance:
         self.tools = tools
         self.num_iter = num_iter
         self.pass_through_tool = "Reply"
-        self.valid_tools = list(tools.keys()).append(self.pass_through_tool)
+        self.valid_tools = list(tools.keys()) + [self.pass_through_tool]
         self.valid_answers = ["Action", "Final Answer"]
 
     def do_tool(self, tool_name, act_input):
@@ -32,11 +32,12 @@ class CustomAgentGuidance:
 
     def __call__(self, query):
         prompt_start = guicance_cot.PROMPT_START_TEMPLATE
+        print(self.valid_answers)
         result_start = run_guidance_prompt(
             prompt_start,
             input_vars={
                 "question": query,
-                "valid_answers": self.valid_answers
+                "valid_options": self.valid_answers
             },
         )
         color_print(f"Result start: {result_start}", Fore.YELLOW)

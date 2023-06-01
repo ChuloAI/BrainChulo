@@ -1,15 +1,34 @@
 from guidance_tooling.guidance_prompt import GuidancePrompt
 import requests
+from copy import deepcopy
 
+def run_guidance_prompt(guidance_prompt: GuidancePrompt, input_vars, macro_values=None):
+    print("[GUIDANCE CALL]: ", guidance_prompt.name)
 
-def run_guidance_prompt(prompt: GuidancePrompt, input_vars):
-    print("[GUIDANCE CALL]: ", prompt.name)
+    # Macro variables are generaly currently not necessary
+    # Unless you want to dynamically set guidance settings that are normally not settable.
+    # 
+    # One example is the number of iterations guidance should loop on a specific generation. 
+    macro_vars = deepcopy(guidance_prompt.macro_vars)
+    prompt_str = guidance_prompt.prompt_template
+    if macro_values is not None:
+        keys = list(macro_vars.keys())
+        for key in keys:
+            macro_identifier = macro_vars.pop(key)
+            value = macro_values.pop(key)
+            prompt_str = prompt_str.replace(macro_identifier, str(value))
+    
+    if macro_vars:
+        raise TypeError("Unexpanded macro variables in prompt! Fix your prompt or pass the macro variable")
+
+    print("[GUIDANCE CALL INPUT VARS]: ", input_vars)
     return _call_guidance(
-        prompt_template=prompt.prompt_template,
+        prompt_template=prompt_str,
         input_vars=input_vars,
-        output_vars=prompt.output_vars,
-        guidance_kwargs=prompt.guidance_kwargs
+        output_vars=guidance_prompt.output_vars,
+        guidance_kwargs=guidance_prompt.guidance_kwargs
     )
+
 
 
 guidance_url = "http://0.0.0.0:9000"

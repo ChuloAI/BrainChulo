@@ -73,8 +73,6 @@ def call_llama(request: Request):
 
 @app.post("/raw")
 def call_raw_llm(request: RawRequest):
-    print("Raw request: ", request)
-
     prompt = request.prompt + "{{"
     if request.stop:
         prompt += "gen 'output' temperature={} max_tokens={} stop='{}'".format(
@@ -92,8 +90,6 @@ def call_raw_llm(request: RawRequest):
 
     prompt += "}}"
 
-    print("Modified prompt", prompt)
-
     guidance_program = guidance(prompt)
 
     program_result = guidance_program(
@@ -102,6 +98,4 @@ def call_raw_llm(request: RawRequest):
         caching=False,
         llm=llama,
     )
-
-    print("Result: ", program_result)
     return {"output": program_result["output"]}
