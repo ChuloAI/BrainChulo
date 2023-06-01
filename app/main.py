@@ -11,7 +11,7 @@ from settings import load_config, logger
 
 config = load_config()
 
-sqlite_database_url = "sqlite:///data/brainchulo.db"
+sqlite_database_url = config.database_url
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args)
 
