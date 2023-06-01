@@ -50,6 +50,9 @@ class Settings:
         # The agent can use tools and come up with a response via REaCT prompt framework
         self.use_agent = False
 
+        # Database URL
+        self.database_url = os.getenv("DATABASE_URL", "sqlite:///data/brainchulo.db")
+
 
 def load_config():
     return Settings()

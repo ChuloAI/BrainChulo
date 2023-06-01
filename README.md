@@ -54,6 +54,9 @@ docker-compose up --build
 
 # To shut it down
 docker compose down
+
+# After pulling the latest code, make sure to run the database migrations
+docker-compose exec backend alembic upgrade head
 ```
 
 
