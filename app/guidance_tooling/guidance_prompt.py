@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class GuidancePrompt:
+    name: str
     prompt_template: str
     input_vars: Dict[str, str]
     output_vars: Dict[str, str]

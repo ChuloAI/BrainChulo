@@ -2,6 +2,7 @@ from guidance_tooling.guidance_prompt import GuidancePrompt
 
 
 PROMPT_START_TEMPLATE = GuidancePrompt(
+    name="cot_start",
     prompt_template="""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
 Answer the following questions as best you can. You have access to the following tools:
@@ -50,11 +51,12 @@ Question: {{question}}
 Thought: {{gen 't1' stop='\\n'}}
 {{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
     guidance_kwargs={},
-    input_vars=["question"],
+    input_vars=["question", "valid_answers"],
     output_vars=["t1","answer"],
 )
 
 PROMPT_CHOOSE_ACTION_TEMPLATE = GuidancePrompt(
+    name="cot_choose_action",
     prompt_template = """{{history}}
 Action: {{select 'tool_name' options=valid_tools}}
 """,
@@ -65,6 +67,7 @@ Action: {{select 'tool_name' options=valid_tools}}
 
 
 PROMPT_ACTION_INPUT_TEMPLATE = GuidancePrompt(
+    name="cot_action_input",
     prompt_template = """{{history}}
 Action Input: {{gen 'actInput' stop='\\n'}}
 Observation:
@@ -76,6 +79,7 @@ Observation:
 
 
 PROMPT_THOUGHT_TEMPLATE = GuidancePrompt(
+    name="cot_thought_gen",
     prompt_template = """{{history}}
 Observation: {{observation}}
 Thought: {{gen 'thought' stop='\\n'}}
@@ -87,6 +91,7 @@ Thought: {{gen 'thought' stop='\\n'}}
 
 
 PROMPT_FINAL_TEMPLATE = GuidancePrompt(
+    name="cot_final",
     prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
 Action Input: {{gen 'actInput' stop='\\n'}}
 Observation: {{do_tool tool_name actInput}}

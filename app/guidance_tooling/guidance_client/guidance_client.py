@@ -3,6 +3,7 @@ import requests
 
 
 def run_guidance_prompt(prompt: GuidancePrompt, input_vars):
+    print("[GUIDANCE CALL]: ", prompt.name)
     return _call_guidance(
         prompt_template=prompt.prompt_template,
         input_vars=input_vars,

@@ -3,7 +3,6 @@ from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from guidance_tooling.guidance_agent.agent import CustomAgentGuidance
-from guidance_tooling.guidance_agent.tools import load_tools
 
 from settings import logger, load_config
 
@@ -20,13 +19,11 @@ class DocumentBasedConversation:
             chunk_size=500, chunk_overlap=20, length_function=len)
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
-
-        docs_retriever = self.vector_store_docs.get_store().as_retriever(
-            search_kwargs=dict(top_k_docs_for_context=4)
-        )
-
-        self.dict_tools = load_tools(docs_retriever)
-        self.custom_agent = CustomAgentGuidance(self.dict_tools)
+        tools = {
+            "Search Documents": self.search_documents,
+            "Search Conversations": self.search_conversations,
+        }
+        self.custom_agent = CustomAgentGuidance(tools)
 
 
     def load_document(self, document_path, conversation_id=None):
@@ -49,7 +46,26 @@ class DocumentBasedConversation:
 
         self.vector_store_docs.add_documents(documents)
 
-    def search(self, search_input, conversation_id=None):
+    def search_documents(self, search_input, conversation_id=None):
+        """
+        Search for the given input in the vector store and return the top 10 most similar documents with their scores.
+        This function is used as a helper function for the SearchLongTermMemory tool
+
+        Args:
+          search_input (str): The input to search for in the vector store.
+
+        Returns:
+          List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
+        """
+
+
+        logger.info(f"Searching for: {search_input} in LTM")
+        docs = self.vector_store_docs.similarity_search_with_score(
+            search_input, k=5, filter=filter
+        )
+        return docs
+
+    def search_conversations(self, search_input, conversation_id=None):
         """
         Search for the given input in the vector store and return the top 10 most similar documents with their scores.
         This function is used as a helper function for the SearchLongTermMemory tool
@@ -66,7 +82,7 @@ class DocumentBasedConversation:
             filter = {}
 
         logger.info(f"Searching for: {search_input} in LTM")
-        docs = self.vector_store_docs.similarity_search_with_score(
+        docs = self.vector_store_convs.similarity_search_with_score(
             search_input, k=5, filter=filter
         )
         return docs
