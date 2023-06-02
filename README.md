@@ -18,14 +18,13 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 - Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
-
-To use BrainChulo, simply clone the repository to your local machine and install the required dependencies:
+To use BrainChulo, simply clone the repository to your local machine and install the required dependencies.
+We recommend the Docker installation explained in the next section. Otherwise, you can install the Python dependencies directly:
 
 ```bash
 git clone https://github.com/your-username/BrainChulo.git
 cd BrainChulo/app
 pip install -r requirements.txt
-
 ```
 
 Note that you will need to be running your own Vicuna model in API mode and ensure your `.env` file is setup properly. See [.env.example](.env.example). Please refer to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui) for more information.
@@ -46,6 +45,14 @@ You may be running it via `start_webui.bat`. In this case, you'll need to edit i
 
 ### BrainChulo
 
+#### Requirements
+1. [Docker Engine](https://docs.docker.com/engine/)
+2. [Docker Compose v2](https://docs.docker.com/compose/)
+
+If you want to use docker-compose v1, you might run into an issue with the port binding - though there's an easy workaround here:
+https://github.com/ChuloAI/BrainChulo/issues/39
+
+#### Starting the service
 The easiest way to start BrainChulo is using Docker with `docker-compose`:
 
 ```
