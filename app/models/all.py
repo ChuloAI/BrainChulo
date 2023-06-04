@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
+from importlib import import_module
 
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -12,6 +13,33 @@ NAMING_CONVENTION = {
 
 metadata = SQLModel.metadata
 metadata.naming_convention = NAMING_CONVENTION
+
+def load_plugin_tables():
+    """
+    Loads all plugins in the plugins directory that have a database.py file and merge their metadata.
+
+    :return: None
+    """
+    import os
+    plugins_dir = os.path.dirname(__file__) + '/../plugins'
+
+    for plugin_name in os.listdir(plugins_dir):
+        if plugin_name.startswith('_'):
+            continue  # Skip hidden files
+
+        plugin_dir = os.path.join(plugins_dir, plugin_name)
+        if not os.path.exists(os.path.join(plugin_dir, 'database.py')):
+            continue  # Skip plugins without a database.py file
+
+        plugin_module = import_module(f'plugins.{plugin_name}.database')
+        # plugin_metadata = plugin_module.metadata
+
+        # # # Copy the tables from the main metadata to the plugin metadata object
+        # # for table_name in plugin_metadata.tables:
+        # #     table = plugin_metadata.tables[table_name]
+        # #     table.schema = None  # Reset the schema to avoid conflicts
+        # #     table.metadata = metadata
+
 
 class ConversationBase(SQLModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
