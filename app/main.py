@@ -8,6 +8,7 @@ from typing import List
 from conversations.document_based import DocumentBasedConversation
 from datetime import datetime
 from settings import load_config, logger
+from plugins import load_plugins
 
 config = load_config()
 
@@ -25,6 +26,8 @@ def get_session():
         yield session
 
 app = FastAPI()
+# Load the plugins
+load_plugins(app=app)
 
 origins = [
     "http://127.0.0.1:5173",
