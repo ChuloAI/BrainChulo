@@ -60,6 +60,9 @@ class Settings:
         self.default_objective = os.getenv("DEFAULT_OBJECTIVE", "Be a CEO.")
 
 
+        # Database URL
+        self.database_url = os.getenv("DATABASE_URL", "sqlite:///data/brainchulo.db")
+
 
 def load_config():
     return Settings()

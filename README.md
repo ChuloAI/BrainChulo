@@ -18,14 +18,13 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 - Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
-
-To use BrainChulo, simply clone the repository to your local machine and install the required dependencies:
+To use BrainChulo, simply clone the repository to your local machine and install the required dependencies.
+We recommend the Docker installation explained in the next section. Otherwise, you can install the Python dependencies directly:
 
 ```bash
 git clone https://github.com/your-username/BrainChulo.git
 cd BrainChulo/app
 pip install -r requirements.txt
-
 ```
 
 Note that you will need to be running your own Vicuna model in API mode and ensure your `.env` file is setup properly. See [.env.example](.env.example). Please refer to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui) for more information.
@@ -46,6 +45,14 @@ You may be running it via `start_webui.bat`. In this case, you'll need to edit i
 
 ### BrainChulo
 
+#### Requirements
+1. [Docker Engine](https://docs.docker.com/engine/)
+2. [Docker Compose v2](https://docs.docker.com/compose/)
+
+If you want to use docker-compose v1, you might run into an issue with the port binding - though there's an easy workaround here:
+https://github.com/ChuloAI/BrainChulo/issues/39
+
+#### Starting the service
 The easiest way to start BrainChulo is using Docker with `docker-compose`:
 
 ```
@@ -54,6 +61,37 @@ docker-compose up --build
 
 # To shut it down
 docker compose down
+
+# After pulling the latest code, make sure to run the database migrations
+docker-compose exec backend alembic upgrade head
+```
+
+## Creating a Plugin
+
+1. Create a new directory for your plugin, e.g. `/app/plugins/my_plugin`
+
+2. Inside the new directory, create a new Python module, e.g. `myplugin_main.py`
+
+3. In `myplugin_main.py`, define your plugin routes using FastAPI. See the `/app/plugins/sample_plugin` directory for an example.
+
+4. Create a `database.py` file to define your SQLModel models. Data for hese models will be persisted in the main database.
+
+5. Once you have defined your models, run the following command **with your own message** to generate a new Alembic migration file. Migration files allow the application to add your models to the database schema:
+
+```
+alembic revision --autogenerate -m "Add Sample Plugin Demo Model"
+```
+
+6. Run `alembic upgrade head` to run your migration. This will update your database.
+
+**Note:** If you wish to run these commands using the stood-up containers, prefix them as such:
+
+```
+# To create a migration
+docker-compose exec backend alembic revision --autogenerate -m "Add Sample Plugin Demo Model"
+
+# To run a migration
+docker-compose exec backend alembic upgrade head
 ```
 
 

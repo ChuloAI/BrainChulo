@@ -7,23 +7,31 @@ from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
 from settings import load_config, logger
+from plugins import load_plugins
+from alembic import command
+from alembic.config import Config
 
 config = load_config()
 
-sqlite_database_url = "sqlite:///data/brainchulo.db"
+sqlite_database_url = config.database_url
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args)
 
 convo = DocumentBasedConversation()
 
 def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+    migrations_config = Config("alembic.ini")
+    command.upgrade(migrations_config, "head")
 
 def get_session():
     with Session(engine) as session:
         yield session
 
 app = FastAPI()
+
+
+# Load the plugins
+load_plugins(app=app)
 
 origins = [
     "http://127.0.0.1:5173",

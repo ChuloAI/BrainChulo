@@ -10,6 +10,5 @@ pyparsing
 sqlmodel
 bs4
 colorama
-guidance
-transformers
 sentence_transformers
+alembic
