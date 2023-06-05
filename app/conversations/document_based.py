@@ -60,12 +60,11 @@ class DocumentBasedConversation:
           List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
         """
 
-
         logger.info(f"Searching for: {search_input} in LTM")
         docs = self.vector_store_docs.similarity_search_with_score(
             search_input, k=5, filter=filter
         )
-        return docs
+        return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
 
     def search_conversations(self, search_input, conversation_id=None):
         """
@@ -87,7 +86,7 @@ class DocumentBasedConversation:
         docs = self.vector_store_convs.similarity_search_with_score(
             search_input, k=5, filter=filter
         )
-        return docs
+        return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
 
     def predict(self, input):
         """

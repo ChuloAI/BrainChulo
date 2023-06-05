@@ -73,7 +73,7 @@ Observation:
 Thought: {{gen 'thought' stop='\\n'}}
 {{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
     guidance_kwargs={},
-    input_vars=["prompt_start", "question"],
+    input_vars=["prompt_start"],
     output_vars=["thought", "answer"],
 )
 
@@ -92,12 +92,9 @@ Thought: {{gen 'thought' stop='\\n'}}
 
     final_prompt = AndromedaPrompt(
     name="cot_final",
-    prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
-Action Input: {{gen 'actInput' stop='\\n'}}
-Observation: {{do_tool tool_name actInput}}
-Thought: {{gen 'thought' stop='\\n'}}
-{{select 'answer' options=valid_answers}}: {{gen 'fn' stop='\\n'}}""",
+    prompt_template = """{{history}}
+Final Answer: {{gen 'final_answer' stop='\\n'}}""",
     guidance_kwargs={},
-    input_vars=["input"],
-    output_vars=["output", "tool_name"],
+    input_vars=["history"],
+    output_vars=["final_answer"],
 )

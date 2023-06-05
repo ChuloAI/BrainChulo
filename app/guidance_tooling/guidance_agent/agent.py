@@ -23,14 +23,12 @@ class AgentHistory:
         return str(self.raw_history)
 
 
-
-
 class CustomAgentGuidance:
     def __init__(self, andromeda: AndromedaChain, tools: Dict[str, Callable[[str], str]], num_iter=3):
         self.andromeda = andromeda
         self.tools = tools
         self.num_iter = num_iter
-        self.valid_tools = list(tools.keys())
+        self.valid_tools = list(tools.keys()) + ["Reply"]
         self.valid_answers = ["Action", "Final Answer"]
 
     def do_tool(self, tool_name, act_input):
@@ -46,37 +44,48 @@ class CustomAgentGuidance:
             input_vars={
                 "prompt_start": PROMPT_START_STRING,
                 "question": query,
+                "valid_answers": self.valid_answers,
             },
         )
         history = result_start.expanded_generation
+        answer = result_start.result_vars["answer"]
+
         color_print(f"Result start: {result_start.result_vars}", Fore.YELLOW)
         for _ in range(self.num_iter - 1):
+            if answer == "Final Answer":
+                break
 
             # Choose action
-            chosen_action = self.andromeda.run_guidance_prompt(
+            chosen_action_result = self.andromeda.run_guidance_prompt(
                 ChainOfThoughts.choose_action,
                 input_vars={
                     "history": history,
                     "valid_tools": self.valid_tools,
                 },
             )
-            color_print(f"Chosen action: {chosen_action.result_vars}", Fore.GREEN)
-
+            history = chosen_action_result.expanded_generation
+            tool_name = chosen_action_result.result_vars["tool_name"]
+            color_print(f"Chosen action: {tool_name}", Fore.GREEN)
 
             # Provide action input
-            action_input = self.andromeda.run_guidance_prompt(
+            action_input_result = self.andromeda.run_guidance_prompt(
                 ChainOfThoughts.action_input,
                 input_vars={
                     "history": history
                 }
             )
-            color_print(f"Action Input: {action_input.result_vars}", Fore.YELLOW)
-            
+            history = action_input_result.expanded_generation
+            action_input = action_input_result.result_vars["actInput"]
+            color_print(f"Action Input: {action_input}", Fore.YELLOW)
+
+            if tool_name == "Reply":
+                break
+
             # Execute tool
-            observation = self.do_tool(chosen_action.result_vars["tool_name"], action_input.result_vars["actInput"])
+            observation = self.do_tool(tool_name, action_input)
             color_print(f"Observation: {observation}", Fore.LIGHTMAGENTA_EX)
 
-            if "Search" in chosen_action.result_vars["tool_name"]:
+            if "Search" in tool_name:
                 check_question = self.andromeda.run_guidance_prompt(
                     guidance_check_question.PROMPT_CHECK_QUESTION,
                     input_vars={
@@ -84,19 +93,30 @@ class CustomAgentGuidance:
                         "question": query,
                     }
                 )
+                color_print(f"Check question: {check_question}", Fore.YELLOW)
                 if check_question.result_vars["answer"] == "no":
                     color_print(f"I don't know", Fore.RED)
-                    return "I cannot answer this question given the context."
+                    return "I could not answer this question given the context"
 
-            if chosen_action.result_vars["tool_name"] == "Final Answer":
-                return observation
 
-        
-        history = history
-        prompt_mid = history + "{{gen 'fn' stop='\\n'}}"
+                thought_result = self.andromeda.run_guidance_prompt(
+                    ChainOfThoughts.thought_gen,
+                    input_vars={
+                        "history": history,
+                        "observation": observation,
+                        "valid_answers": self.valid_answers,
+                    },
+                )
+                color_print(f"Thought result: {thought_result.result_vars}", Fore.CYAN)
+                answer = thought_result.result_vars["answer"]
+                history = thought_result.expanded_generation
+
+        # Generate final answer
         result_final = self.andromeda.run_guidance_prompt(
-            prompt_mid,
-            {}
+            ChainOfThoughts.final_prompt,
+            {
+                "history": history,
+            }
         )
-
-        return result_final
+        color_print(f"Final resut: {result_final.result_vars}", Fore.GREEN)
+        return result_final.result_vars["final_answer"]
