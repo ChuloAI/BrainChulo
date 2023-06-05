@@ -66,6 +66,34 @@ docker compose down
 docker-compose exec backend alembic upgrade head
 ```
 
+## Creating a Plugin
+
+1. Create a new directory for your plugin, e.g. `/app/plugins/my_plugin`
+
+2. Inside the new directory, create a new Python module, e.g. `myplugin_main.py`
+
+3. In `myplugin_main.py`, define your plugin routes using FastAPI. See the `/app/plugins/sample_plugin` directory for an example.
+
+4. Create a `database.py` file to define your SQLModel models. Data for hese models will be persisted in the main database.
+
+5. Once you have defined your models, run the following command **with your own message** to generate a new Alembic migration file. Migration files allow the application to add your models to the database schema:
+
+```
+alembic revision --autogenerate -m "Add Sample Plugin Demo Model"
+```
+
+6. Run `alembic upgrade head` to run your migration. This will update your database.
+
+**Note:** If you wish to run these commands using the stood-up containers, prefix them as such:
+
+```
+# To create a migration
+docker-compose exec backend alembic revision --autogenerate -m "Add Sample Plugin Demo Model"
+
+# To run a migration
+docker-compose exec backend alembic upgrade head
+```
+
 
 **Developers:** While you may use the container-based approach since it is a development container with hot reloading you may also wish to start BrainChulo's services manually. To do so, run the `main.py` script from within the `app` directory, then start the frontend:
 
