@@ -1,4 +1,3 @@
-# plugins/sample_plugin/routes.py
 from fastapi import APIRouter
 
 router = APIRouter()
