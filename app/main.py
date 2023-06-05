@@ -8,6 +8,8 @@ from typing import List
 from conversations.document_based import DocumentBasedConversation
 from settings import load_config, logger
 from plugins import load_plugins
+from alembic import command
+from alembic.config import Config
 
 config = load_config()
 
@@ -18,7 +20,8 @@ engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args
 convo = DocumentBasedConversation()
 
 def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+    migrations_config = Config("alembic.ini")
+    command.upgrade(migrations_config, "head")
 
 def get_session():
     with Session(engine) as session:
