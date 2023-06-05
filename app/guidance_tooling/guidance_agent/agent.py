@@ -67,6 +67,9 @@ class CustomAgentGuidance:
             tool_name = chosen_action_result.result_vars["tool_name"]
             color_print(f"Chosen action: {tool_name}", Fore.GREEN)
 
+            if tool_name == "Reply":
+                break
+
             # Provide action input
             action_input_result = self.andromeda.run_guidance_prompt(
                 ChainOfThoughts.action_input,
@@ -78,8 +81,7 @@ class CustomAgentGuidance:
             action_input = action_input_result.result_vars["actInput"]
             color_print(f"Action Input: {action_input}", Fore.YELLOW)
 
-            if tool_name == "Reply":
-                break
+
 
             # Execute tool
             observation = self.do_tool(tool_name, action_input)
