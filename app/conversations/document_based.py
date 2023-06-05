@@ -2,6 +2,7 @@ from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from andromeda_chain import AndromedaChain
 from guidance_tooling.guidance_agent.agent import CustomAgentGuidance
 
 from settings import logger, load_config
@@ -23,7 +24,8 @@ class DocumentBasedConversation:
             "Search Documents": self.search_documents,
             "Search Conversations": self.search_conversations,
         }
-        self.custom_agent = CustomAgentGuidance(tools)
+        self.andromeda = AndromedaChain()
+        self.custom_agent = CustomAgentGuidance(self.andromeda, tools)
 
 
     def load_document(self, document_path, conversation_id=None):

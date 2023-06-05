@@ -1,9 +1,6 @@
 from andromeda_chain.prompt import AndromedaPrompt
 
-
-PROMPT_START_TEMPLATE = AndromedaPrompt(
-    name="cot_start",
-    prompt_template="""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+PROMPT_START_STRING = """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
 Answer the following questions as best you can. You have access to the following tools:
 
@@ -43,19 +40,11 @@ Observation: Anupama Nadella's age is 50.
 Thought: I now know the final answer.
 Final Answer: Anupama Nadella is 50 years old.
 
-### Input:
-{{question}}
+### Input:"""
+ 
 
-### Response:
-Question: {{question}}
-Thought: {{gen 't1' stop='\\n'}}
-{{select 'answer' logprobs='logprobs' options=valid_options}}: """,
-    guidance_kwargs={},
-    input_vars=["question", "valid_options"],
-    output_vars=["t1","answer"],
- )
-
-PROMPT_CHOOSE_ACTION_TEMPLATE = AndromedaPrompt(
+class ChainOfThoughts:
+    choose_action = AndromedaPrompt(
     name="cot_choose_action",
     prompt_template = """{{history}}
 Action: {{select 'tool_name' options=valid_tools}}
@@ -66,7 +55,7 @@ Action: {{select 'tool_name' options=valid_tools}}
 )
 
 
-PROMPT_ACTION_INPUT_TEMPLATE = AndromedaPrompt(
+    action_input = AndromedaPrompt(
     name="cot_action_input",
     prompt_template = """{{history}}
 Action Input: {{gen 'actInput' stop='\\n'}}
@@ -77,8 +66,19 @@ Observation:
     output_vars=["actInput"],
 )
 
+    prompt_start = AndromedaPrompt(
+    name="cot_prompt_start",
+    prompt_template = """{{prompt_start}}{{question}}
+###RESPONSE:
+Thought: {{gen 'thought' stop='\\n'}}
+{{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
+    guidance_kwargs={},
+    input_vars=["prompt_start", "question"],
+    output_vars=["thought", "answer"],
+)
 
-PROMPT_THOUGHT_TEMPLATE = AndromedaPrompt(
+
+    thought_gen = AndromedaPrompt(
     name="cot_thought_gen",
     prompt_template = """{{history}}
 Observation: {{observation}}
@@ -90,7 +90,7 @@ Thought: {{gen 'thought' stop='\\n'}}
 )
 
 
-PROMPT_FINAL_TEMPLATE = AndromedaPrompt(
+    final_prompt = AndromedaPrompt(
     name="cot_final",
     prompt_template = """{{history}}{{select 'tool_name' options=valid_tools}}
 Action Input: {{gen 'actInput' stop='\\n'}}

@@ -15,7 +15,7 @@ services:
     # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
     stop_signal: SIGINT
     environment:
-      MODEL_PATH: /models/codegen-350M-mono
+      MODEL_PATH: /models/wizardLM-7B-HF
     deploy:
       resources:
         limits:

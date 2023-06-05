@@ -13,6 +13,3 @@ colorama
 guidance
 transformers
 sentence_transformers
-safetensors
-accelerate
-bitsandbytes

@@ -3,7 +3,8 @@ from typing import Callable, Dict
 
 from colorama import Fore
 from colorama import Style
-from prompts import guicance_cot
+from prompts.guicance_cot import ChainOfThoughts, PROMPT_START_STRING
+from prompts import guidance_check_question
 from andromeda_chain import AndromedaChain
 
 
@@ -29,43 +30,31 @@ class CustomAgentGuidance:
         self.andromeda = andromeda
         self.tools = tools
         self.num_iter = num_iter
-        self.pass_through_tool = "Reply"
-        self.valid_tools = list(tools.keys()) + [self.pass_through_tool]
+        self.valid_tools = list(tools.keys())
         self.valid_answers = ["Action", "Final Answer"]
 
     def do_tool(self, tool_name, act_input):
         color_print(f"Using tool: {tool_name}", Fore.GREEN)
-    
-        if tool_name == self.pass_through_tool:
-            result = act_input
-        else:
-            result = self.tools[tool_name](act_input)
-    
+        result = self.tools[tool_name](act_input)
         color_print(f"Tool result: {result}", Fore.BLUE)
         return result
 
     def __call__(self, query):
-        prompt_start = guicance_cot.PROMPT_START_TEMPLATE
         print(self.valid_answers)
         result_start = self.andromeda.run_guidance_prompt(
-            prompt_start,
+            ChainOfThoughts.prompt_start,
             input_vars={
+                "prompt_start": PROMPT_START_STRING,
                 "question": query,
-                "valid_options": self.valid_answers
             },
         )
-        history = result_start.pop("__main__")
-        color_print(f"Result start: {result_start}", Fore.YELLOW)
-        result_mid = result_start
-        # Copying langchain
-
+        history = result_start.expanded_generation
+        color_print(f"Result start: {result_start.result_vars}", Fore.YELLOW)
         for _ in range(self.num_iter - 1):
-            if result_mid["answer"] == "Final Answer":
-                break
 
             # Choose action
-            choose_action_prompt = guicance_cot.PROMPT_CHOOSE_ACTION_TEMPLATE
-            chosen_action = self.andromeda.run_guidance_prompt(choose_action_prompt,
+            chosen_action = self.andromeda.run_guidance_prompt(
+                ChainOfThoughts.choose_action,
                 input_vars={
                     "history": history,
                     "valid_tools": self.valid_tools,
@@ -75,9 +64,8 @@ class CustomAgentGuidance:
 
 
             # Provide action input
-            prompt_action_input = guicance_cot.PROMPT_ACTION_INPUT_TEMPLATE
             action_input = self.andromeda.run_guidance_prompt(
-                prompt_action_input,
+                ChainOfThoughts.action_input,
                 input_vars={
                     "history": history
                 }
@@ -85,29 +73,30 @@ class CustomAgentGuidance:
             color_print(f"Action Input: {action_input.result_vars}", Fore.YELLOW)
             
             # Execute tool
-            observation = self.do_tool(chosen_action["tool_name"], action_input["actInput"])
+            observation = self.do_tool(chosen_action.result_vars["tool_name"], action_input.result_vars["actInput"])
             color_print(f"Observation: {observation}", Fore.LIGHTMAGENTA_EX)
 
-            # TODO: bring old langchain prompt to guidance (guidance_check_question.py)
-            if "Observation: no" in observation:
-                color_print(f"I don't know", Fore.RED)
-                break
+            if "Search" in chosen_action.result_vars["tool_name"]:
+                check_question = self.andromeda.run_guidance_prompt(
+                    guidance_check_question.PROMPT_CHECK_QUESTION,
+                    input_vars={
+                        "context": observation,
+                        "question": query,
+                    }
+                )
+                if check_question.result_vars["answer"] == "no":
+                    color_print(f"I don't know", Fore.RED)
+                    return "I cannot answer this question given the context."
 
-            if chosen_action["tool_name"] == "Reply":
+            if chosen_action.result_vars["tool_name"] == "Final Answer":
                 return observation
 
-        if "Observation: no" in str(result_mid):
-            result_final = "I cannot answer this question given the context"
-
-        elif result_mid["answer"] != "Final Answer":
-            color_print("Broken flow", Fore.RED)
-            return "I'm broke, sorry"
-        else:
-            history = history
-            prompt_mid = history + "{{gen 'fn' stop='\\n'}}"
-            result_final = self.andromeda.run_guidance_prompt(
-                prompt_mid,
-                {}
-            )
+        
+        history = history
+        prompt_mid = history + "{{gen 'fn' stop='\\n'}}"
+        result_final = self.andromeda.run_guidance_prompt(
+            prompt_mid,
+            {}
+        )
 
         return result_final
