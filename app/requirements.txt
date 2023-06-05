@@ -1,3 +1,4 @@
+andromeda-chain==0.2.0
 langchain
 python-dotenv
 chromadb

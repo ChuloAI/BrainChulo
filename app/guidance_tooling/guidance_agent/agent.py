@@ -3,8 +3,8 @@ from typing import Callable, Dict
 
 from colorama import Fore
 from colorama import Style
-from guidance_tooling.guidance_templates import guicance_cot
-from guidance_tooling.guidance_client.guidance_client import run_guidance_prompt
+from prompts import guicance_cot
+from andromeda_chain import AndromedaChain
 
 
 def color_print(msg, color):
@@ -25,7 +25,8 @@ class AgentHistory:
 
 
 class CustomAgentGuidance:
-    def __init__(self, tools: Dict[str, Callable[[str], str]], num_iter=3):
+    def __init__(self, andromeda: AndromedaChain, tools: Dict[str, Callable[[str], str]], num_iter=3):
+        self.andromeda = andromeda
         self.tools = tools
         self.num_iter = num_iter
         self.pass_through_tool = "Reply"
@@ -46,7 +47,7 @@ class CustomAgentGuidance:
     def __call__(self, query):
         prompt_start = guicance_cot.PROMPT_START_TEMPLATE
         print(self.valid_answers)
-        result_start = run_guidance_prompt(
+        result_start = self.andromeda.run_guidance_prompt(
             prompt_start,
             input_vars={
                 "question": query,
@@ -64,26 +65,24 @@ class CustomAgentGuidance:
 
             # Choose action
             choose_action_prompt = guicance_cot.PROMPT_CHOOSE_ACTION_TEMPLATE
-            chosen_action = run_guidance_prompt(choose_action_prompt,
+            chosen_action = self.andromeda.run_guidance_prompt(choose_action_prompt,
                 input_vars={
                     "history": history,
                     "valid_tools": self.valid_tools,
                 },
             )
-            history = chosen_action.pop("__main__")
-            color_print(f"Chosen action: {chosen_action}", Fore.GREEN)
+            color_print(f"Chosen action: {chosen_action.result_vars}", Fore.GREEN)
 
 
             # Provide action input
             prompt_action_input = guicance_cot.PROMPT_ACTION_INPUT_TEMPLATE
-            action_input = run_guidance_prompt(
+            action_input = self.andromeda.run_guidance_prompt(
                 prompt_action_input,
                 input_vars={
                     "history": history
                 }
             )
-            history = action_input.pop("__main__")
-            color_print(f"Action Input: {action_input}", Fore.YELLOW)
+            color_print(f"Action Input: {action_input.result_vars}", Fore.YELLOW)
             
             # Execute tool
             observation = self.do_tool(chosen_action["tool_name"], action_input["actInput"])
@@ -106,7 +105,7 @@ class CustomAgentGuidance:
         else:
             history = history
             prompt_mid = history + "{{gen 'fn' stop='\\n'}}"
-            result_final = run_guidance_prompt(
+            result_final = self.andromeda.run_guidance_prompt(
                 prompt_mid,
                 {}
             )
