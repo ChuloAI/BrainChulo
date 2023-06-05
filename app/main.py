@@ -1,12 +1,11 @@
 import os
 import shutil
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session, desc
-from models.all import Conversation, Message, ConversationWithMessages, load_plugin_tables
+from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
 from conversations.document_based import DocumentBasedConversation
-from datetime import datetime
 from settings import load_config, logger
 from plugins import load_plugins
 
@@ -26,8 +25,7 @@ def get_session():
         yield session
 
 app = FastAPI()
-# load plugin tables
-load_plugin_tables()
+
 
 # Load the plugins
 load_plugins(app=app)
