@@ -31,14 +31,8 @@ def load_plugin_tables():
         if not os.path.exists(os.path.join(plugin_dir, 'database.py')):
             continue  # Skip plugins without a database.py file
 
-        plugin_module = import_module(f'plugins.{plugin_name}.database')
-        # plugin_metadata = plugin_module.metadata
+        import_module(f'plugins.{plugin_name}.database')
 
-        # # # Copy the tables from the main metadata to the plugin metadata object
-        # # for table_name in plugin_metadata.tables:
-        # #     table = plugin_metadata.tables[table_name]
-        # #     table.schema = None  # Reset the schema to avoid conflicts
-        # #     table.metadata = metadata
 
 
 class ConversationBase(SQLModel):
@@ -68,3 +62,5 @@ class MessageRead(MessageBase):
 
 class ConversationWithMessages(ConversationRead):
     messages: List[MessageRead] = []
+
+load_plugin_tables()
