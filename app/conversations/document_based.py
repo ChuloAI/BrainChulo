@@ -1,20 +1,13 @@
 from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
-from langchain.memory import VectorStoreRetrieverMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import ConversationChain
-from langchain.agents import Tool, initialize_agent, AgentType, load_tools
-from langchain.schema import OutputParserException
-from llms.oobabooga_llm import OobaboogaLLM
-from prompt_templates.document_based_conversation import (
-    Examples,
-    ConversationWithDocumentTemplate,
-)
+
+from andromeda_chain import AndromedaChain
+from guidance_tooling.guidance_agent.agent import CustomAgentGuidance
+
 from settings import logger, load_config
 
 config = load_config()
-
-USE_AGENT = config.use_agent
 
 
 class DocumentBasedConversation:
@@ -23,54 +16,17 @@ class DocumentBasedConversation:
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
-
-        self.llm = OobaboogaLLM()
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
+        tools = {
+            "Search Documents": self.search_documents,
+            "Search Conversations": self.search_conversations,
+        }
+        self.andromeda = AndromedaChain()
+        self.custom_agent = CustomAgentGuidance(self.andromeda, tools)
 
-        convs_retriever = self.vector_store_convs.get_store().as_retriever(
-            search_kwargs=dict(top_k_docs_for_context=10)
-        )
-
-        convs_memory = VectorStoreRetrieverMemory(retriever=convs_retriever)
-
-        self.prompt = ConversationWithDocumentTemplate(
-            input_variables=["input", "history"],
-            document_store=self.vector_store_docs,
-        )
-
-        self.conversation_chain = ConversationChain(
-            llm=self.llm, prompt=self.prompt, memory=convs_memory, verbose=True
-        )
-
-        if USE_AGENT:
-            tools = load_tools([])
-
-            tools.append(
-                Tool(
-                    name="FriendlyDiscussion",
-                    func=self.conversation_chain.run,
-                    description="useful when you need to discuss with a human based on relevant context from previous conversation",
-                )
-            )
-
-            tools.append(
-                Tool(
-                    name="SearchLongTermMemory",
-                    func=self.search,
-                    description="useful when you need to search for information in long-term memory",
-                )
-            )
-
-            self.conversation_agent = initialize_agent(
-                tools,
-                self.llm,
-                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                memory=convs_memory,
-                verbose=True,
-            )
 
     def load_document(self, document_path, conversation_id=None):
         """
@@ -92,7 +48,25 @@ class DocumentBasedConversation:
 
         self.vector_store_docs.add_documents(documents)
 
-    def search(self, search_input, conversation_id=None):
+    def search_documents(self, search_input, conversation_id=None):
+        """
+        Search for the given input in the vector store and return the top 10 most similar documents with their scores.
+        This function is used as a helper function for the SearchLongTermMemory tool
+
+        Args:
+          search_input (str): The input to search for in the vector store.
+
+        Returns:
+          List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
+        """
+
+        logger.info(f"Searching for: {search_input} in LTM")
+        docs = self.vector_store_docs.similarity_search_with_score(
+            search_input, k=5, filter=filter
+        )
+        return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
+
+    def search_conversations(self, search_input, conversation_id=None):
         """
         Search for the given input in the vector store and return the top 10 most similar documents with their scores.
         This function is used as a helper function for the SearchLongTermMemory tool
@@ -109,10 +83,10 @@ class DocumentBasedConversation:
             filter = {}
 
         logger.info(f"Searching for: {search_input} in LTM")
-        docs = self.vector_store_docs.similarity_search_with_score(
+        docs = self.vector_store_convs.similarity_search_with_score(
             search_input, k=5, filter=filter
         )
-        return docs
+        return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
 
     def predict(self, input):
         """
@@ -127,19 +101,11 @@ class DocumentBasedConversation:
         Raises:
           OutputParserException: If the response from the conversation agent could not be parsed.
         """
-        if USE_AGENT:
-            try:
-                response = self.conversation_agent.run(
-                    input=f"{Examples}\n{input}",
-                )
-            except OutputParserException as e:
-                response = str(e)
-                if not response.startswith("Could not parse LLM output: `"):
-                    raise e
-                response = response.removeprefix(
-                    "Could not parse LLM output: `"
-                ).removesuffix("`")
+        final_answer = self.custom_agent(input)
+        if isinstance(final_answer, dict):
+            final_answer = {'answer': str(final_answer), 'function': str(final_answer['fn'])}
         else:
-            response = self.conversation_chain.predict(input=input)
+            # Handle the case when final_answer is not a dictionary.
+            final_answer = {'answer': str(final_answer)}
 
-        return response
+        return final_answer["answer"]

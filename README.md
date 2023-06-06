@@ -18,40 +18,61 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 - Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
-To use BrainChulo, simply clone the repository to your local machine and install the required dependencies.
-We recommend the Docker installation explained in the next section. Otherwise, you can install the Python dependencies directly:
+**Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the (guidance library)[https://github.com/microsoft/guidance] features.
 
-```bash
-git clone https://github.com/your-username/BrainChulo.git
-cd BrainChulo/app
-pip install -r requirements.txt
+Currently, we only support standard Hugging Face models on GPU. They are loaded with 4-bit NormalFloat quantization (see more)[https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8]
+
+According to the link above, the following models are supported with this 4-bit quantization method:
+
+```json
+[
+    'bigbird_pegasus', 'blip_2', 'bloom', 'bridgetower', 'codegen', 'deit', 'esm', 
+    'gpt2', 'gpt_bigcode', 'gpt_neo', 'gpt_neox', 'gpt_neox_japanese', 'gptj', 'gptsan_japanese', 
+    'lilt', 'llama', 'longformer', 'longt5', 'luke', 'm2m_100', 'mbart', 'mega', 'mt5', 'nllb_moe', 
+    'open_llama', 'opt', 'owlvit', 'plbart', 'roberta', 'roberta_prelayernorm', 'rwkv', 'switch_transformers', 
+    't5', 'vilt', 'vit', 'vit_hybrid', 'whisper', 'xglm', 'xlm_roberta'
+]
 ```
+We plan to reintroduce CPU support back soon, through GGML / llamacpp-bindings - at least for the LLaMA models.
 
-Note that you will need to be running your own Vicuna model in API mode and ensure your `.env` file is setup properly. See [.env.example](.env.example). Please refer to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui) for more information.
+To use BrainChulo, there are three required steps.
 
-Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
+### 1 - Install requirements (docker)
 
-## Usage
-
-### Oobabooga Text Generation WebUI
-
-Make sure to navigate to your installation directory of Oobabooga's Text Generation WebUI, then start the web server using `--api`. In my case, this is the command I run:
-
-```bash
-python server.py --model TheBloke_wizardLM-7B-GPTQ-4bit-128g --wbits 4 --groupsize 128 --verbose --model_type llama --xformers --api
-```
-
-You may be running it via `start_webui.bat`. In this case, you'll need to edit it to include the two parameters mentioned above.
-
-### BrainChulo
-
-#### Requirements
 1. [Docker Engine](https://docs.docker.com/engine/)
 2. [Docker Compose v2](https://docs.docker.com/compose/)
+3. [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
 
 If you want to use docker-compose v1, you might run into an issue with the port binding - though there's an easy workaround here:
 https://github.com/ChuloAI/BrainChulo/issues/39
 
+
+### 2 - Clone your desired model from Hugging Face
+Choose a model that implements the Hugging Face API, if you're downloading them from TheBloke, typically they have the `-HF` suffix.
+
+```bash
+mkdir models
+cd models
+git clone https://huggingface.co/TheBloke/wizardLM-7B-HF
+cd ..
+```
+
+Make sure the environment variable `MODEL_PATH` in `docker-compose.yaml` matches the path to your downloaded model:
+```
+    environment:
+      MODEL_PATH: /models/wizardLM-7B-HF
+```
+
+Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
+
+
+### 3 - Download, build and start Docker containers through the docker-compose
+```
+docker-compose up --build
+```
+
+## Usage
+### BrainChulo
 #### Starting the service
 The easiest way to start BrainChulo is using Docker with `docker-compose`:
 

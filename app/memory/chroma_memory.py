@@ -11,25 +11,13 @@ from settings import load_config, logger
 
 config = load_config()
 
-instruct_embeddings = ["hkunlp/instructor-xl", "hkunlp/instructor-large"]
-sentence_transformers_embeddings = ["all-MiniLM-L6-v2", "sentence-t5-xxl"]
-
-
 class Chroma(BaseMemory):
     vector_store: Optional[Type[vectorstores.Chroma]]
     collection_name: Optional[str]
 
-    embeddings_map = {
-        **{name: HuggingFaceInstructEmbeddings for name in instruct_embeddings},
-        **{
-            name: HuggingFaceEmbeddings
-            for name in sentence_transformers_embeddings
-        },
-    }
-
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        EmbeddingsModel = self.embeddings_map.get(config.embeddings_model)
+        EmbeddingsModel = config.embeddings_map.get(config.embeddings_model)
         if EmbeddingsModel is None:
             raise ValueError(
                 f"Invalid embeddings model: {config.embeddings_model}"

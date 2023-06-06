@@ -1,7 +1,7 @@
+andromeda-chain==0.2.0
 langchain
 python-dotenv
 chromadb
-sentence_transformers
 bs4
 fastapi[all]
 uvicorn
@@ -9,4 +9,6 @@ pydantic
 pyparsing
 sqlmodel
 bs4
+colorama
+sentence_transformers
 alembic
