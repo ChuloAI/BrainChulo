@@ -1,7 +1,7 @@
 version: '3'
 services:
   guidance:
-    image: paolorechia/guidance_server:gpu-0.1
+    image: paolorechia/guidance_server:gpu-0.2
     ports:
       - "9000:9000"
     volumes:
@@ -15,7 +15,11 @@ services:
     # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
     stop_signal: SIGINT
     environment:
-      MODEL_PATH: /models/wizardLM-7B-HF
+      MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
+      USE_GPTQ: true
+      GPTQ_WBITS: 4
+      GROUP_SIZE: 128
+      GPTQ_DEVICE: cuda
     deploy:
       resources:
         limits:
