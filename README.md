@@ -18,9 +18,9 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 - Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
-**Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the (guidance library)[https://github.com/microsoft/guidance] features.
+**Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the [guidance library](https://github.com/microsoft/guidance) features.
 
-Currently, we only support standard Hugging Face models on GPU. They are loaded with 4-bit NormalFloat quantization (see more)[https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8]
+Currently, we only support standard Hugging Face models on GPU. They are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
 
 According to the link above, the following models are supported with this 4-bit quantization method:
 
