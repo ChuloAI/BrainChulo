@@ -3,7 +3,7 @@ from colorama import Fore
 from typing import List, Union, Dict
 from andromeda_chain import AndromedaChain, AndromedaPrompt, AndromedaResponse
 from agents.base import color_print
-
+from prompts.guidance_choice import CHOICE_PROMPT
 
 
 class Node:
@@ -14,6 +14,37 @@ class Node:
     def run(self, variables) -> Union[AndromedaResponse, Dict[str, str]]:
         raise NotImplementedError()
 
+
+class HiddenNode(Node):
+    """Classes of nodes that can be executed in the background,
+    without expanding the context history for the agent.
+    """
+
+class ChoiceNode(HiddenNode):
+    def __init__(self, name, choices: List[str]) -> None:
+        super().__init__(name)
+        self.choices = choices
+
+    def choose(self, chain: AndromedaChain, variables) -> AndromedaResponse:        
+        history = ""
+        if "history" in variables:
+            history = variables["history"]
+
+        result_vars = chain.run_guidance_prompt(
+            CHOICE_PROMPT,
+            input_vars={
+                "history": history,
+                "valid_choices": self.choices
+            }
+        )
+        return result_vars["choice"]
+
+    def set_next(self, next_):
+        self._next = next_
+
+
+    def next(self):
+        return self._next
 
 
 class ToolNode(Node):
@@ -47,7 +78,7 @@ class PromptNode(Node):
 
         return chain.run_guidance_prompt(
             self.prompt,
-            **variables
+            input_vars=input_dict
         )
 
     def set_next(self, next_):

@@ -50,7 +50,7 @@ class ChainOfThoughts:
 Action: {{select 'tool_name' options=valid_tools}}
 """,
     guidance_kwargs={},
-    input_vars=["valid_tools"],
+    input_vars=["history", "valid_tools"],
     output_vars=["tool_name"],
 )
 
@@ -73,7 +73,7 @@ Observation:
 Thought: {{gen 'thought' stop='\\n'}}
 {{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
     guidance_kwargs={},
-    input_vars=["prompt_start"],
+    input_vars=["prompt_start", "question", "valid_answers"],
     output_vars=["thought", "answer"],
 )
 
@@ -85,7 +85,7 @@ Observation: {{observation}}
 Thought: {{gen 'thought' stop='\\n'}}
 {{select 'answer' logprobs='logprobs' options=valid_answers}}: """,
     guidance_kwargs={},
-    input_vars=["history", "observation"],
+    input_vars=["history", "observation", "valid_answers"],
     output_vars=["thought", "answer"],
 )
 
