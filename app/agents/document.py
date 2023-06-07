@@ -11,17 +11,11 @@ from agents.base import color_print, BaseAgent
 
 class DocumentQuestionAnswerAgent(BaseAgent):
     def __init__(self, andromeda: AndromedaChain, tools: Dict[str, Callable[[str], str]], num_iter=3):
-        self.andromeda = andromeda
-        self.tools = tools
-        self.num_iter = num_iter
+        super().__init__(andromeda, tools)
         self.valid_tools = list(tools.keys()) + ["Reply"]
         self.valid_answers = ["Action", "Final Answer"]
+        self.num_iter = num_iter
 
-    def do_tool(self, tool_name, act_input):
-        color_print(f"Using tool: {tool_name}", Fore.GREEN)
-        result = self.tools[tool_name](act_input)
-        color_print(f"Tool result: {result}", Fore.BLUE)
-        return result
 
     def run(self, query):
         print(self.valid_answers)

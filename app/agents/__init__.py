@@ -1,1 +1,1 @@
-from document import DocumentQuestionAnswerAgent
+from agents.document import DocumentQuestionAnswerAgent
