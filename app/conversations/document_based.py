@@ -3,7 +3,7 @@ from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from andromeda_chain import AndromedaChain
-from guidance_tooling.guidance_agent.agent import CustomAgentGuidance
+from agents import DocumentQuestionAnswerAgent
 
 from settings import logger, load_config
 
@@ -25,7 +25,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain()
-        self.custom_agent = CustomAgentGuidance(self.andromeda, tools)
+        self.document_qa_agent = DocumentQuestionAnswerAgent(self.andromeda, tools)
 
 
     def load_document(self, document_path, conversation_id=None):
@@ -101,7 +101,7 @@ class DocumentBasedConversation:
         Raises:
           OutputParserException: If the response from the conversation agent could not be parsed.
         """
-        final_answer = self.custom_agent(input)
+        final_answer = self.document_qa_agent.run(input)
         if isinstance(final_answer, dict):
             final_answer = {'answer': str(final_answer), 'function': str(final_answer['fn'])}
         else:
