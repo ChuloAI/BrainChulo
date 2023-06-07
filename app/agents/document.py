@@ -6,24 +6,10 @@ from colorama import Style
 from prompts.guicance_cot import ChainOfThoughts, PROMPT_START_STRING
 from prompts import guidance_check_question
 from andromeda_chain import AndromedaChain
+from agents.base import color_print, BaseAgent
 
 
-def color_print(msg, color):
-    print(color + Style.BRIGHT + msg  + Style.RESET_ALL)
-
-
-class AgentHistory:
-    def __init__(self) -> None:
-        self.raw_history = []
-
-    def append(self, item):
-        self.raw_history.append(item)
-
-    def __str__(self) -> str:
-        return str(self.raw_history)
-
-
-class CustomAgentGuidance:
+class DocumentQuestionAnswerAgent(BaseAgent):
     def __init__(self, andromeda: AndromedaChain, tools: Dict[str, Callable[[str], str]], num_iter=3):
         self.andromeda = andromeda
         self.tools = tools
@@ -37,7 +23,7 @@ class CustomAgentGuidance:
         color_print(f"Tool result: {result}", Fore.BLUE)
         return result
 
-    def __call__(self, query):
+    def run(self, query):
         print(self.valid_answers)
         result_start = self.andromeda.run_guidance_prompt(
             ChainOfThoughts.prompt_start,
