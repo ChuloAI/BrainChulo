@@ -21,11 +21,17 @@ class HiddenNode(Node):
     """
 
 class ChoiceNode(HiddenNode):
-    def __init__(self, name, choices: List[str]) -> None:
+    def __init__(self, name, choices: List[str], max_decisions, force_exit_on) -> None:
         super().__init__(name)
         self.choices = choices
+        self.max_decisions = max_decisions
+        self.force_exit_on=force_exit_on
+        self.decisions_made = 0
 
     def run(self, chain: AndromedaChain, variables) -> AndromedaResponse:        
+        if self.decisions_made >= self.max_decisions:
+            return self.force_exit_on
+
         history = ""
         if "history" in variables:
             history = variables["history"]
@@ -37,6 +43,7 @@ class ChoiceNode(HiddenNode):
                 "valid_choices": self.choices
             }
         )
+        self.decisions_made += 1
         return result.result_vars["choice"]
 
     def set_next(self, next_):

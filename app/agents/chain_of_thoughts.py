@@ -17,7 +17,7 @@ class ChainOfThoughtsAgent(BaseFlowAgent):
         choose_action = PromptNode("choose_action", ChainOfThoughts.choose_action)
         perform_action = PromptNode("perform_action", ChainOfThoughts.action_input)
         execute_tool_node = ToolNode("execute_tool", execute_tool)
-        decide = ChoiceNode("decide", ["thought", "final_prompt"])
+        decide = ChoiceNode("decide", ["thought", "final_prompt"], max_decisions=3, force_exit_on="final_prompt")
         final = PromptNode("final_prompt", ChainOfThoughts.final_prompt)
 
         start.set_next(choose_action)
@@ -37,7 +37,7 @@ class ChainOfThoughtsAgent(BaseFlowAgent):
 
 
     def run(self, query: str) -> str:
-        super().run(query, variables={
+        return super().run(query, variables={
             "prompt_start": PROMPT_START_STRING,
             "question": query,
             "valid_tools": self.valid_tools,
