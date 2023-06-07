@@ -109,6 +109,12 @@ class Flow:
             elif isinstance(node, ToolNode):
                 tool_result = node.run(variables)
                 variables = {**variables, **tool_result}
+            elif isinstance(node, ChoiceNode):
+                choice = node.run(variables)
+                for n in self.nodes:
+                    if n.name == choice:
+                        node = n
+                        break 
             else:
                 raise ValueError(f"Invalid node class: {type(node)}")
 

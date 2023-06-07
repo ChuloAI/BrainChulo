@@ -1,7 +1,7 @@
 from typing import Dict, Callable
 from andromeda_chain import AndromedaChain
 from agents.flow_based import BaseFlowAgent
-from app.flow.flow import Flow, PromptNode, ToolNode
+from app.flow.flow import Flow, PromptNode, ToolNode, ChoiceNode
 from prompts.guicance_cot import ChainOfThoughts
 
 
@@ -21,10 +21,11 @@ class ChainOfThoughtsAgent(BaseFlowAgent):
         node3 = PromptNode("choose_action", ChainOfThoughts.choose_action)
         node4 = PromptNode("perform_action", ChainOfThoughts.action_input)
         node5 = ToolNode("execute_tool", execute_tool)
-        node6 = PromptNode("final_prompt", ChainOfThoughts.final_prompt)
+        node6 = ChoiceNode("decide", ["thought", "final_prompt"])
+        node7 = PromptNode("final_prompt", ChainOfThoughts.final_prompt)
 
         flow = Flow(
-            [node1, node2, node3, node4, node5, node6]
+            [node1, node2, node3, node4, node5, node6, node7]
         )
 
         self.flow = flow
