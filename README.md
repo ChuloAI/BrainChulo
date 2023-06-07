@@ -23,7 +23,6 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 Currently, we only support models on GPU (GPTQ or Hugging Face).
 
 Hugging Face models are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
-GPTQ models are also supported by
 
 According to the link above, the following models are supported with this 4-bit quantization method:
 
