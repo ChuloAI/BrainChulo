@@ -18,5 +18,7 @@ class BaseFlowAgent(BaseAgent):
         super().__init__(andromeda, tools)
         self.flow = flow
 
-    def run(self, query: str) -> str:
-        return self.flow.execute(self.chain, query)
+    def run(self, query: str, variables=None) -> str:
+        if not variables:
+            variables = {}
+        return self.flow.execute(self.andromeda, query, variables)

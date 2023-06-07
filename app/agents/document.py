@@ -2,7 +2,6 @@
 from typing import Callable, Dict
 
 from colorama import Fore
-from colorama import Style
 from prompts.guicance_cot import ChainOfThoughts, PROMPT_START_STRING
 from prompts import guidance_check_question
 from andromeda_chain import AndromedaChain
