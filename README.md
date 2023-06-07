@@ -20,17 +20,7 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 ## Installation
 **Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the [guidance library](https://github.com/microsoft/guidance) features.
 
-Currently, we only support standard models on GPU.
-
-To use GPTQ, setup your docker-compose file appropriately:
-```yaml
-    environment:
-      MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
-      USE_GPTQ: true
-      GPTQ_WBITS: 4
-      GROUP_SIZE: 128
-      GPTQ_DEVICE: cuda
-```
+Currently, we only support models on GPU (GPTQ or Hugging Face).
 
 Hugging Face models are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
 GPTQ models are also supported by
@@ -61,7 +51,7 @@ https://github.com/ChuloAI/BrainChulo/issues/39
 
 
 ### 2 - Clone your desired model from Hugging Face
-Choose a model that implements the Hugging Face API, if you're downloading them from TheBloke, typically they have the `-HF` suffix.
+Choose a model that either implements the Hugging Face API, if you're downloading them from TheBloke, typically they have the `-HF` suffix, or a GPTQ one (`-GPTQ` suffix).
 
 ```bash
 mkdir models
@@ -74,6 +64,16 @@ Make sure the environment variable `MODEL_PATH` in `docker-compose.yaml` matches
 ```
     environment:
       MODEL_PATH: /models/wizardLM-7B-HF
+```
+
+To use GPTQ, setup your docker-compose file appropriately:
+```yaml
+    environment:
+      MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
+      USE_GPTQ: true
+      GPTQ_WBITS: 4
+      GROUP_SIZE: 128
+      GPTQ_DEVICE: cuda
 ```
 
 Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
