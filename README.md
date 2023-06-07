@@ -20,7 +20,20 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 ## Installation
 **Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the [guidance library](https://github.com/microsoft/guidance) features.
 
-Currently, we only support standard Hugging Face models on GPU. They are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
+Currently, we only support standard models on GPU.
+
+To use GPTQ, setup your docker-compose file appropriately:
+```yaml
+    environment:
+      MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
+      USE_GPTQ: true
+      GPTQ_WBITS: 4
+      GROUP_SIZE: 128
+      GPTQ_DEVICE: cuda
+```
+
+Hugging Face models are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
+GPTQ models are also supported by
 
 According to the link above, the following models are supported with this 4-bit quantization method:
 
