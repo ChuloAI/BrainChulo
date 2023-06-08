@@ -63,6 +63,7 @@ class Settings:
         # Database URL
         self.database_url = os.getenv("DATABASE_URL", "sqlite:///data/brainchulo.db")
 
+        self.andromeda_url = os.getenv("http://0.0.0.0:9000", "ANDROMEDA_URL") 
 
 def load_config():
     return Settings()
