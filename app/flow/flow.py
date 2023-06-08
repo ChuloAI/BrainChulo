@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from colorama import Fore
-from typing import List, Union, Dict
+from typing import Tuple, List, Union, Dict
 from andromeda_chain import AndromedaChain, AndromedaPrompt, AndromedaResponse
 from agents.base import color_print
 from prompts.guidance_choice import CHOICE_PROMPT
@@ -28,7 +28,7 @@ class ChoiceNode(HiddenNode):
         self.force_exit_on=force_exit_on
         self.decisions_made = 0
 
-    def run(self, chain: AndromedaChain, variables) -> AndromedaResponse:        
+    def run(self, chain: AndromedaChain, variables) -> str:        
         if self.decisions_made >= self.max_decisions:
             return self.force_exit_on
 
@@ -52,7 +52,7 @@ class ChoiceNode(HiddenNode):
 
     def next(self):
         return self._next
-
+    
 
 class ToolNode(Node):
     def __init__(self, name, tool_callback, variable_name = "observation") -> None:
@@ -77,6 +77,7 @@ class PromptNode(Node):
         self.prompt = prompt
         self._next = None
 
+
     def run(self, chain: AndromedaChain, variables) -> AndromedaResponse:        
         input_dict = {}
         for var_ in self.prompt.input_vars:
@@ -96,6 +97,16 @@ class PromptNode(Node):
         return self._next
 
 
+class StartNode(PromptNode):
+    def __init__(self, name, prompt: AndromedaPrompt, choices: List[str]) -> None:
+        super().__init__(name, prompt)
+        self.choices = choices
+
+    def run(self, chain: AndromedaChain, variables) -> Tuple[str, AndromedaResponse]:
+        response = super().run(chain, variables)
+        choice = response.result_vars.pop("choice")
+        return self.choices[choice], response
+
 class Flow:
     def __init__(self, nodes: List[PromptNode]) -> None:
         assert len(nodes) > 0
@@ -103,44 +114,66 @@ class Flow:
     
     def execute(self, chain, query: str, variables: Dict[str, str], return_key="final_answer"):
         node = self.nodes[0]
-        variables = {**variables, "query": query}
+        variables["query"] = query
+        history = ""
         while node:
             color_print(f"---> On node {node.name}", Fore.RED)
-            if isinstance(node, PromptNode): 
-                debug_vars = deepcopy(variables)
-                if "history" in debug_vars:
-                    debug_vars.pop("history")
-                if "prompt_start" in debug_vars:
-                    debug_vars.pop("prompt_start")
+            debug_vars = deepcopy(variables)
+            if "history" in debug_vars:
+                debug_vars.pop("history")
+            if "prompt_start" in debug_vars:
+                debug_vars.pop("prompt_start")
 
+            if isinstance(node, StartNode):
+                color_print(f"Executing start node {node.name} with variables: {debug_vars}", Fore.YELLOW)
+                choice, result = node.run(chain, variables)
+                color_print(f"Node result: {result.result_vars}", Fore.GREEN)
+                history = result.expanded_generation
+                variables.update(result.result_vars)
+                variables["history"] = history
+                node = _find_node_by_name(choice, self.nodes, node)
+                color_print(f"Choice decided to jump to node {node.name}", Fore.RED)
+
+            elif isinstance(node, PromptNode):
                 color_print(f"Executing node {node.name} with variables: {debug_vars}", Fore.YELLOW)
                 result = node.run(chain, variables)
                 color_print(f"Node result: {result.result_vars}", Fore.GREEN)
                 history = result.expanded_generation
                 # Merge contexts
-                variables = {**variables, **result.result_vars, "history": history}
+                variables.update(result.result_vars)
+                variables["history"] = history
                 node = node.next()
+
             elif isinstance(node, ToolNode):
                 color_print(f"Executing tool node {node.name} with variables: {debug_vars}", Fore.YELLOW)
                 tool_result = node.run(variables)
-                variables = {**variables, **tool_result}
+                variables.update(tool_result)
                 node = node.next()
+
             elif isinstance(node, ChoiceNode):
                 color_print(f"Executing choice node {node.name} with variables: {debug_vars}", Fore.YELLOW)
                 choice = node.run(chain, variables)
-                new_node = None
-                for n in self.nodes:
-                    if n.name == choice:
-                        new_node = n
-                        break
-                if not new_node:
-                    raise ValueError(f"Choice {choice} led to limbo! Please choose the name of another node in the flow.")
-                if new_node == node: 
-                    raise ValueError(f"Choice {choice} led to an infinite loop on itself! Make sure choice node hop to itself.")
-                node = new_node
+                node = _find_node_by_name(choice, self.nodes, node)
+                color_print(f"Choice decided to jump to node {node.name}", Fore.RED)
             else:
                 raise ValueError(f"Invalid node class: {type(node)}")
+
+            color_print(f"History: {history}", Fore.CYAN)
 
 
         color_print(f"Flow ended, returning variable '{return_key}'.", Fore.GREEN)
         return variables[return_key] 
+
+
+
+def _find_node_by_name(choice, nodes, current_node):
+    new_node = None
+    for n in nodes:
+        if n.name == choice:
+            new_node = n
+            break
+    if not new_node:
+        raise ValueError(f"Choice {choice} led to limbo! Please choose the name of another node in the flow.")
+    if new_node == current_node: 
+        raise ValueError(f"Choice {choice} led to an infinite loop on itself! Make sure choice node hop to itself.")
+    return new_node
