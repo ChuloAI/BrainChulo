@@ -24,7 +24,7 @@ class DocumentBasedConversation:
             "Search Documents": self.search_documents,
             "Search Conversations": self.search_conversations,
         }
-        self.andromeda = AndromedaChain()
+        self.andromeda = AndromedaChain(config.andromeda_url)
         self.document_qa_agent = ChainOfThoughtsAgent(self.andromeda, tools)
         # self.document_qa_agent = DocumentQuestionAnswerAgent(self.andromeda, tools)
 
