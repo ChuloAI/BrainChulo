@@ -67,22 +67,6 @@ git clone https://huggingface.co/TheBloke/wizardLM-7B-HF
 cd ..
 ```
 
-Make sure the environment variable `MODEL_PATH` in `docker-compose.yaml` matches the path to your downloaded model:
-```
-    environment:
-      MODEL_PATH: /models/wizardLM-7B-HF
-```
-
-To use GPTQ, setup your docker-compose file appropriately:
-```yaml
-    environment:
-      MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
-      USE_GPTQ: true
-      GPTQ_WBITS: 4
-      GROUP_SIZE: 128
-      GPTQ_DEVICE: cuda
-```
-
 ### 3 - Update the environment variables
 Copy the `.env.example` file. In Linux, that is done:
 
