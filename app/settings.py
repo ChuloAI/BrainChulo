@@ -43,18 +43,18 @@ class Settings:
         self.model_path = os.getenv("MODEL_PATH", f"{self.model_root_path}/wizardLM-7B-HF")
 
         # Where all data is stored
-        self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data/")
+        self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data")
 
         # Where short-term memory is stored
-        self.memories_path = os.getenv("MEMORIES_PATH", f"{self.backend_root_path}/memories/")
+        self.memories_path = os.getenv("MEMORIES_PATH", f"{self.data_path}/memories")
 
         # Where uploads are saved
-        self.upload_path = os.getenv("UPLOAD_PATH", f"{self.backend_root_path}/uploads/")
+        self.upload_path = os.getenv("UPLOAD_PATH", f"{self.data_path}/uploads")
 
         # Where conversation history is stored
         self.conversation_history_path = os.getenv(
             "CONVERSATION_HISTORY_PATH",
-            f"{self.backend_root_path}/conversation_history/",
+            f"{self.data_path}/conversation_history/",
         )
 
         # Document store name
@@ -67,7 +67,8 @@ class Settings:
         # Database URL
         self.database_url = os.getenv("DATABASE_URL", "sqlite:///data/brainchulo.db")
 
-        self.andromeda_url = os.getenv("ANDROMEDA_URL", "http://0.0.0.0:9000") 
+        self.andromeda_url = os.getenv("ANDROMEDA_URL", "http://0.0.0.0:9000")
+
 
 def load_config():
     return Settings()
