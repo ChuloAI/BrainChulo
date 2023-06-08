@@ -1,6 +1,9 @@
 {
     "python.formatting.autopep8Args": [
-        "--ignore=E121"
+        "--ignore=E121",
+        "--max-line-length",
+        "180",
+        "--experimental"
     ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
@@ -8,7 +11,7 @@
     "python.formatting.provider": "none",
     "editor.defaultFormatter": "ms-python.black-formatter",
     "black-formatter.args": [
-        "--line-length=80",
+        "--line-length=180",
         "--skip-string-normalization"
     ],
     "files.associations": {
