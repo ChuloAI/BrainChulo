@@ -17,7 +17,8 @@ class Chroma(BaseMemory):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        EmbeddingsModel = config.embeddings_map.get(config.embeddings_model)
+        embeddings_model_name = config.embeddings_model.split("/")[-1]
+        EmbeddingsModel = config.embeddings_map.get(embeddings_model_name)
         if EmbeddingsModel is None:
             raise ValueError(
                 f"Invalid embeddings model: {config.embeddings_model}"

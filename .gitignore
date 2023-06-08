@@ -17,3 +17,5 @@ venv/
 
 # Do not save index
 index.json
+
+generated_alembic.ini
