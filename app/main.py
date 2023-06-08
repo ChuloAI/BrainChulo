@@ -26,10 +26,13 @@ def create_db_and_tables():
     confparser.read(f"{config.backend_root_path}/alembic.ini")
     confparser.set('alembic', 'script_location', f"{config.backend_root_path}/migrations")
     confparser.set('alembic', 'prepend_sys_path', config.backend_root_path)
-    with open('generated_alembic.ini', 'w') as config_file:
+
+    migrations_config_path = os.path.join(config.backend_root_path, "generated_alembic.ini")
+
+    with open(migrations_config_path, 'w') as config_file:
         confparser.write(config_file)
 
-    migrations_config = Config(f"{config.backend_root_path}/generated_alembic.ini")
+    migrations_config = Config(migrations_config_path)
     command.upgrade(migrations_config, "head")
 
 
@@ -52,7 +55,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[*origins],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
