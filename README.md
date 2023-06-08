@@ -18,27 +18,20 @@ BrainChulo is a powerful Chat application with an emphasis on its memory managem
 - Ability to upvote or downvote AI answers for fine-tuning
 
 ## Installation
-**Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui). The reason being is it does not offer enough support for the [guidance library](https://github.com/microsoft/guidance) features.
+### Oobabooga UI (not officially supported currently)
+**Update 06.06.2023** As of today, we're dropping support to [Oobabooga Text Generation WebUI](https://github.com/oobabooga/text-generation-webui).The reason being is it does not offer enough support for the [guidance library](https://github.com/microsoft/guidance) features.
 
-Currently, we only support models on GPU (GPTQ or Hugging Face).
+**Update 08.06.2023** We've raised a PR to add an extension that would enable us to again use oobabooga. If that's important for you, [leave a thumbs up](https://github.com/oobabooga/text-generation-webui/pull/2554) so it gets merged.
 
-Hugging Face models are loaded with 4-bit NormalFloat quantization [see more](https://www.google.com/search?client=safari&rls=en&q=hugging+face+4bit+qlora&ie=UTF-8&oe=UTF-8)
 
-According to the link above, the following models are supported with this 4-bit quantization method:
+Note that currently, we only support models on GPU (GPTQ or Hugging Face), because the guidance does not (yet) fully support llama cpp bindings, or any GGML model.
+This would be the case until [this PR is merged on guidance library](https://github.com/microsoft/guidance/pull/70).
 
-```json
-[
-    'bigbird_pegasus', 'blip_2', 'bloom', 'bridgetower', 'codegen', 'deit', 'esm', 
-    'gpt2', 'gpt_bigcode', 'gpt_neo', 'gpt_neox', 'gpt_neox_japanese', 'gptj', 'gptsan_japanese', 
-    'lilt', 'llama', 'longformer', 'longt5', 'luke', 'm2m_100', 'mbart', 'mega', 'mt5', 'nllb_moe', 
-    'open_llama', 'opt', 'owlvit', 'plbart', 'roberta', 'roberta_prelayernorm', 'rwkv', 'switch_transformers', 
-    't5', 'vilt', 'vit', 'vit_hybrid', 'whisper', 'xglm', 'xlm_roberta'
-]
-```
-We plan to reintroduce CPU support back soon, through GGML / llamacpp-bindings - at least for the LLaMA models.
+We plan to reintroduce CPU support through GGML / llamacpp-bindings - at least for the LLaMA models - when this PR is fully merged into guidance.
 
-To use BrainChulo, there are three required steps.
 
+### Using docker-compose
+To use BrainChulo, there are four required steps.
 ### 1 - Install requirements (docker)
 
 1. [Docker Engine](https://docs.docker.com/engine/)
@@ -50,11 +43,28 @@ https://github.com/ChuloAI/BrainChulo/issues/39
 
 
 ### 2 - Clone your desired model from Hugging Face
-Choose a model that either implements the Hugging Face API, if you're downloading them from TheBloke, typically they have the `-HF` suffix, or a GPTQ one (`-GPTQ` suffix).
+
+Choose a model that either implements the Hugging Face API, if you're downloading them from TheBloke, typically they have the `-HF` suffix, or a GPTQ one (`-GPTQ`) 
+
+There a couple of scripts to help you with this:
+- `bootstrap_models.py`
+- `download-model.py`
+
+Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
+
+If you simply execute `python bootstrap_models.py` it will create the required directory and download a pair of recommended models to get started. You can override the default model by passing additional arguments:
+
+For instance, downloading WizardLM-30B-GPTQ
+```bash
+python bootstrap_models.py TheBloke/WizardLM-30B-GPTQ
+```
+
+Under the hood, this is roughly equivalent to this:
 
 ```bash
 mkdir models
 cd models
+git clone https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
 git clone https://huggingface.co/TheBloke/wizardLM-7B-HF
 cd ..
 ```
@@ -75,10 +85,23 @@ To use GPTQ, setup your docker-compose file appropriately:
       GPTQ_DEVICE: cuda
 ```
 
-Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
+### 3 - Update the environment variables
+Copy the `.env.example` file. In Linux, that is done:
 
+```bash
+cp .env.example .env
+```
 
-### 3 - Download, build and start Docker containers through the docker-compose
+You should then override the following variables to match your downloaded model:
+```
+MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
+USE_GPTQ: true
+GPTQ_WBITS: 4
+GROUP_SIZE: 128
+GPTQ_DEVICE: cuda
+```
+
+### 4 - Download, build and start Docker containers through the docker-compose
 ```
 docker-compose up --build
 ```
