@@ -48,9 +48,7 @@ Choose a model that either implements the Hugging Face API, if you're downloadin
 
 There a couple of scripts to help you with this:
 - `bootstrap_models.py`
-- `download-model.py`
-
-Additionally, a highly-inspired from Oobabooga's repo `download-model.py` has been made available to help you download the model.
+- `download-model.py` (highly-inspired script from Oobabooga's repo)
 
 If you simply execute `python bootstrap_models.py` it will create the required directory and download a pair of recommended models to get started. You can override the default model by passing additional arguments:
 
