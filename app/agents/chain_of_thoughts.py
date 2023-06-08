@@ -20,7 +20,7 @@ class ChainOfThoughtsAgent(BaseFlowAgent):
         decide = ChoiceNode("decide", ["thought", "final_prompt"], max_decisions=3, force_exit_on="final_prompt")
         final = PromptNode("final_prompt", ChainOfThoughts.final_prompt)
 
-        start.set_next(choose_action)
+        start.set_next(decide)
         thought.set_next(choose_action)
 
         choose_action.set_next(perform_action)
@@ -32,7 +32,7 @@ class ChainOfThoughtsAgent(BaseFlowAgent):
         )
 
         super().__init__(andromeda, tools, flow)
-        self.valid_tools = list(tools.keys()) + ["Reply"]
+        self.valid_tools = list(tools.keys())
         self.valid_answers = ["Action", "Final Answer"]
 
 
