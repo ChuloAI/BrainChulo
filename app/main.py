@@ -10,6 +10,7 @@ from settings import load_config, logger
 from plugins import load_plugins
 from alembic import command
 from alembic.config import Config
+from configparser import ConfigParser
 
 config = load_config()
 
@@ -19,13 +20,23 @@ engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args
 
 convo = DocumentBasedConversation()
 
+
 def create_db_and_tables():
-    migrations_config = Config("alembic.ini")
+    confparser = ConfigParser()
+    confparser.read(f"{config.backend_root_path}/alembic.ini")
+    confparser.set('alembic', 'script_location', f"{config.backend_root_path}/migrations")
+    confparser.set('alembic', 'prepend_sys_path', config.backend_root_path)
+    with open('generated_alembic.ini', 'w') as config_file:
+        confparser.write(config_file)
+
+    migrations_config = Config(f"{config.backend_root_path}/generated_alembic.ini")
     command.upgrade(migrations_config, "head")
+
 
 def get_session():
     with Session(engine) as session:
         yield session
+
 
 app = FastAPI()
 
@@ -46,6 +57,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("startup")
 def on_startup():
@@ -78,6 +90,7 @@ def update_conversation(*, session: Session = Depends(get_session), conversation
 
     return conversation
 
+
 @app.delete("/conversations/{conversation_id}")
 def delete_conversation(*, session: Session = Depends(get_session), conversation_id: int):
     """
@@ -107,6 +120,7 @@ def get_conversation(conversation_id: int, session: Session = Depends(get_sessio
 
     return conversation
 
+
 @app.post("/conversations/{conversation_id}/messages", response_model=Message)
 def create_message(*, session: Session = Depends(get_session), conversation_id: int, message: Message):
     """
@@ -119,6 +133,7 @@ def create_message(*, session: Session = Depends(get_session), conversation_id: 
 
     return message
 
+
 @app.post("/conversations/{conversation_id}/files", response_model=dict)
 def upload_file(*, conversation_id: int, file: UploadFile):
     """
@@ -126,9 +141,7 @@ def upload_file(*, conversation_id: int, file: UploadFile):
     """
     try:
         uploaded_file_name = file.filename
-        filepath = os.path.join(
-            os.getcwd(), "data", config.upload_path, uploaded_file_name
-        )
+        filepath = os.path.join(os.getcwd(), "data", config.upload_path, uploaded_file_name)
 
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
@@ -142,12 +155,14 @@ def upload_file(*, conversation_id: int, file: UploadFile):
         logger.error(f"Error adding file to history: {e}")
         return f"Error adding file to history: {e}"
 
+
 @app.post('/llm', response_model=str)
 def llm(*, query: str):
     """
     Query the LLM
     """
     return convo.predict(query)
+
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
 def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
@@ -162,6 +177,7 @@ def upvote_message(*, session: Session = Depends(get_session), conversation_id: 
 
     return message
 
+
 @app.post("/conversations/{conversation_id}/messages/{message_id}/downvote", response_model=Message)
 def downvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
     """
@@ -174,6 +190,7 @@ def downvote_message(*, session: Session = Depends(get_session), conversation_id
     session.refresh(message)
 
     return message
+
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/resetVote", response_model=Message)
 def reset_message_vote(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
@@ -188,6 +205,7 @@ def reset_message_vote(*, session: Session = Depends(get_session), conversation_
 
     return message
 
+
 @app.post("/reset", response_model=dict)
 def reset_all():
     """
@@ -198,6 +216,7 @@ def reset_all():
     SQLModel.metadata.create_all(engine)
 
     return {"text": "Database has been reset."}
+
 
 if __name__ == "__main__":
     import uvicorn
