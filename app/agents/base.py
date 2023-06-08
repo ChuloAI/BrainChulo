@@ -5,7 +5,7 @@ from typing import Dict, Callable
 from andromeda_chain import AndromedaChain
 
 def color_print(msg, color):
-    print(color + Style.BRIGHT + msg  + Style.RESET_ALL)
+    print(color + Style.BRIGHT + msg  + Style.RESET_ALL, flush=True)
 
 
 class BaseAgent:
