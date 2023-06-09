@@ -1,0 +1,3 @@
+[submodule "andromeda-chain"]
+	path = andromeda-chain
+	url = https://github.com/ChuloAI/andromeda-chain

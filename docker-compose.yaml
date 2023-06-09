@@ -1,7 +1,9 @@
 version: '3'
 services:
   guidance:
-    image: paolorechia/guidance_server:gpu-0.2
+    build:
+      context: ./andromeda-chain
+      dockerfile: Dockerfile.gpu
     ports:
       - "9000:9000"
     volumes:
