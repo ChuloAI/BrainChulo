@@ -6,8 +6,11 @@ from andromeda_chain import AndromedaChain
 from agents import DocumentQuestionAnswerAgent, ChainOfThoughtsAgent
 
 from settings import logger, load_config
-
+import guidance 
 config = load_config()
+llama = None
+
+dict_tools = None
 
 
 class DocumentBasedConversation:
@@ -18,6 +21,15 @@ class DocumentBasedConversation:
         """
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
+        self.llama = guidance.llms.LlamaCpp(
+    model = "/home/karajan/labzone/llama.cpp/models/jondurbin_airoboros-7b-gpt4/jondurbin_airoborosggml-model-q4_0.bin",
+    tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
+    before_role = "<|",
+    after_role = "|>",
+    n_gpu_layers=300,
+    n_threads=12,
+    caching=False, )
+        guidance.llm = self.llama
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
         tools = {
@@ -25,7 +37,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
-        self.document_qa_agent = ChainOfThoughtsAgent(self.andromeda, tools)
+        self.document_qa_agent = ChainOfThoughtsAgent(guidance, tools)
         # self.document_qa_agent = DocumentQuestionAnswerAgent(self.andromeda, tools)
 
 
@@ -90,6 +102,7 @@ class DocumentBasedConversation:
         return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
 
     def predict(self, input):
+        global dict_tools
         """
         Predicts a response based on the given input.
 
