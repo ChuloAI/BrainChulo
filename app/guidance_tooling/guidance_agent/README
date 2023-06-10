@@ -1,0 +1,12 @@
+Those are the steps required to run the guidance agent with llama.cpp integration: 
+
+1 - run pip install andromeda-chain --no-deps (this is to maintain compatiblity with the main without having to hack into the project) 
+2 - run pip install llama-cpp-python==0.1.55 (if you notice gpu layers offloading doesn't work, refer to the solution described in this issue: https://github.com/abetlen/llama-cpp-python/issues/300)
+3 - run pip install git+https://github.com/Maximilian-Winter/guidance.git@313c726265c94523375b0dadd8954d19c01e709b
+4 - run pip install -r requirements.txt 
+5 - download ggml model, I recommend : https://huggingface.co/TheBloke/airoboros-7b-gpt4-GGML (stick with the q4 version as models reload a lot for the moment at startup and it can cause out of memory issues even on 3090s)
+6 - set the model path in chain_of_thoughts.py and document_based.py (setting it up in the .env seemed to cause some issues right now?)
+7 - set your test file in the .env
+8 - startup BrainChulo, you should be all set! 
+
+
