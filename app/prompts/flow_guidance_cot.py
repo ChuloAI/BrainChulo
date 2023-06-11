@@ -1,7 +1,7 @@
 from andromeda_chain.prompt import AndromedaPrompt
 
-PROMPT_START_STRING = """You're an AI assistant that has access to tools.
-You're nicely and friendly, and try to help a human that talks to you to the best of your capabilities. You'll receive questions from the user, try to help him.
+PROMPT_START_STRING = """You're an AI assistant with access to tools.
+You're nice and friendly, and try to answer questions to the best of your ability.
 You have access to the following tools.
 
 Conversation Search: A tool to validate if a question is answerable or not. The input is the question to validate.
@@ -18,65 +18,63 @@ Observation: the result of the action
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
-When chatting with the user, you can search information using your tools, for instance.
+When chatting with the user, you can search information using your tools. Here is an example:
 
 Question: What's your name?
 Thought: I should search my name in the documents.
 Action: Document Search
 Action Input:
 What's my name?
-Observation: You're an AI. You don't have an age.
-Thought: I should answer that I don't have an age.
-Final Answer: As an AI, I don't have an age, at least not in the human sense.
+Observation: You're an AI. You don't have a name.
+Thought: I should answer that I don't have a name.
+Final Answer: As an AI, I don't have a name, at least not in the human sense.
 
 Now your turn.
 Question:"""
 
+
 class FlowChainOfThoughts:
     choose_action = AndromedaPrompt(
-    name="cot_choose_action",
-    prompt_template = """{{history}}
+        name="cot_choose_action",
+        prompt_template="""{{history}}
 Action: {{select 'tool_name' options=valid_tools}}""",
-    guidance_kwargs={},
-    input_vars=["history", "valid_tools"],
-    output_vars=["tool_name"],
-)
-
+        guidance_kwargs={},
+        input_vars=["history", "valid_tools"],
+        output_vars=["tool_name"],
+    )
 
     action_input = AndromedaPrompt(
-    name="cot_action_input",
-    prompt_template = """{{history}}{{gen 'act_input' stop='\\n'}}""",
-    guidance_kwargs={},
-    input_vars=["history"],
-    output_vars=["act_input"],
-)
-
+        name="cot_action_input",
+        prompt_template="""{{history}}{{gen 'act_input' stop='\\n'}}""",
+        guidance_kwargs={},
+        input_vars=["history"],
+        output_vars=["act_input"],
+    )
 
     thought_gen = AndromedaPrompt(
-    name="cot_thought_gen",
-    prompt_template = """{{history}}
+        name="cot_thought_gen",
+        prompt_template="""{{history}}
 Observation: {{observation}}
 Thought: {{gen 'thought' stop='\\n'}}""",
-    guidance_kwargs={},
-    input_vars=["history", "observation"],
-    output_vars=["thought"],
-)
+        guidance_kwargs={},
+        input_vars=["history", "observation"],
+        output_vars=["thought"],
+    )
 
     final_prompt = AndromedaPrompt(
-    name="cot_final",
-    prompt_template = """{{history}}
+        name="cot_final",
+        prompt_template="""{{history}}
 Final Answer: {{gen 'final_answer' stop='\\n'}}""",
-    guidance_kwargs={},
-    input_vars=["history"],
-    output_vars=["final_answer"],
-)
-
+        guidance_kwargs={},
+        input_vars=["history"],
+        output_vars=["final_answer"],
+    )
 
     flow_prompt_start = AndromedaPrompt(
-    name="cot_flow_prompt_start",
-    prompt_template = """{{prompt_start}} {{question}}
+        name="cot_flow_prompt_start",
+        prompt_template="""{{prompt_start}} {{question}}
 Thought: {{gen 'thought' stop='\\n'}}{{#block hidden=True}}{{select 'choice' logprobs='logprobs' options=valid_answers}}:{{/block}}""",
-    guidance_kwargs={},
-    input_vars=["prompt_start", "question", "valid_answers"],
-    output_vars=["thought", "choice"],
-)
+        guidance_kwargs={},
+        input_vars=["prompt_start", "question", "valid_answers"],
+        output_vars=["thought", "choice"],
+    )
