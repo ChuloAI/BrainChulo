@@ -8,10 +8,26 @@ from agents import DocumentQuestionAnswerAgent, ChainOfThoughtsAgent
 from settings import logger, load_config
 import guidance 
 config = load_config()
-llama = None
 
 dict_tools = None
 
+
+llama_model = None
+
+def get_llama_model():
+    global llama_model
+    if llama_model is None:
+        print("Loading qa model...")
+        llama_model = guidance.llms.LlamaCpp(
+            model = "/home/karajan/Downloads/open-llama-3b-q8_0.bin",
+            tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
+            before_role = "<|",
+            after_role = "|>",
+            n_gpu_layers=300,
+            n_threads=12,
+            caching=False, )
+        guidance.llm = llama_model
+    return llama_model
 
 class DocumentBasedConversation:
     def __init__(self):
@@ -21,14 +37,7 @@ class DocumentBasedConversation:
         """
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
-        self.llama = guidance.llms.LlamaCpp(
-    model = "/home/karajan/labzone/llama.cpp/models/jondurbin_airoboros-7b-gpt4/jondurbin_airoborosggml-model-q4_0.bin",
-    tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
-    before_role = "<|",
-    after_role = "|>",
-    n_gpu_layers=300,
-    n_threads=12,
-    caching=False, )
+        self.llama = get_llama_model()
         guidance.llm = self.llama
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")

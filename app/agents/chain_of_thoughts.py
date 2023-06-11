@@ -16,26 +16,34 @@ from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 
-model_type = "LlamaCpp"
-model_path ="/home/karajan/labzone/llama.cpp/models/jondurbin_airoboros-7b-gpt4/jondurbin_airoborosggml-model-q4_0.bin"
-model_n_ctx =1000
-target_source_chunks = 4
-n_gpu_layers = 500
-use_mlock = 0
-n_batch = os.environ.get('N_BATCH') if os.environ.get('N_BATCH') != None else 512
-callbacks = []
-qa_prompt = ""
-llm = LlamaCpp(model_path=model_path, n_ctx=model_n_ctx, callbacks=callbacks, verbose=False,n_gpu_layers=n_gpu_layers, use_mlock=use_mlock,top_p=0.9, n_batch=n_batch)
+llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
+
+def get_llm():
+    global llm
+    if llm is None:
+        print("Loading guidance model...")
+        model_type = "LlamaCpp"
+        model_path ="/home/karajan/Downloads/open-llama-3b-q8_0.bin"
+        model_n_ctx =1000
+        target_source_chunks = 4
+        n_gpu_layers = 500
+        use_mlock = 0
+        n_batch = os.environ.get('N_BATCH') if os.environ.get('N_BATCH') != None else 512
+        callbacks = []
+        qa_prompt = ""
+        llm = LlamaCpp(model_path=model_path, n_ctx=model_n_ctx, callbacks=callbacks, verbose=False,n_gpu_layers=n_gpu_layers, use_mlock=use_mlock,top_p=0.9, n_batch=n_batch)
+    return llm
+
 
 
 class ChainOfThoughtsAgent(BaseFlowAgent):
     def __init__(self, guidance, retriever, num_iter=3):
         self.guidance = guidance
         self.retriever = ingest_file(TEST_FILE)
-        self.llm = llm
+        self.llm = get_llm()
 
         self.num_iter = num_iter
         self.prompt_template = """
