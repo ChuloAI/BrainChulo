@@ -58,8 +58,8 @@ class InternalService {
     }
 
     /* Query the LLM */
-    async queryLLM(query) {
-        return await this.request(`/llm`, 'POST', {}, {}, {query: query});
+    async queryLLM(conversationId, query) {
+        return await this.request(`/llm/${conversationId}/`, 'POST', {}, {}, {query: query});
     }
 
     /* Upvote a message */
@@ -76,7 +76,6 @@ class InternalService {
     async resetMessageVote(conversationId, messageId) {
         return await this.request(`/conversations/${conversationId}/messages/${messageId}/resetVote`, 'POST');
     }
-
     /* Reset the Database */
     async resetDatabase() {
         return await this.request(`/reset`, 'POST');

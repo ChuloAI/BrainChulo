@@ -69,6 +69,7 @@ class Settings:
 
         self.andromeda_url = os.getenv("ANDROMEDA_URL", "http://0.0.0.0:9000")
 
+        self.use_flow_agents = os.getenv("USE_FLOW_AGENTS", "false") == "true"
 
 def load_config():
     return Settings()

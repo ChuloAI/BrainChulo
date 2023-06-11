@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session, desc
 from models.all import Conversation, Message, ConversationWithMessages
 from typing import List
-from conversations.document_based import DocumentBasedConversation
 from settings import load_config, logger
 from plugins import load_plugins
 from alembic import command
@@ -18,7 +17,17 @@ sqlite_database_url = config.database_url
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args)
 
-convo = DocumentBasedConversation()
+# Introducing a new feature flag
+# So GuidanceLLaMAcpp can coexist with FlowAgents
+
+if config.use_flow_agents:
+    logger.info("Using (experimental) flow agents")
+    from conversations.document_based_flow import DocumentBasedConversationFlowAgent
+    convo = DocumentBasedConversationFlowAgent()
+else:
+    logger.info("Using experimental Guidance LLaMA cpp implementation.")
+    from conversations.document_based import DocumentBasedConversation
+    convo = DocumentBasedConversation()
 
 
 def create_db_and_tables():
@@ -64,7 +73,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    pass
+    # create_db_and_tables()
 
 
 @app.post("/conversations", response_model=Conversation)
@@ -159,13 +169,15 @@ def upload_file(*, conversation_id: int, file: UploadFile):
         return f"Error adding file to history: {e}"
 
 
-@app.post('/llm', response_model=str)
-def llm(*, query: str):
+@app.post('/llm/{conversation_id}/', response_model=str)
+def llm(*, conversation_id: str, query: str):
     """
     Query the LLM
     """
-    return convo.predict(query)
-
+    if config.use_flow_agents:
+        return convo.predict(query, conversation_id)
+    else:
+        return convo.predict(query)
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
 def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
