@@ -224,4 +224,4 @@ def reset_all():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=7865, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=7865, reload=False)
