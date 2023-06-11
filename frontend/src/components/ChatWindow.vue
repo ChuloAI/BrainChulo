@@ -180,7 +180,7 @@
 
         this.messages.push(loadingMessage);
 
-        const aiMessageText = await InternalService.queryLLM(userMessage.text);
+        const aiMessageText = await InternalService.queryLLM(this.conversation_id, userMessage.text);
         const aiMessage = {
           created_at: Date.now(),
           text: aiMessageText,

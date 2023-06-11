@@ -41,7 +41,8 @@ services:
     volumes:
       - ./app:/code
       - ./models:/models
-
+    env_file:
+      - .env
     # Add the "restart: unless-stopped" option to automatically restart the container unless explicitly stopped
     restart: unless-stopped
     # Add the "labels" section to set the container to remove itself on shutdown

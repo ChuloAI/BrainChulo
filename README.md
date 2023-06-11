@@ -117,6 +117,12 @@ docker compose down
 docker-compose exec backend alembic upgrade head
 ```
 
+## Enabling Flow Agents
+We have a experimental feature that enables what we call flow agents. To activate it, set the feature flag to true in the .env file:
+```
+USE_FLOW_AGENTS=true
+```
+
 ## Creating a Plugin
 
 1. Create a new directory for your plugin, e.g. `/app/plugins/my_plugin`

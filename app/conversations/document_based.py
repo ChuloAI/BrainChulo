@@ -3,7 +3,7 @@ from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from andromeda_chain import AndromedaChain
-from agents import DocumentQuestionAnswerAgent, ChainOfThoughtsAgent
+from agents import ChainOfThoughtsAgent
 
 from settings import logger, load_config
 import guidance 
@@ -47,7 +47,6 @@ class DocumentBasedConversation:
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
         self.document_qa_agent = ChainOfThoughtsAgent(guidance, tools)
-        # self.document_qa_agent = DocumentQuestionAnswerAgent(self.andromeda, tools)
 
 
     def load_document(self, document_path, conversation_id=None):
