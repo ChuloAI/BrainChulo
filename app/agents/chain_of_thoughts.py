@@ -89,7 +89,7 @@ class ChainOfThoughtsAgent(BaseAgent):
         Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
         ### Instruction:
         Answer the following questions as best you can. You have access to the following tools:
-        Google Search: A wrapper around Google Search. Useful for when you need to answer questions about current events. The input is the question to search relevant information.
+        Chroma Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
         {{~/system}}
 
         {{#user~}}
