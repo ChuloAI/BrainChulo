@@ -73,8 +73,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
-    pass
-    # create_db_and_tables()
+    create_db_and_tables()
 
 
 @app.post("/conversations", response_model=Conversation)
