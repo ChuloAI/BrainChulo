@@ -76,12 +76,25 @@ cp .env.example .env
 
 You should then override the following variables to match your downloaded model:
 ```
-MODEL_PATH: models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
-USE_GPTQ: true
-GPTQ_WBITS: 4
-GROUP_SIZE: 128
-GPTQ_DEVICE: cuda
+MODEL_PATH=/models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
+# General Settings
+GENERAL_LOADING_METHOD=GPTQ
+GENERAL_BOOL_CPU_OFFLOADING=true
+# HuggingFace
+HF_BOOL_USE_QUANT=true
+HF_BOOL_USE_4_BIT=true
+# GPTQ
+GPTQ_INT_WBITS=4
+GPTQ_INT_GROUP_SIZE=128
+GPTQ_INT_PRE_LOADED_LAYERS=20
+GPTQ_DEVICE="cuda"
 ```
+Note that you only need to set the variables according to your desired model loading method.
+`GENERAL_LOADING_METHOD` expects either `GPTQ` or `HUGGING_FACE`. Most of these parameters are self-explanatory,
+except `GPTQ_INT_PRE_LOADED_LAYERS` which only changes how many layers are preloaded for the `CPU OFFLOADING` when loading a GPTQ model.
+Setting a number too high for the model e.g., 50 for a 7B model triggers an error.
+
+
 
 ### 4 - Download, build and start Docker containers through the docker-compose
 ```
