@@ -3,7 +3,7 @@ import os
 import subprocess
 
 DEFAULT_EMBEDDINGS_MODEL ="sentence-transformers/all-MiniLM-L6-v2"
-DEFAULT_MODEL = "openlm-research/open_llama_3b"
+DEFAULT_MODEL = "TheBloke/open-llama-7b-open-instruct-GPTQ"
 MODEL_DIR = "./models"
 
 
