@@ -74,25 +74,54 @@ Copy the `.env.example` file. In Linux, that is done:
 cp .env.example .env
 ```
 
-You should then override the following variables to match your downloaded model:
-```
-MODEL_PATH=/models/vicuna-AlekseyKorshuk-7B-GPTQ-4bit-128g
-# General Settings
-GENERAL_LOADING_METHOD=GPTQ
-GENERAL_BOOL_CPU_OFFLOADING=true
+You should then override the following variables to match your downloaded model / loading method:
+```bash
+# CPP Model Example:
+GENERAL_MODEL_PATH=/models/open-llama-7B-open-instruct.ggmlv3.q4_0.bin
+GENERAL_TOKENIZER_PATH=/models/VMware_open-llama-7b-open-instruct
+GENERAL_LOADING_METHOD=CPP
+
+# GPTQ Model Example:
+# GENERAL_MODEL_PATH=/models/vicuna-7B-1.1-GPTQ-4bit-128g
+# GENERAL_LOADING_METHOD=GPTQ
+
+# HF Model Example
+# GENERAL_MODEL_PATH=/models/VMware_open-llama-7b-open-instruct
+# GENERAL_LOADING_METHOD=HUGGING_FACE
+
+# Guidance Settings
+GUIDANCE_AFTER_ROLE="|>"
+GUIDANCE_BEFORE_ROLE="<|"
+
+# Tokenizer Settings
+TK_BOOL_USE_FAST=false
+
 # HuggingFace
-HF_BOOL_USE_QUANT=true
-HF_BOOL_USE_4_BIT=true
+HF_BOOL_USE_8_BIT=true
+HF_BOOL_USE_4_BIT=false
+HF_DEVICE_MAP=auto
+
 # GPTQ
 GPTQ_INT_WBITS=4
 GPTQ_INT_GROUP_SIZE=128
+# How many layers loaded into GPU, decrease to save more VRAM at the expense of inference speed
 GPTQ_INT_PRE_LOADED_LAYERS=20
 GPTQ_DEVICE="cuda"
+GPTQ_BOOL_CPU_OFFLOADING=true
+
+# LLaMA CPP
+CPP_INT_N_GPU_LAYERS=300
+CPP_INT_N_THREADS=12
+CPP_BOOL_CACHING=false
 ```
 Note that you only need to set the variables according to your desired model loading method.
-`GENERAL_LOADING_METHOD` expects either `GPTQ` or `HUGGING_FACE`. Most of these parameters are self-explanatory,
-except `GPTQ_INT_PRE_LOADED_LAYERS` which only changes how many layers are preloaded for the `CPU OFFLOADING` when loading a GPTQ model.
-Setting a number too high for the model e.g., 50 for a 7B model triggers an error.
+
+`GENERAL_LOADING_METHOD` expects one of:
+    - `GPTQ`
+    - `HUGGING_FACE`
+    - `CPP`
+    
+Most of these parameters are self-explanatory, except `GPTQ_INT_PRE_LOADED_LAYERS` which only changes how many layers are preloaded for the `CPU OFFLOADING` when loading a GPTQ model. Setting a number too high for the model e.g., 50 for a 7B model triggers an error.
 
 
 
