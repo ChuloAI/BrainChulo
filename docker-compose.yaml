@@ -16,6 +16,9 @@ services:
     stop_signal: SIGINT
     env_file:
       - .env
+    # Increase memory lock for LLaMA cpp
+    ulimits:
+      memlock: 8791351808
     deploy:
       resources:
         limits:
