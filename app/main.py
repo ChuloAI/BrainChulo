@@ -73,8 +73,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
-
+    # create_db_and_tables()
+    return
 
 @app.post("/conversations", response_model=Conversation)
 def create_conversation(*, session: Session = Depends(get_session), conversation: Conversation):

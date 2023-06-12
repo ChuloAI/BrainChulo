@@ -24,7 +24,7 @@ class BaseAgent:
     
     def do_tool(self, tool_name, act_input):
         color_print(f"Using tool: {tool_name}", Fore.GREEN)
-        result = self.tools[tool_name](act_input)
+        result = self.tools[tool_name.strip()](act_input)
         color_print(f"Tool result: {result}", Fore.BLUE)
         return result
 

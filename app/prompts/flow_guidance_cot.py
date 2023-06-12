@@ -46,7 +46,7 @@ Action: {{select 'tool_name' options=valid_tools}}""",
         name="cot_thought_gen",
         prompt_template="""{{history}}
 Observation: {{observation}}
-Thought: {{gen 'thought' stop='\\n'}}""",
+Thought: {{gen 'thought' temperature=0.2 stop='\\n'}}""",
         guidance_kwargs={},
         input_vars=["history", "observation"],
         output_vars=["thought"],
@@ -55,8 +55,7 @@ Thought: {{gen 'thought' stop='\\n'}}""",
     final_prompt = AndromedaPrompt(
         name="cot_final",
         prompt_template="""{{history}}
-Thought: I should now reply the user with what I thought and gathered.
-Final Answer: {{gen 'final_answer' stop='\\n'}}""",
+Final Answer: {{gen 'final_answer' temperature=0.2 stop='\\n'}}""",
         guidance_kwargs={},
         input_vars=["history"],
         output_vars=["final_answer"],
@@ -65,8 +64,7 @@ Final Answer: {{gen 'final_answer' stop='\\n'}}""",
     flow_prompt_start = AndromedaPrompt(
         name="cot_flow_prompt_start",
         prompt_template="""{{prompt_start}} {{question}}
-Think carefully about what you should do next. Take an action or provide a final answer to the user.
-Thought: {{gen 'thought' stop='\\n'}}{{#block hidden=True}}
+Thought: {{gen 'thought' stop='\\n' temperature=0.2}}{{#block hidden=True}}
 {{select 'choice' logprobs='logprobs' options=valid_answers}}
 :{{/block}}""",
         guidance_kwargs={},

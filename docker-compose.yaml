@@ -1,7 +1,7 @@
 version: '3'
 services:
   guidance:
-    image: paolorechia/guidance_server:gpu-0.3
+    image: paolorechia/guidance_server:gpu-0.5
     ports:
       - "9000:9000"
     volumes:
@@ -16,6 +16,9 @@ services:
     stop_signal: SIGINT
     env_file:
       - .env
+    # Increase memory lock for LLaMA cpp
+    ulimits:
+      memlock: 8791351808
     deploy:
       resources:
         limits:
