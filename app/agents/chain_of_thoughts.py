@@ -1,24 +1,29 @@
 from agents.base import BaseAgent
 from guidance_tooling.guidance_programs.tools import ingest_file
 from guidance_tooling.guidance_programs.tools import clean_text
-
-import os
 from langchain.llms import LlamaCpp
 import os
 from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
+from prompt_templates.qa_agent import *
 
 llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
+ETHICS = os.getenv("ETHICS")
+QA_MODEL = os.getenv("MODEL_PATH")
+if ETHICS == "ON":
+    agent_template = QA_ETHICAL_AGENT
+else: 
+    agent_template = QA_AGENT
 
 def get_llm():
     global llm
     if llm is None:
-        print("Loading guidance model...")
-        model_path ="/home/karajan/Downloads/airoboros-13b-gpt4.ggmlv3.q8_0.bin"
+        print("Loading qa model...")
+        model_path =QA_MODEL
         model_n_ctx =1000
         n_gpu_layers = 500
         use_mlock = 0
@@ -34,40 +39,7 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.llm = get_llm()
 
         self.num_iter = num_iter
-        self.prompt_template = """
-        {{#system~}}
-        Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-        ### Instruction:
-        Answer the following questions as best you can. You have access to the following tools:
-        Chroma Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
-        {{~/system}}
-
-        {{#user~}}
-        Question: {{question}}
-        {{~/user}}
-
-        {{#assistant~}}
-        Thought: Let's first check our database.
-        Action: Check Question
-        Action Input: {{question}}
-        {{~/assistant}}
-
-        {{#user~}}
-        Here are the relevant documents from our database:{{search question}}
-        {{~/user}}address?
-
-        {{#assistant~}}
-        Observation: Based on the documents, I think I can reach a conclusion.
-        {{#if (can_answer)}} 
-        Thought: I believe I can answer the question based on the information contained in the returned documents.
-        Final Answer: {{gen 'answer' temperature=0.7 max_tokens=50}}
-        {{else}}
-        Thought: I don't think I can answer the question based on the information contained in the returned documents.
-        Final Answer: I'm sorry, but I don't have sufficient information to provide an answer to this question.
-        {{/if}}
-
-        {{~/assistant}}
-        """
+        self.prompt_template = agent_template
 
     def searchQA(self, t):    
         return self.checkQuestion(self.question)
@@ -118,7 +90,7 @@ class ChainOfThoughtsAgent(BaseAgent):
     def run(self, query: str) -> str:
         self.question = query
         prompt = self.guidance(self.prompt_template)
-        result = prompt(question=self.question, search=self.searchQA, can_answer=self.can_answer(self.question),valid_answers=valid_answers, valid_tools=valid_tools)
+        result = prompt(question=self.question, search=self.searchQA,valid_answers=valid_answers, valid_tools=valid_tools)
         return result
 
   

@@ -7,19 +7,20 @@ from agents import ChainOfThoughtsAgent
 
 from settings import logger, load_config
 import guidance 
+import os
+
 config = load_config()
-
 dict_tools = None
-
-
 llama_model = None
+
+GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
 
 def get_llama_model():
     global llama_model
     if llama_model is None:
-        print("Loading qa model...")
+        print("Loading guidance model...")
         llama_model = guidance.llms.LlamaCpp(
-            model = "/home/karajan/Downloads/open-llama-3b-q8_0.bin",
+            model = GUIDANCE_MODEL,
             tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
             before_role = "<|",
             after_role = "|>",
