@@ -19,7 +19,7 @@ def get_llama_model():
     if llama_model is None:
         print("Loading qa model...")
         llama_model = guidance.llms.LlamaCpp(
-            model = "/home/karajan/Downloads/open-llama-3b-q8_0.bin",
+            model = "/home/karajan/Downloads/guanaco-33B.ggmlv3.q5_0.bin",
             tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
             before_role = "<|",
             after_role = "|>",
