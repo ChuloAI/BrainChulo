@@ -12,6 +12,11 @@ llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
+ETHICS = os.getenv("ETHICS")
+if ETHICS == "ON":
+    agent_template = QA_ETHICAL_AGENT
+else: 
+    agent_template = QA_AGENT
 
 def get_llm():
     global llm
@@ -33,7 +38,7 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.llm = get_llm()
 
         self.num_iter = num_iter
-        self.prompt_template = QA_ETHICAL_AGENT
+        self.prompt_template = agent_template
 
     def searchQA(self, t):    
         return self.checkQuestion(self.question)
