@@ -13,6 +13,7 @@ valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
 ETHICS = os.getenv("ETHICS")
+QA_MODEL = os.getenv("MODEL_PATH")
 if ETHICS == "ON":
     agent_template = QA_ETHICAL_AGENT
 else: 
@@ -21,8 +22,8 @@ else:
 def get_llm():
     global llm
     if llm is None:
-        print("Loading guidance model...")
-        model_path ="/home/karajan/labzone/llm_tools/llama.cpp/models/airoboros-7b-gpt4.ggmlv3.q8_0.bin"
+        print("Loading qa model...")
+        model_path =QA_MODEL
         model_n_ctx =1000
         n_gpu_layers = 500
         use_mlock = 0
