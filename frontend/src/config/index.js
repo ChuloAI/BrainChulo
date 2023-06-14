@@ -1,7 +1,6 @@
-console.log("env mode",import.meta.env.BASE_URL);
 
 const config = {
-    baseUrl: 'http://localhost:5173/api',
+    baseUrl: import.meta.env.BACKEND_BASE_URL,
 }
 
 export default config;
