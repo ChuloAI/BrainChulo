@@ -6,6 +6,8 @@ services:
       - "9000:9000"
     volumes:
       - ./models:/models
+    networks:
+      common-network:
     # Add the "labels" section to set the container to remove itself on shutdown
     labels:
       - "com.docker.compose.container-name=guidance-server"
@@ -37,7 +39,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "7865:7865"
-    network_mode: "host"
+    networks:
+      - common-network
     volumes:
       - ./app:/code
       - ./models:/models
@@ -61,6 +64,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
+    networks:
+      - common-network
     volumes:
       - ./frontend:/code
       - /code/node_modules
@@ -76,3 +81,6 @@ services:
       - "com.docker.compose.project=brainchulo-frontend"
     # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
     stop_signal: SIGINT
+networks:
+  common-network:
+    driver: bridge
