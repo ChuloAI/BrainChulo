@@ -16,5 +16,5 @@ COPY . .
 EXPOSE 5173
 
 # Specify the command to run when the container starts
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["/entrypoint.sh"]
 
