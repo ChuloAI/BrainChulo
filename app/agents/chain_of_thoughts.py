@@ -7,6 +7,7 @@ from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from prompt_templates.qa_agent import *
+import re 
 
 llm = None
 valid_answers = ['Action', 'Final Answer']
@@ -18,7 +19,6 @@ QA_MODEL = os.getenv("MODEL_PATH")
 
 if ETHICS == "ON":
     agent_template = QA_ETHICAL_AGENT
-    ethics_template = ETHICS_PROMPT
 else: 
     agent_template = QA_AGENT
 
@@ -43,7 +43,6 @@ class ChainOfThoughtsAgent(BaseAgent):
 
         self.num_iter = num_iter
         self.prompt_template = agent_template
-        self.ethics_prompt_template = ethics_template
 
     def searchQA(self, t):    
         return self.checkQuestion(self.question, self.context)
@@ -64,6 +63,17 @@ class ChainOfThoughtsAgent(BaseAgent):
 
         print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
         return context
+    
+    def checkEthics(self, guidance, question):
+        ethics_prompt_template = ""
+        ethics_prompt = guidance(ethics_prompt_template)
+        ethics = ethics_prompt(question=question)
+        # format the
+        ethics_answer = str(ethics)[-3:]
+        ethics_answer=re.sub(r':', '', ethics_answer)
+        ethics_answer = re.sub(r' ', '', ethics_answer)
+    
+
 
     def can_answer(self, question: str):
         question = question.replace("Action Input: ", "")
@@ -100,9 +110,7 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.context = context
         self.history = history
         prompt = self.guidance(self.prompt_template)
-        ethics_prompt = self.guidance(self.ethics_prompt_template)
-        offensive = ethics_prompt(question=self.question)
-        result = prompt(question=self.question, context = self.context, history= self.history, search=self.searchQA,valid_answers=valid_answers, valid_tools=valid_tools)
+        result = prompt(question=self.question, context = self.context, history= self.history,search=self.searchQA)
         return result
 
   

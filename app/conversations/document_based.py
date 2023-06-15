@@ -126,6 +126,8 @@ class DocumentBasedConversation:
         OutputParserException: If the response from the conversation agent could not be parsed.
       """
       context = str(self.search_documents(input))
+      print(Fore.GREEN + Style.BRIGHT + context + Style.RESET_ALL)
+
       final_answer = self.document_qa_agent.run(input, context, history)
       print(Fore.CYAN + Style.BRIGHT + str(final_answer) + Style.RESET_ALL)
 

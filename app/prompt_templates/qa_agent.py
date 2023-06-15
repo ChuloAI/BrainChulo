@@ -2,7 +2,7 @@ QA_ETHICAL_AGENT="""
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpgul assistant. Answer the following questions as best you can. You have access to the following tools:
+You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
@@ -31,14 +31,15 @@ Now classify the intent behind this question:{{question}} Identify if this quest
 {{#assistant~}}
 Thought: I need to evaluate the user's query and determine its intent - is {{question}} phatic or referential?
 Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/select}}
+{{~/assistant}}
 
 {{#if (equal query_type "Phatic")~}}
 Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
+Thought: I need to stay in my role as an helpful assistant.
 Final Answer: {{gen 'phatic answer' temperature=0.7 max_tokens=50}}
 {{else}}
-
 
 {{#user~}}
 Here are the relevant documents from our database:{{search question}}
@@ -48,7 +49,7 @@ Given the documents listed, can you determine an answer to the following questio
 {{#assistant~}}
 Observation: I need to determine if I can answer the question based solely on the returned documents.
 Thought: Inferential analysis of {{question}} for potential answers, telegraphic style.
-Summary {{gen 'summary' temperature=0.5 max_tokens=120}}
+Summary {{gen 'summary' temperature=0 max_tokens=120}}
 {{~/assistant}}
 
 {{#user~}}
@@ -56,10 +57,12 @@ Given your analysis, can you determine an answer to the following question based
 {{~/user}}
 
 {{#assistant~}}
-Thought: I need to determine if I can answer {{question}} based solely on the information provided in my analysis. 
+Thought: I need to determine if I can answer {{question}} based solely on the information provided in {{summary}}. I need to consider all details, even if they seem only remotely related or are uncertain.
 Decision:{{#select 'answer' logprobs='logprobs'}}Yes{{or}}No{{/select}}
+
 {{#if (equal answer "Yes")~}}
 Observation: I believe I can answer {{question}} based on the information contained in my analysis. 
+Thought: Now that I've determined that I can answer the question, I should provide the information to the user.
 Final Answer: {{gen 'answer' temperature=0 max_tokens=100}}
 {{else}}
 Thought: I don't think I can answer the question based on the information contained in the returned documents.
@@ -69,9 +72,9 @@ Final Answer: I'm sorry, but I don't have sufficient information to provide an a
 {{~/assistant}}
 
 {{/if}}
-{{~/assistant}}
+{{/if}}
 
-{{/if}}"""
+"""
 
 
 QA_AGENT= """
@@ -135,7 +138,7 @@ Final Answer: I'm sorry, but I don't have sufficient information to provide an a
 {{~/assistant}}
 
 """
-ETHICS_PROMPT="""
+ETHICS_PROMPT= '''
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
@@ -152,4 +155,5 @@ Utilizing your extensive understanding of common moral and ethical principles, p
 Observation: Let's see if the query is offensive.
 Decision:{{#select 'ethic' logprobs='logprobs'}}Yes{{or}}No{{/select}}
 {{~/assistant}}
-"""
+
+'''
