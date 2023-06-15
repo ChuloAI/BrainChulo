@@ -81,6 +81,9 @@ services:
       - "com.docker.compose.project=brainchulo-frontend"
     # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
     stop_signal: SIGINT
+    entrypoint: ./entrypoint.sh
+    env_file:
+      - .env
 networks:
   common-network:
     driver: bridge
