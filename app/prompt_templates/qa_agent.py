@@ -37,7 +37,6 @@ Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/s
 Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
-Thought: I need to stay in my role as an helpful assistant.
 Final Answer: {{gen 'phatic answer' temperature=0.7 max_tokens=50}}
 {{else}}
 
@@ -47,9 +46,8 @@ Given the documents listed, can you determine an answer to the following questio
 {{~/user}}
 
 {{#assistant~}}
-Observation: I need to determine if I can answer the question based solely on the returned documents.
-Thought: Inferential analysis of {{question}} for potential answers, telegraphic style.
-Summary {{gen 'summary' temperature=0 max_tokens=120}}
+Thought: First, I need to extract potential answers to {{question}} from the returned documents.
+Summary: {{gen 'potential_answers' temperature=0 max_tokens=120}}
 {{~/assistant}}
 
 {{#user~}}
@@ -57,12 +55,11 @@ Given your analysis, can you determine an answer to the following question based
 {{~/user}}
 
 {{#assistant~}}
-Thought: I need to determine if I can answer {{question}} based solely on the information provided in {{summary}}. I need to consider all details, even if they seem only remotely related or are uncertain.
-Decision:{{#select 'answer' logprobs='logprobs'}}Yes{{or}}No{{/select}}
+Thought: I need to determine if I can answer {{question}} based solely on the information provided in my summary. I need to consider all details, even if they seem only remotely related or are uncertain.
+Decision:{{#select 'answerable' logprobs='logprobs'}}Yes{{or}}No{{/select}}
 
-{{#if (equal answer "Yes")~}}
+{{#if (equal answerable "Yes")~}}
 Observation: I believe I can answer {{question}} based on the information contained in my analysis. 
-Thought: Now that I've determined that I can answer the question, I should provide the information to the user.
 Final Answer: {{gen 'answer' temperature=0 max_tokens=100}}
 {{else}}
 Thought: I don't think I can answer the question based on the information contained in the returned documents.
@@ -73,6 +70,7 @@ Final Answer: I'm sorry, but I don't have sufficient information to provide an a
 
 {{/if}}
 {{/if}}
+
 
 """
 

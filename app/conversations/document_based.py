@@ -14,6 +14,7 @@ config = load_config()
 dict_tools = None
 llama_model = None
 
+TEST_MODE = os.getenv("TEST_MODE")
 GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
 
 def get_llama_model():
@@ -85,10 +86,10 @@ class DocumentBasedConversation:
 
         logger.info(f"Searching for: {search_input} in LTM")
         docs = self.vector_store_docs.similarity_search_with_score(
-            search_input, k=5, filter=filter
+            search_input, k=8, filter=filter
         )
         return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
-
+        
     def search_conversations(self, search_input, conversation_id=None):
         """
         Search for the given input in the vector store and return the top 10 most similar documents with their scores.
@@ -126,9 +127,11 @@ class DocumentBasedConversation:
         OutputParserException: If the response from the conversation agent could not be parsed.
       """
       context = str(self.search_documents(input))
+      print(Fore.GREEN + Style.BRIGHT + "Printing vector search context..." + Style.RESET_ALL)
       print(Fore.GREEN + Style.BRIGHT + context + Style.RESET_ALL)
-
       final_answer = self.document_qa_agent.run(input, context, history)
+
+      print(Fore.CYAN + Style.BRIGHT + "Printing full thought process..." + Style.RESET_ALL)
       print(Fore.CYAN + Style.BRIGHT + str(final_answer) + Style.RESET_ALL)
 
       if isinstance(final_answer, dict):

@@ -13,6 +13,8 @@ llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
+TEST_MODE = os.getenv("TEST_MODE")
+
 ETHICS = os.getenv("ETHICS")
 QA_MODEL = os.getenv("MODEL_PATH")
 
@@ -39,17 +41,17 @@ class ChainOfThoughtsAgent(BaseAgent):
     def __init__(self, guidance, retriever, num_iter=3):
         self.guidance = guidance
         self.retriever = ingest_file(TEST_FILE)
-        self.llm = get_llm()
-
         self.num_iter = num_iter
         self.prompt_template = agent_template
+        if TEST_MODE =="ON":
+            self.llm = get_llm()
 
     def searchQA(self, t):    
         return self.checkQuestion(self.question, self.context)
 
     def checkQuestion(self, question: str, context):
         context = context
-        if context == "[]":
+        if TEST_MODE == "ON":
             print(Fore.GREEN + Style.BRIGHT + "No document loaded in conversation. Falling back on test file." + Style.RESET_ALL)
             question = question.replace("Action Input: ", "")
             qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
@@ -60,7 +62,9 @@ class ChainOfThoughtsAgent(BaseAgent):
                 return "Issue in retrieving the answer."
             context_documents = answer_data['source_documents']
             context = " ".join([clean_text(doc.page_content) for doc in context_documents])
-
+            print(Fore.WHITE + Style.BRIGHT + "Printing langchain context..." + Style.RESET_ALL)
+            print(Fore.WHITE + Style.BRIGHT + context + Style.RESET_ALL)
+            
         print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
         return context
     
