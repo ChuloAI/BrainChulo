@@ -14,8 +14,11 @@ valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
 ETHICS = os.getenv("ETHICS")
 QA_MODEL = os.getenv("MODEL_PATH")
+
+
 if ETHICS == "ON":
     agent_template = QA_ETHICAL_AGENT
+    ethics_template = ETHICS_PROMPT
 else: 
     agent_template = QA_AGENT
 
@@ -40,21 +43,26 @@ class ChainOfThoughtsAgent(BaseAgent):
 
         self.num_iter = num_iter
         self.prompt_template = agent_template
+        self.ethics_prompt_template = ethics_template
 
     def searchQA(self, t):    
-        return self.checkQuestion(self.question)
+        return self.checkQuestion(self.question, self.context)
 
-    def checkQuestion(self, question: str):
-        question = question.replace("Action Input: ", "")
-        qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
-        answer_data = qa({"query": question})
+    def checkQuestion(self, question: str, context):
+        context = context
+        if context == "[]":
+            print(Fore.GREEN + Style.BRIGHT + "No document loaded in conversation. Falling back on test file." + Style.RESET_ALL)
+            question = question.replace("Action Input: ", "")
+            qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
+            answer_data = qa({"query": question})
 
-        if 'result' not in answer_data:
-            print(f"\033[1;31m{answer_data}\033[0m")
-            return "Issue in retrieving the answer."
+            if 'result' not in answer_data:
+                print(f"\033[1;31m{answer_data}\033[0m")
+                return "Issue in retrieving the answer."
+            context_documents = answer_data['source_documents']
+            context = " ".join([clean_text(doc.page_content) for doc in context_documents])
 
-        context_documents = answer_data['source_documents']
-        context = " ".join([clean_text(doc.page_content) for doc in context_documents])
+        print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
         return context
 
     def can_answer(self, question: str):
@@ -87,10 +95,14 @@ class ChainOfThoughtsAgent(BaseAgent):
             return False
 
 
-    def run(self, query: str) -> str:
+    def run(self, query: str, context, history) -> str:
         self.question = query
+        self.context = context
+        self.history = history
         prompt = self.guidance(self.prompt_template)
-        result = prompt(question=self.question, search=self.searchQA,valid_answers=valid_answers, valid_tools=valid_tools)
+        ethics_prompt = self.guidance(self.ethics_prompt_template)
+        offensive = ethics_prompt(question=self.question)
+        result = prompt(question=self.question, context = self.context, history= self.history, search=self.searchQA,valid_answers=valid_answers, valid_tools=valid_tools)
         return result
 
   

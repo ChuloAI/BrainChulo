@@ -1,6 +1,7 @@
 from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from colorama import Fore, Style
 
 from andromeda_chain import AndromedaChain
 from agents import ChainOfThoughtsAgent
@@ -110,25 +111,37 @@ class DocumentBasedConversation:
         )
         return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
 
-    def predict(self, input):
-        global dict_tools
-        """
-        Predicts a response based on the given input.
+    def predict(self, input, history):
+      global dict_tools
+      """
+      Predicts a response based on the given input.
 
-        Args:
-          input (str): The input string to generate a response for.
+      Args:
+        input (str): The input string to generate a response for.
 
-        Returns:
-          str: The generated response string.
+      Returns:
+        str: The generated response string.
 
-        Raises:
-          OutputParserException: If the response from the conversation agent could not be parsed.
-        """
-        final_answer = self.document_qa_agent.run(input)
-        if isinstance(final_answer, dict):
-            final_answer = {'answer': str(final_answer), 'function': str(final_answer['fn'])}
-        else:
-            # Handle the case when final_answer is not a dictionary.
-            final_answer = {'answer': str(final_answer)}
+      Raises:
+        OutputParserException: If the response from the conversation agent could not be parsed.
+      """
+      context = str(self.search_documents(input))
+      final_answer = self.document_qa_agent.run(input, context, history)
+      print(Fore.CYAN + Style.BRIGHT + str(final_answer) + Style.RESET_ALL)
 
-        return final_answer["answer"]
+      if isinstance(final_answer, dict):
+          final_answer = {'answer': str(final_answer), 'function': str(final_answer['fn'])}
+      else:
+          # Handle the case when final_answer is not a dictionary.
+          final_answer = {'answer': str(final_answer)}
+
+          # Check if 'Final Answer:' key exists in the dictionary
+      if 'Final Answer:' in final_answer['answer']:
+          # Find the index of 'Final Answer:' and extract everything after it
+          answer_start_index = final_answer['answer'].index('Final Answer:') + len('Final Answer:')
+          final_answer_text = final_answer['answer'][answer_start_index:]
+          return final_answer_text.strip()
+      else:
+          return final_answer["answer"]
+
+
