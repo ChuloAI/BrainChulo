@@ -34,7 +34,7 @@ Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/s
 {{~/assistant}}
 
 {{#if (equal query_type "Phatic")~}}
-Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
+Observation: The user's query is conversational. I need to answer as an helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
 Thought: I need to stay in my role of an helpful assistant and make casual conversation.
@@ -100,7 +100,7 @@ Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/s
 {{~/assistant}}
 
 {{#if (equal query_type "Phatic")~}}
-Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
+Observation: The user's query is conversational. I need to answer as an helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
 Thought: I need to stay in my role of an helpful assistant and make casual conversation.
