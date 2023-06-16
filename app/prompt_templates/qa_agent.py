@@ -41,25 +41,17 @@ Final Answer: {{gen 'phatic answer' temperature=0.7 max_tokens=50}}
 {{else}}
 
 {{#user~}}
-Here are the relevant documents from our database:{{search question}}
-Given the documents listed, can you determine an answer to the following question based solely on the provided information: {{question}} Note that your response MUST contain either 'yes' or 'no'.
+Here are the relevant documents from our database:{{set 'documents' (search question)}}
+Using the concept of deixis, please evaluate if the answer to {{question}} is in :{{documents}}. Note that your response MUST contain either 'yes' or 'no'.
 {{~/user}}
 
 {{#assistant~}}
-Thought: First, I need to extract potential answers to {{question}} from the returned documents.
-Summary: {{gen 'potential_answers' temperature=0 max_tokens=120}}
-{{~/assistant}}
-
-{{#user~}}
-Given your analysis, can you determine an answer to the following question based solely on the provided information: {{question}} Consider all details, even if they seem only remotely related or are uncertain.
-{{~/user}}
-
-{{#assistant~}}
-Thought: I need to determine if I can answer {{question}} based solely on the information provided in my summary. I need to consider all details, even if they seem only remotely related or are uncertain.
+Thought: I need to determine if the answer to {{question}} is in: {{documents}}.
 Decision:{{#select 'answerable' logprobs='logprobs'}}Yes{{or}}No{{/select}}
 
 {{#if (equal answerable "Yes")~}}
-Observation: I believe I can answer {{question}} based on the information contained in my analysis. 
+Observation: I believe I can answer {{question}} based on the information contained in my analysis.
+Thought: Now that I know that I can answer, I should provide the information to the user.
 Final Answer: {{gen 'answer' temperature=0 max_tokens=100}}
 {{else}}
 Thought: I don't think I can answer the question based on the information contained in the returned documents.
@@ -69,7 +61,9 @@ Final Answer: I'm sorry, but I don't have sufficient information to provide an a
 {{~/assistant}}
 
 {{/if}}
+
 {{/if}}
+
 
 
 """
