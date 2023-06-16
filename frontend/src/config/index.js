@@ -1,5 +1,5 @@
 const config = {
-    baseUrl: 'http://localhost:7865',
+    baseUrl: import.meta.env.VITE_BACKEND_BASE_URL,
 }
 
 export default config;
