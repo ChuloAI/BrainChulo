@@ -86,7 +86,7 @@ class DocumentBasedConversation:
 
         logger.info(f"Searching for: {search_input} in LTM")
         docs = self.vector_store_docs.similarity_search_with_score(
-            search_input, k=8, filter=filter
+            search_input, k=5, filter=filter
         )
         return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
         

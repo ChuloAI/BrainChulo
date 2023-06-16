@@ -2,7 +2,7 @@ QA_ETHICAL_AGENT="""
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+You are a helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
