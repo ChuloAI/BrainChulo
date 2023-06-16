@@ -7,13 +7,18 @@ from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from prompt_templates.qa_agent import *
+import re 
 
 llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
 TEST_FILE = os.getenv("TEST_FILE")
+TEST_MODE = os.getenv("TEST_MODE")
+
 ETHICS = os.getenv("ETHICS")
 QA_MODEL = os.getenv("MODEL_PATH")
+
+
 if ETHICS == "ON":
     agent_template = QA_ETHICAL_AGENT
 else: 
@@ -36,26 +41,43 @@ class ChainOfThoughtsAgent(BaseAgent):
     def __init__(self, guidance, retriever, num_iter=3):
         self.guidance = guidance
         self.retriever = ingest_file(TEST_FILE)
-        self.llm = get_llm()
-
         self.num_iter = num_iter
         self.prompt_template = agent_template
+        if TEST_MODE =="ON":
+            self.llm = get_llm()
 
     def searchQA(self, t):    
-        return self.checkQuestion(self.question)
+        return self.checkQuestion(self.question, self.context)
 
-    def checkQuestion(self, question: str):
-        question = question.replace("Action Input: ", "")
-        qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
-        answer_data = qa({"query": question})
+    def checkQuestion(self, question: str, context):
+        context = context
+        if TEST_MODE == "ON":
+            print(Fore.GREEN + Style.BRIGHT + "No document loaded in conversation. Falling back on test file." + Style.RESET_ALL)
+            question = question.replace("Action Input: ", "")
+            qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
+            answer_data = qa({"query": question})
 
-        if 'result' not in answer_data:
-            print(f"\033[1;31m{answer_data}\033[0m")
-            return "Issue in retrieving the answer."
-
-        context_documents = answer_data['source_documents']
-        context = " ".join([clean_text(doc.page_content) for doc in context_documents])
+            if 'result' not in answer_data:
+                print(f"\033[1;31m{answer_data}\033[0m")
+                return "Issue in retrieving the answer."
+            context_documents = answer_data['source_documents']
+            context = " ".join([clean_text(doc.page_content) for doc in context_documents])
+            print(Fore.WHITE + Style.BRIGHT + "Printing langchain context..." + Style.RESET_ALL)
+            print(Fore.WHITE + Style.BRIGHT + context + Style.RESET_ALL)
+            
+        print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
         return context
+    
+    def checkEthics(self, guidance, question):
+        ethics_prompt_template = ""
+        ethics_prompt = guidance(ethics_prompt_template)
+        ethics = ethics_prompt(question=question)
+        # format the
+        ethics_answer = str(ethics)[-3:]
+        ethics_answer=re.sub(r':', '', ethics_answer)
+        ethics_answer = re.sub(r' ', '', ethics_answer)
+    
+
 
     def can_answer(self, question: str):
         question = question.replace("Action Input: ", "")
@@ -87,10 +109,12 @@ class ChainOfThoughtsAgent(BaseAgent):
             return False
 
 
-    def run(self, query: str) -> str:
+    def run(self, query: str, context, history) -> str:
         self.question = query
+        self.context = context
+        self.history = history
         prompt = self.guidance(self.prompt_template)
-        result = prompt(question=self.question, search=self.searchQA,valid_answers=valid_answers, valid_tools=valid_tools)
+        result = prompt(question=self.question, context = self.context, history= self.history,search=self.searchQA)
         return result
 
   

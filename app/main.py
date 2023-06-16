@@ -85,7 +85,7 @@ def create_conversation(*, session: Session = Depends(get_session), conversation
     session.add(conversation)
     session.commit()
     session.refresh(conversation)
-
+    print(str(conversation))
     return conversation
 
 
@@ -169,14 +169,16 @@ def upload_file(*, conversation_id: int, file: UploadFile):
 
 
 @app.post('/llm/{conversation_id}/', response_model=str)
-def llm(*, conversation_id: str, query: str):
+def llm(*, conversation_id: str, query: str, session: Session = Depends(get_session)):
     """
     Query the LLM
     """
+    conversation_data = get_conversation(conversation_id, session)
+    history = conversation_data.messages 
     if config.use_flow_agents:
         return convo.predict(query, conversation_id)
     else:
-        return convo.predict(query)
+        return convo.predict(query, history)
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
 def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
