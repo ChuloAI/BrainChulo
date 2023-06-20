@@ -40,11 +40,11 @@ def get_llm():
 class ChainOfThoughtsAgent(BaseAgent):
     def __init__(self, guidance, retriever, num_iter=3):
         self.guidance = guidance
-        self.retriever = ingest_file(TEST_FILE)
         self.num_iter = num_iter
         self.prompt_template = agent_template
         if TEST_MODE =="ON":
             self.llm = get_llm()
+            self.retriever = ingest_file(TEST_FILE)
 
     def searchQA(self, t):    
         return self.checkQuestion(self.question, self.context)
@@ -114,7 +114,10 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.context = context
         self.history = history
         prompt = self.guidance(self.prompt_template)
-        result = prompt(question=self.question, context = self.context, history= self.history,search=self.searchQA)
+        if TEST_MODE =="ON":
+            result = prompt(question=self.question, context = self.context, history= self.history,search=self.searchQA)
+        else:
+            result = prompt(question=self.question, context = self.context, history= self.history)
         return result
 
   
