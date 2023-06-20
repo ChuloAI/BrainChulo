@@ -1,37 +1,5 @@
 version: '3'
 services:
-  guidance:
-    image: paolorechia/guidance_server:gpu-0.3
-    ports:
-      - "9000:9000"
-    volumes:
-      - ./models:/models
-    networks:
-      common-network:
-    # Add the "labels" section to set the container to remove itself on shutdown
-    labels:
-      - "com.docker.compose.container-name=guidance-server"
-      - "com.docker.compose.service=guidance-server"
-      - "com.docker.compose.oneoff=False"
-      - "com.docker.compose.project=brainchulo-guidance-server"
-    # Add the "stop_signal: SIGINT" option to use SIGINT signal for stopping the container gracefully
-    stop_signal: SIGINT
-    env_file:
-      - .env
-    deploy:
-      resources:
-        limits:
-          memory: 28000M
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
 
   backend:
     build:
@@ -62,6 +30,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+ 
     ports:
       - "5173:5173"
     networks:
