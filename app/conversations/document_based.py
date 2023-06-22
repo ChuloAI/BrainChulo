@@ -5,7 +5,6 @@ from colorama import Fore, Style
 
 from andromeda_chain import AndromedaChain
 from agents import ChainOfThoughtsAgent
-
 from settings import logger, load_config
 import guidance 
 import os
@@ -13,6 +12,7 @@ import os
 config = load_config()
 dict_tools = None
 llama_model = None
+guidance_model_path = config.guidance_model_path
 
 TEST_MODE = os.getenv("TEST_MODE")
 GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
@@ -22,7 +22,7 @@ def get_llama_model():
     if llama_model is None:
         print("Loading guidance model...")
         llama_model = guidance.llms.LlamaCpp(
-            model = GUIDANCE_MODEL,
+            model = guidance_model_path,
             tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
             before_role = "<|",
             after_role = "|>",

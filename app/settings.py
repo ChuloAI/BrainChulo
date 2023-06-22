@@ -40,8 +40,9 @@ class Settings:
         self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", f"{self.model_root_path}/all-MiniLM-L6-v2")
 
         self.chat_api_url = os.getenv("CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate")
-        self.model_path = os.getenv("MODEL_PATH", f"{self.model_root_path}/wizardLM-7B-HF")
-
+        self.model_path = self.model_root_path  + os.getenv("MODEL_PATH")
+        self.guidance_model_path = self.model_root_path  + os.getenv("GUIDANCE_MODEL_PATH")
+        
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data")
 
