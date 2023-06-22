@@ -7,8 +7,11 @@ from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from prompt_templates.qa_agent import *
+from settings import load_config
+
 import re 
 
+config = load_config()
 llm = None
 valid_answers = ['Action', 'Final Answer']
 valid_tools = ["Check Question", "Google Search"]
@@ -17,6 +20,7 @@ TEST_MODE = os.getenv("TEST_MODE")
 
 ETHICS = os.getenv("ETHICS")
 QA_MODEL = os.getenv("MODEL_PATH")
+model_path = config.model_path
 
 
 if ETHICS == "ON":
