@@ -1,6 +1,3 @@
-llama-cpp-python==0.1.65
-git+https://github.com/Maximilian-Winter/guidance.git@313c726265c94523375b0dadd8954d19c01e709b
-andromeda-chain==0.2.0
 langchain
 python-dotenv
 chromadb
