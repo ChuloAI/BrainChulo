@@ -118,10 +118,8 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.context = context
         self.history = history
         prompt = self.guidance(self.prompt_template)
-        if TEST_MODE =="ON":
-            result = prompt(question=self.question, context = self.context, history= self.history,search=self.searchQA)
-        else:
-            result = prompt(question=self.question, context = self.context, history= self.history)
+        
+        result = prompt(question=self.question, context = self.context, history= self.history, search=self.searchQA)
         return result
 
   

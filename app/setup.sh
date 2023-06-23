@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install llama-cpp-python with CUBAS ON to allow gpu offloading in local
-LLAMA_CUBLAS=1  pip install llama-cpp-python  --force-reinstall --verbose
+LLAMA_CUBLAS=1  pip install llama-cpp-python==0.1.65  --force-reinstall --verbose
 
 # Install experimental cpp guidance package
 pip install git+https://github.com/Maximilian-Winter/guidance.git@313c726265c94523375b0dadd8954d19c01e709b
