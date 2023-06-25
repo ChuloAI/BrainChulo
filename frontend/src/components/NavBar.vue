@@ -6,6 +6,26 @@
           <div class="flex items-center">
             <img class="hidden h-8 w-auto sm:block" src="../assets/logo.png" alt="Logo" />
             <h1 class="hidden ml-3 text-2xl font-bold text-white uppercase sm:block">BrainChulo</h1>
+            <ul class="flex ml-6 space-x-4">
+              <li>
+                <router-link
+                  to="/"
+                  class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  exact-active-class="bg-gray-900 text-white"
+                  active-class="bg-gray-700 text-white">
+                  Home
+                </router-link>
+              </li>
+              <li>
+                <router-link
+                  to="/about"
+                  class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  exact-active-class="bg-gray-900 text-white"
+                  active-class="bg-gray-700 text-white">
+                  About
+                </router-link>
+              </li>
+            </ul>
           </div>
         </div>
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
