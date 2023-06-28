@@ -149,3 +149,96 @@ Decision:{{#select 'ethic' logprobs='logprobs'}}Yes{{or}}No{{/select}}
 {{~/assistant}}
 
 '''
+
+
+
+ethics_prompt= '''
+{{#system~}}
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+### Instruction:
+You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
+{{~/system}}
+
+{{~! The assistant either starts the conversation or not, depending on if the user query is offensive or no}}
+{{#user~}}
+Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
+{{~/user}}
+{{#assistant~}}
+Observation: Let's see if the query is inherently offensive.
+Decision:{{#select 'offensive' logprobs='logprobs'}}Yes{{or}}No{{/select}}
+{{~/assistant}}
+'''
+
+conversation_prompt="""
+{{#system~}}
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+### Instruction:
+You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
+{{~/system}}
+{{~! The assistant then classifies the user intent to decide whether he needs to enter qa mode}}
+{{#user~}}
+Question: {{question}}
+Now classify the intent behind this question:{{question}} Identify if this question is phatic (serving a social function) or referential (seeking information). Provide reasoning for your classification based on elements like the content, structure, or context of the user's input.
+{{~/user}}
+
+{{#assistant~}}
+Thought: I need to evaluate the user's query and determine its intent - is {{question}} phatic or referential?
+Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/select}}
+{{~/assistant}}
+"""
+
+phatic_prompt= '''
+{{#system~}}
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+### Instruction:
+You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
+{{~/system}}
+
+Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
+Chat history: {{history}}
+Latest user message: {{question}}
+Final Answer: {{gen 'phatic_answer' temperature=0 max_tokens=50}}'''
+
+referential_prompt = '''
+{{#system~}}
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+### Instruction:
+You are an helpful assistant. Follow user queries as best you can. You have access to the following tools:
+Search: Useful for when you need to answer questions about factual information. The input is the question to search relevant information.
+{{~/system}}
+
+{{#user~}}
+Using the concept of deixis, please evaluate if the answer to {{question}} is in the documents retrieved from your database. Note that your response MUST contain either 'yes' or 'no'.
+{{~/user}}
+
+{{#assistant~}}
+Observation: I need to determine if the answer to {{question}}  is in:
+{{#each (search question)}}
+{{this.document_content}}
+{{/each}}
+{{#select 'answerable' logprobs='logprobs'}}Yes{{or}}No{{/select}}
+{{~/assistant}}
+'''
+
+answer_prompt = """
+{{#system~}}
+Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+### Instruction:
+You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
+{{~/system}}
+
+{{#user~}}
+Please answer {{question}} based on the information contained in:
+{{#each (search question)}}
+{{this.document_content}}
+{{/each}}
+{{~/user}}
+
+{{#assistant~}}
+Thought: Now that I know that I can answer, I should provide the information to the user. 
+Final Answer: {{gen 'final_answer' temperature=0.7 max_tokens=50}}
+{{~/assistant}}"""

@@ -41,7 +41,8 @@ class Settings:
 
         self.chat_api_url = os.getenv("CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate")
         self.model_path = self.model_root_path  + os.getenv("MODEL_PATH")
-        self.guidance_model_path = self.model_root_path  + os.getenv("GUIDANCE_MODEL_PATH")
+        self.guidance_reasoning_model_path = self.model_root_path  + os.getenv("GUIDANCE_REASONING_MODEL_PATH")
+        self.guidance_extraction_model_path = self.model_root_path  + os.getenv("GUIDANCE_EXTRACTION_MODEL_PATH")
         
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data")
