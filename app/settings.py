@@ -6,14 +6,53 @@ from langchain.embeddings import (
     HuggingFaceInstructEmbeddings,
 )
 
-load_dotenv()
+
+class CustomFormatter(logging.Formatter):
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+ch.setFormatter(CustomFormatter())
+
+logger.addHandler(ch)
 
 
 class Settings:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
+        load_dotenv()
+
         # Chat API - By default, we are assuming Oobabooga's Text Generation
         # WebUI is running
         self.root_path = os.getcwd()
@@ -40,9 +79,9 @@ class Settings:
         self.embeddings_model = os.getenv("EMBEDDINGS_MODEL", f"{self.model_root_path}/all-MiniLM-L6-v2")
 
         self.chat_api_url = os.getenv("CHAT_API_URL", "http://0.0.0.0:5000/api/v1/generate")
-        self.model_path = self.model_root_path  + os.getenv("MODEL_PATH")
-        self.guidance_model_path = self.model_root_path  + os.getenv("GUIDANCE_MODEL_PATH")
-        
+        self.model_path = self.model_root_path + os.getenv("MODEL_PATH")
+        self.guidance_model_path = self.model_root_path + os.getenv("GUIDANCE_MODEL_PATH")
+
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data")
 
@@ -71,6 +110,7 @@ class Settings:
         self.andromeda_url = os.getenv("ANDROMEDA_URL", "http://0.0.0.0:9000")
 
         self.use_flow_agents = os.getenv("USE_FLOW_AGENTS", "false") == "true"
+
 
 def load_config():
     return Settings()
