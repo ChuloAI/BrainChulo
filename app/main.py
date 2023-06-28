@@ -23,10 +23,12 @@ engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args
 if config.use_flow_agents:
     logger.info("Using (experimental) flow agents")
     from conversations.document_based_flow import DocumentBasedConversationFlowAgent
+
     convo = DocumentBasedConversationFlowAgent()
 else:
     logger.info("Using experimental Guidance LLaMA cpp implementation.")
     from conversations.document_based import DocumentBasedConversation
+
     convo = DocumentBasedConversation()
 
 
@@ -155,7 +157,7 @@ def upload_file(*, conversation_id: int, file: UploadFile):
         uploaded_file_name = file.filename
         filepath = os.path.join(os.getcwd(), "data", config.upload_path, uploaded_file_name)
 
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        os.makedirs(os.path.dirname(filepath), mode=0o777, exist_ok=True)
 
         with open(filepath, "wb") as f:
             shutil.copyfileobj(file.file, f)
@@ -174,11 +176,12 @@ def llm(*, conversation_id: str, query: str, session: Session = Depends(get_sess
     Query the LLM
     """
     conversation_data = get_conversation(conversation_id, session)
-    history = conversation_data.messages 
+    history = conversation_data.messages
     if config.use_flow_agents:
         return convo.predict(query, conversation_id)
     else:
         return convo.predict(query, history)
+
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)
 def upvote_message(*, session: Session = Depends(get_session), conversation_id: int, message_id: int):
