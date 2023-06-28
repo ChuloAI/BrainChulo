@@ -47,7 +47,9 @@ class ChainOfThoughtsAgent(BaseAgent):
   
     def __init__(self, guidance, llama_model, llama_model2):
         self.guidance = guidance
+         # We first load the model in charge of reasoning along the guidance program
         self.llama_model = llama_model
+        # We then load the model in charge of correctly identifying the data within the context and provide an answer
         self.llama_model2 = llama_model2
 
     

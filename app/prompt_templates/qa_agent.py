@@ -7,9 +7,9 @@ Search: Useful for when you need to answer questions about current events. The i
 {{~/system}}
 
 {{#block hidden=True}}
-{{~! The assistant either starts the conversation or not, depending on if the user query is offensive or no}}
+{{~! The assistant either starts the conversation or not, depending on if the user's query is offensive or not}}
 {{#user~}}
-Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
+Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query: {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
 {{~/user}}
 
 {{#assistant~}}
@@ -34,10 +34,10 @@ Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/s
 {{~/assistant}}
 
 {{#if (equal query_type "Phatic")~}}
-Observation: The user's query is conversational. I need to answer as an helpful assistant while taking into account our chat history;
+Observation: The user's query is conversational. I need to answer as a helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
-Thought: I need to stay in my role of an helpful assistant and make casual conversation.
+Thought: I need to stay in my role of a helpful assistant and make casual conversation.
 Final Answer: {{gen 'phatic answer' temperature=0.7 max_tokens=50}}
 {{else}}
 
@@ -100,10 +100,10 @@ Decision:{{#select 'query_type' logprobs='logprobs'}}Phatic{{or}}Referential{{/s
 {{~/assistant}}
 
 {{#if (equal query_type "Phatic")~}}
-Observation: The user's query is conversational. I need to answer as an helpful assistant while taking into account our chat history;
+Observation: The user's query is conversational. I need to answer as a helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
-Thought: I need to stay in my role of an helpful assistant and make casual conversation.
+Thought: I need to stay in my role of a helpful assistant and make casual conversation.
 Final Answer: {{gen 'phatic answer' temperature=0.7 max_tokens=50}}
 {{else}}
 
@@ -138,7 +138,7 @@ Answer the following questions as best you can. You have access to the following
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
-{{~! The assistant either starts the conversation or not, depending on if the user query is offensive or no}}
+{{~! The assistant either starts the conversation or not, depending on if the user's query is offensive or not}}
 {{#user~}}
 Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
 {{~/user}}
@@ -156,13 +156,13 @@ ethics_prompt= '''
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+You are a helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
-{{~! The assistant either starts the conversation or not, depending on if the user query is offensive or no}}
+{{~! The assistant either starts the conversation or not, depending on if the user's query is offensive or not}}
 {{#user~}}
-Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
+Utilizing your extensive understanding of common moral and ethical principles, please evaluate the following user's query: {{question}}. Analyze the potential implications and outcomes associated with the query, considering various ethical frameworks such as consequentialism, deontology, and virtue ethics, among others. Also consider the social, cultural, and legal context of the query. Is the user's query ethical and/or moral? 
 {{~/user}}
 {{#assistant~}}
 Observation: Let's see if the query is inherently offensive.
@@ -174,7 +174,7 @@ conversation_prompt="""
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+You are a helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 {{~! The assistant then classifies the user intent to decide whether he needs to enter qa mode}}
@@ -193,11 +193,11 @@ phatic_prompt= '''
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+You are a helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
-Observation: The user's query is conversational. I need to answer him as an helpful assistant while taking into account our chat history;
+Observation: The user's query is conversational. I need to answer him as a helpful assistant while taking into account our chat history;
 Chat history: {{history}}
 Latest user message: {{question}}
 Final Answer: {{gen 'phatic_answer' temperature=0 max_tokens=50}}'''
@@ -206,7 +206,7 @@ referential_prompt = '''
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Follow user queries as best you can. You have access to the following tools:
+You are a helpful assistant. Follow user queries as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about factual information. The input is the question to search relevant information.
 {{~/system}}
 
@@ -227,7 +227,7 @@ answer_prompt = """
 {{#system~}}
 Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 ### Instruction:
-You are an helpful assistant. Answer the following questions as best you can. You have access to the following tools:
+You are a helpful assistant. Answer the following questions as best you can. You have access to the following tools:
 Search: Useful for when you need to answer questions about current events. The input is the question to search relevant information.
 {{~/system}}
 
