@@ -3,6 +3,8 @@ from guidance_tooling.guidance_programs.tools import ingest_file
 from guidance_tooling.guidance_programs.tools import clean_text
 from langchain.llms import LlamaCpp
 import os
+import time
+import guidance
 from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
@@ -42,14 +44,20 @@ def get_llm():
     return llm
  
 class ChainOfThoughtsAgent(BaseAgent):
-    def __init__(self, guidance, retriever, num_iter=3):
+  
+    def __init__(self, guidance, llama_model, llama_model2):
         self.guidance = guidance
-        self.num_iter = num_iter
-        self.prompt_template = agent_template
-        if TEST_MODE =="ON":
-            self.llm = get_llm()
-            self.retriever = ingest_file(TEST_FILE)
+         # We first load the model in charge of reasoning along the guidance program
+        self.llama_model = llama_model
+        # We then load the model in charge of correctly identifying the data within the context and provide an answer
+        self.llama_model2 = llama_model2
 
+    
+    def print_stage(self, stage_name, message):
+        print(Fore.CYAN + Style.BRIGHT + f"Entering {stage_name} round" + Style.RESET_ALL)
+        time.sleep(1)
+        print(Fore.GREEN + Style.BRIGHT + message + Style.RESET_ALL)
+    
     def searchQA(self, t):    
         return self.checkQuestion(self.question, self.context)
 
@@ -68,58 +76,57 @@ class ChainOfThoughtsAgent(BaseAgent):
             context = " ".join([clean_text(doc.page_content) for doc in context_documents])
             print(Fore.WHITE + Style.BRIGHT + "Printing langchain context..." + Style.RESET_ALL)
             print(Fore.WHITE + Style.BRIGHT + context + Style.RESET_ALL)
-            
-        print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
         return context
     
-    def checkEthics(self, guidance, question):
-        ethics_prompt_template = ""
-        ethics_prompt = guidance(ethics_prompt_template)
-        ethics = ethics_prompt(question=question)
-        # format the
-        ethics_answer = str(ethics)[-3:]
-        ethics_answer=re.sub(r':', '', ethics_answer)
-        ethics_answer = re.sub(r' ', '', ethics_answer)
-    
+    def ethics_check(self, question, ethics_prompt):
+        ethics_program = self.guidance(ethics_prompt)
+        return ethics_program(question=question)
 
+    def query_identification(self, question, conversation_prompt):
+        guidance.llm = self.llama_model
+        conversation_program = self.guidance(conversation_prompt) 
+        return conversation_program(question=question)
 
-    def can_answer(self, question: str):
-        question = question.replace("Action Input: ", "")
-        qa = RetrievalQA.from_chain_type(llm=self.llm, chain_type="stuff", retriever=self.retriever, return_source_documents=True)
-        answer_data = qa({"query": question})
+    def phatic_answer(self, question, history, phatic_prompt):
+        phatic_program = self.guidance(phatic_prompt)
+        return phatic_program(question=question, history=history)
 
-        if 'result' not in answer_data:
-            print(f"\033[1;31m{answer_data}\033[0m")
-            return "Issue in retrieving the answer."
+    def data_retrieval(self, question):
+        if self.llama_model2 is not None:
+            guidance.llm = self.llama_model2
+        referential_program = self.guidance(referential_prompt)
+        referential_round = referential_program(question=question, search=self.searchQA)
+        return referential_round
 
-        answer = answer_data['result']
-        context_documents = answer_data['source_documents']
-        context = " ".join([clean_text(doc.page_content) for doc in context_documents])
-
-        question_check_prompt = """###Instruction: You are an AI assistant who uses document information to answer questions. For each query, your database returns you documents that might or might include relevant elements to the query. Don't forget you MUST answer with 'yes' or 'no'
- 
-        Documents:{context}
-        Given the documents listed, can you determine an answer to the following question based solely on the provided information: ""{question}"" Note that your response MUST contain either 'yes' or 'no'.
-        ### Response:
-        """.format(context=context, question=question)
-        
-        print(Fore.GREEN + Style.BRIGHT + question_check_prompt + Style.RESET_ALL)
-        answerable = self.llm(question_check_prompt)
-        print(Fore.RED + Style.BRIGHT + context + Style.RESET_ALL)
-        print(Fore.RED + Style.BRIGHT + answerable + Style.RESET_ALL)
-        if "yes" in answerable.lower():
-            return True
-        else:
-            return False
-
+    def answer_question(self, question, answer_prompt):
+        if self.llama_model2 is not None:
+            guidance.llm = self.llama_model2
+        answer_program = self.guidance(answer_prompt)
+        answer_round = answer_program(question=question, search=self.searchQA)
+        return answer_round["final_answer"] 
 
     def run(self, query: str, context, history) -> str:
-        self.question = query
+
+        self.question = query 
         self.context = context
         self.history = history
-        prompt = self.guidance(self.prompt_template)
-        
-        result = prompt(question=self.question, context = self.context, history= self.history, search=self.searchQA)
-        return result
+        print(Fore.GREEN + Style.BRIGHT + "Starting guidance agent..." + Style.RESET_ALL)
+        conversation_round= self.query_identification(self.question , conversation_prompt)
+
+        if conversation_round["query_type"] == "Phatic": 
+            self.print_stage("answering", "User query identified as phatic")
+            phatic_round = self.phatic_answer(self.question , history, phatic_prompt)
+            return phatic_round["phatic_answer"]  
+
+        self.print_stage("data retrieval", "User query identified as referential")
+        referential_round = self.data_retrieval(self.question )
+
+        if referential_round["answerable"] == "Yes":
+            self.print_stage("answering", "Matching information found")
+            return self.answer_question(self.question, answer_prompt)
+        else:
+            return "I don't have enough information to answer."
+
+
 
   

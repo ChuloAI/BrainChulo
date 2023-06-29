@@ -2,6 +2,7 @@ from langchain.document_loaders import TextLoader
 from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from colorama import Fore, Style
+from guidance_tooling.guidance_programs.tools import clean_text
 
 from andromeda_chain import AndromedaChain
 from agents import ChainOfThoughtsAgent
@@ -12,7 +13,9 @@ import os
 config = load_config()
 dict_tools = None
 llama_model = None
-guidance_model_path = config.guidance_model_path
+llama_model2 = None
+guidance_reasoning_model_path = config.guidance_reasoning_model_path
+guidance_extraction_model_path = config.guidance_extraction_model_path
 
 TEST_MODE = os.getenv("TEST_MODE")
 GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
@@ -20,17 +23,33 @@ GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
 def get_llama_model():
     global llama_model
     if llama_model is None:
-        print("Loading guidance model...")
+        print("Loading main guidance model...")
         llama_model = guidance.llms.LlamaCpp(
-            model = guidance_model_path,
+            model = guidance_reasoning_model_path,
             tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
             before_role = "<|",
             after_role = "|>",
             n_gpu_layers=300,
             n_threads=12,
             caching=False, )
+        print("Loading main guidance model...")
         guidance.llm = llama_model
     return llama_model
+
+def get_llama_model2():
+    global llama_model2
+    if llama_model2 is None and guidance_extraction_model_path is not None: 
+        print("Loading guidance model...")
+        llama_model2 = guidance.llms.LlamaCpp(
+            model = guidance_extraction_model_path,
+            tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
+            before_role = "<|",
+            after_role = "|>",
+            n_gpu_layers=300,
+            n_threads=12,
+            caching=False, )
+        print("Loading second guidance model...")
+    return llama_model2
 
 class DocumentBasedConversation:
     def __init__(self):
@@ -40,8 +59,10 @@ class DocumentBasedConversation:
         """
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
-        self.llama = get_llama_model()
-        guidance.llm = self.llama
+        self.llama_model = get_llama_model()
+        if llama_model2 is not None:
+            self.llama_model2 = get_llama_model2()
+        guidance.llm = self.llama_model
         self.vector_store_docs = Chroma(collection_name="docs_collection")
         self.vector_store_convs = Chroma(collection_name="convos_collection")
         tools = {
@@ -49,7 +70,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
-        self.document_qa_agent = ChainOfThoughtsAgent(guidance, tools)
+        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2)
 
 
     def load_document(self, document_path, conversation_id=None):
@@ -126,9 +147,11 @@ class DocumentBasedConversation:
       Raises:
         OutputParserException: If the response from the conversation agent could not be parsed.
       """
-      context = str(self.search_documents(input))
+      context = self.search_documents(input)
+      
+      str_context = str(context)
       print(Fore.GREEN + Style.BRIGHT + "Printing vector search context..." + Style.RESET_ALL)
-      print(Fore.GREEN + Style.BRIGHT + context + Style.RESET_ALL)
+      print(Fore.GREEN + Style.BRIGHT + str_context + Style.RESET_ALL)
       final_answer = self.document_qa_agent.run(input, context, history)
 
       print(Fore.CYAN + Style.BRIGHT + "Printing full thought process..." + Style.RESET_ALL)
