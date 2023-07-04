@@ -1,5 +1,5 @@
 from agents.base import BaseAgent
-from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence
+from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence, classify_question
 from langchain.llms import LlamaCpp
 import os
 import time
@@ -45,7 +45,7 @@ def get_llm():
  
 class ChainOfThoughtsAgent(BaseAgent):
   
-    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model):
+    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model, phatic_model, phatic_tokenizer):
         self.guidance = guidance
          # We first load the model in charge of reasoning along the guidance program
         self.llama_model = llama_model
@@ -53,6 +53,9 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.llama_model2 = llama_model2
         self.bert_tokenizer = bert_tokenizer
         self.bert_model = bert_model 
+        self.bert_tokenizer = bert_tokenizer
+        self.phatic_model = phatic_model
+        self.phatic_tokenizer = phatic_tokenizer
 
     
     def print_stage(self, stage_name, message):
@@ -85,15 +88,16 @@ class ChainOfThoughtsAgent(BaseAgent):
         return ethics_program(question=question)
 
     def query_classification(self, question):
-        print(Fore.RED + Style.BRIGHT + "CLASSIFYING QUERY" + Style.RESET_ALL)
+        print(Fore.RED + Style.BRIGHT + "Classifying query..." + Style.RESET_ALL)
         prediction = classify_sentence(self.bert_model, self.bert_tokenizer, question)
         print(Fore.RED + Style.BRIGHT + str(prediction)+ Style.RESET_ALL)
         return prediction
     
-    def query_identification(self, question, conversation_prompt):
-        guidance.llm = self.llama_model
-        conversation_program = self.guidance(conversation_prompt) 
-        return conversation_program(question=question)
+    def query_identification(self, question):
+        print(Fore.RED + Style.BRIGHT + "Classifying question..." + Style.RESET_ALL)
+        prediction = classify_question(self.phatic_model, self.phatic_tokenizer, question)
+        print(Fore.RED + Style.BRIGHT + str(prediction)+ Style.RESET_ALL)
+        return prediction
 
     def phatic_answer(self, question, history, phatic_prompt):
         phatic_program = self.guidance(phatic_prompt)
@@ -114,7 +118,6 @@ class ChainOfThoughtsAgent(BaseAgent):
         return answer_round["final_answer"] 
 
     def run(self, query: str, context, history) -> str:
-
         self.question = query 
         self.context = context
         self.history = history
@@ -127,9 +130,9 @@ class ChainOfThoughtsAgent(BaseAgent):
             phatic_round = self.phatic_answer(query, history, phatic_prompt)
             return phatic_round["phatic_answer"]  
         
-        conversation_round= self.query_identification(self.question , conversation_prompt)
+        conversation_round= self.query_identification(self.question)
 
-        if conversation_round["query_type"] == "Phatic": 
+        if "phatic" in conversation_round: 
             self.print_stage("answering", "User query identified as phatic")
             phatic_round = self.phatic_answer(self.question , history, phatic_prompt)
             return phatic_round["phatic_answer"]  

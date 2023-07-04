@@ -106,7 +106,35 @@ def classify_sentence(model, tokenizer, sentence):
     _, predicted = torch.max(outputs.logits, 1)
     
     # Return the predicted class (0 for 'declarative', 1 for 'interrogative')
-    return 'declarative' if predicted.item() == 0 else 'interrogative'
+    return "declarative" if predicted.item() == 0 else "interrogative"
+
+
+def classify_question(model, tokenizer, sentence):
+    # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
+    print("FUNCTION STARTED")
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/phatic_referential_results/checkpoint-18000')
+    encoding = tokenizer.encode_plus(
+      sentence,
+      truncation=True,
+      padding='max_length',
+      max_length=128,
+      return_tensors='pt'  # Return PyTorch tensors
+    )
+    # Get the input IDs and attention mask in tensor format
+    input_ids = encoding['input_ids']
+    attention_mask = encoding['attention_mask']
+
+    # No gradient needed for inference, so wrap in torch.no_grad()
+    with torch.no_grad():
+        # Forward pass, get logit predictions
+        outputs = model(input_ids, attention_mask=attention_mask)
+    print(outputs)
+    # Get the predicted class
+    _, predicted = torch.max(outputs.logits, 1)
+    
+    # Return the predicted class (0 for 'declarative', 1 for 'interrogative')
+    return "phatic" if predicted.item() == 0 else "referential"
 
 
 

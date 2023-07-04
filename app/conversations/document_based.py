@@ -18,6 +18,9 @@ llama_model2 = None
 bert = None
 bert_tokenizer = None
 bert_model = None
+phatic_tokenizer = None
+phatic_model = None 
+
 guidance_reasoning_model_path = config.guidance_reasoning_model_path
 guidance_extraction_model_path = config.guidance_extraction_model_path
 
@@ -63,6 +66,13 @@ def load_bert():
     print("u-bert node loaded!")
     return {"tokenizer": tokenizer, "model": model}
 
+def load_phatic_bert():
+    print("Loading phatic alphabert node...")
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/results/checkpoint-13500')
+    print("alphabert node loaded!")
+    return {"phatic_tokenizer": tokenizer, "phatic_model": model}
+
 class DocumentBasedConversation:
     def __init__(self):
         """
@@ -70,8 +80,14 @@ class DocumentBasedConversation:
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
         self.bert = load_bert()
+        self.phatic_bert = load_phatic_bert()
+        
+        self.bert_model  = self.bert["model"]
         self.bert_tokenizer=self.bert["tokenizer"]
-        self.bert_model = self.bert["model"]
+    
+        self.phatic_model = self.phatic_bert["phatic_model"]
+        self.phatic_tokenizer=self.phatic_bert["phatic_tokenizer"]
+
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
         self.llama_model = get_llama_model()
@@ -85,7 +101,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
-        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2, bert_tokenizer, bert_model)
+        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2, bert_tokenizer, bert_model, phatic_tokenizer, phatic_model)
 
 
     def load_document(self, document_path, conversation_id=None):
