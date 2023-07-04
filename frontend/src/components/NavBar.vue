@@ -38,27 +38,36 @@
 
 <script>
   import NavbarDropdown from './NavbarDropdown.vue';
+  import { useProfileStore } from '../stores/profile';
+
   export default {
     name: 'NavBar',
     components: {
       NavbarDropdown,
     },
-    props: {
-      username: {
-        type: String,
-        required: true,
+    data() {
+      return {
+        profileStore: useProfileStore(),
+      };
+    },
+    computed: {
+      username() {
+        return this.profileStore.username;
       },
-      avatarUrl: {
-        type: String,
-        required: true,
+      avatarUrl() {
+        return this.profileStore.avatarUrl;
       },
     },
     methods: {
       updateProfile(data = {}) {
+        this.profileStore.updateProfile(data);
+
         this.$emit('update-profile', data);
       },
-      clearMessages() {
-        this.$emit('clear-messages');
+      async clearMessages() {
+        if (!window.confirm('Are you sure?')) return;
+
+        this.profileStore.clearMessages();
       },
     },
   };
