@@ -1,14 +1,10 @@
 <template>
-  <div class="about">
-    <nav>
-      <router-link to="/">Home</router-link>
-      <router-link to="/about">About</router-link>
-    </nav>
-    <NavBar :username="username" :avatar-url="avatarUrl" @update-profile="updateProfile" @clear-messages="clearMessages"></NavBar>
+  <main class="about h-screen flex flex-col">
+    <NavBar></NavBar>
 
     <h1>About View</h1>
     <p>This is the about view.</p>
-  </div>
+  </main>
 </template>
 
 <script>
@@ -20,13 +16,3 @@
     },
   };
 </script>
-
-<style>
-  @media (min-width: 1024px) {
-    .about {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
-  }
-</style>

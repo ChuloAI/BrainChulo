@@ -1,7 +1,6 @@
 <template :class="{ dark: isDarkMode }">
-  <div class="h-screen flex flex-col">
+  <div class="flex flex-col chat-window">
     <!-- toolbar -->
-    <NavBar :username="username" :avatar-url="avatarUrl" @update-profile="updateProfile" @clear-messages="clearMessages"></NavBar>
     <div class="overflow-hidden w-full h-full relative flex z-0">
       <!-- sidebar -->
       <SideBar
@@ -69,15 +68,14 @@
 <script>
   import SideBar from './SideBar.vue';
   import ChatBubble from './ChatBubble.vue';
-  import NavBar from './NavBar.vue';
   import InternalService from '../services/internal';
   import FileUpload from 'vue-upload-component';
+  import eventBus from '../services/eventBus';
 
   export default {
     components: {
       SideBar,
       ChatBubble,
-      NavBar,
       FileUpload,
     },
     data() {
@@ -96,6 +94,9 @@
     },
     mounted() {
       this.$refs.messageInput.focus();
+
+      eventBus.$on('update-profile', this.updateProfile);
+      eventBus.$on('clear-messages', this.clearMessages);
     },
     methods: {
       async onSetup() {
@@ -121,9 +122,6 @@
       },
 
       updateProfile(data) {
-        localStorage.setItem('username', data['username']);
-        localStorage.setItem('avatarUrl', data['avatarUrl']);
-
         this.username = data['username'];
         this.avatarUrl = data['avatarUrl'];
 
@@ -131,13 +129,7 @@
         this.onSelectConversation(this.conversation_id);
       },
       async clearMessages() {
-        if (!window.confirm('Are you sure?')) return;
-
         this.messages = [];
-        localStorage.removeItem('conversation_id');
-
-        await InternalService.resetDatabase();
-
         await this.onSetup();
       },
       async sendMessage() {
@@ -249,6 +241,9 @@
 </script>
 
 <style scoped>
+  .chat-window {
+    height: calc(100% - 64px);
+  }
   .overflow-y-auto {
     overflow-y: scroll; /* add a scrollbar when the content overflows */
     height: 80%;
