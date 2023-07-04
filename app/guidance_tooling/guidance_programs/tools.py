@@ -1,14 +1,17 @@
 from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter, RecursiveCharacterTextSplitter
 from langchain import HuggingFacePipeline
 from colorama import Fore, Style
-import re
+from transformers import BertTokenizerFast, BertForSequenceClassification
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
-from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter, RecursiveCharacterTextSplitter
-import os
 from langchain.llms import LlamaCpp
+import torch
+import re
+import os
+
 
 load_dotenv()
 
@@ -77,6 +80,33 @@ def ingest_file(file_path):
         print(retriever)
 
         return retriever
+
+def classify_sentence(model, tokenizer, sentence):
+    # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
+    print("FUNCTION STARTED")
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/results/checkpoint-13500')
+    encoding = tokenizer.encode_plus(
+      sentence,
+      truncation=True,
+      padding='max_length',
+      max_length=128,
+      return_tensors='pt'  # Return PyTorch tensors
+    )
+    # Get the input IDs and attention mask in tensor format
+    input_ids = encoding['input_ids']
+    attention_mask = encoding['attention_mask']
+
+    # No gradient needed for inference, so wrap in torch.no_grad()
+    with torch.no_grad():
+        # Forward pass, get logit predictions
+        outputs = model(input_ids, attention_mask=attention_mask)
+    print(outputs)
+    # Get the predicted class
+    _, predicted = torch.max(outputs.logits, 1)
+    
+    # Return the predicted class (0 for 'declarative', 1 for 'interrogative')
+    return 'declarative' if predicted.item() == 0 else 'interrogative'
 
 
 

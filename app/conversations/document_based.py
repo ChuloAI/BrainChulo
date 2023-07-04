@@ -3,6 +3,7 @@ from memory.chroma_memory import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from colorama import Fore, Style
 from guidance_tooling.guidance_programs.tools import clean_text
+from transformers import BertTokenizerFast, BertForSequenceClassification
 
 from andromeda_chain import AndromedaChain
 from agents import ChainOfThoughtsAgent
@@ -14,6 +15,9 @@ config = load_config()
 dict_tools = None
 llama_model = None
 llama_model2 = None
+bert = None
+bert_tokenizer = None
+bert_model = None
 guidance_reasoning_model_path = config.guidance_reasoning_model_path
 guidance_extraction_model_path = config.guidance_extraction_model_path
 
@@ -51,12 +55,23 @@ def get_llama_model2():
         print("Loading second guidance model...")
     return llama_model2
 
+
+def load_bert():
+    print("Loading u-bert node...")
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/results/checkpoint-13500')
+    print("u-bert node loaded!")
+    return {"tokenizer": tokenizer, "model": model}
+
 class DocumentBasedConversation:
     def __init__(self):
         """
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
+        self.bert = load_bert()
+        self.bert_tokenizer=self.bert["tokenizer"]
+        self.bert_model = self.bert["model"]
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
         self.llama_model = get_llama_model()
@@ -70,7 +85,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
-        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2)
+        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2, bert_tokenizer, bert_model)
 
 
     def load_document(self, document_path, conversation_id=None):

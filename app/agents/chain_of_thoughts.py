@@ -1,6 +1,5 @@
 from agents.base import BaseAgent
-from guidance_tooling.guidance_programs.tools import ingest_file
-from guidance_tooling.guidance_programs.tools import clean_text
+from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence
 from langchain.llms import LlamaCpp
 import os
 import time
@@ -42,15 +41,18 @@ def get_llm():
         callbacks = []
         llm = LlamaCpp(model_path=model_path, n_ctx=model_n_ctx, callbacks=callbacks, verbose=False,n_gpu_layers=n_gpu_layers, use_mlock=use_mlock,top_p=0.9, n_batch=n_batch)
     return llm
+
  
 class ChainOfThoughtsAgent(BaseAgent):
   
-    def __init__(self, guidance, llama_model, llama_model2):
+    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model):
         self.guidance = guidance
          # We first load the model in charge of reasoning along the guidance program
         self.llama_model = llama_model
         # We then load the model in charge of correctly identifying the data within the context and provide an answer
         self.llama_model2 = llama_model2
+        self.bert_tokenizer = bert_tokenizer
+        self.bert_model = bert_model 
 
     
     def print_stage(self, stage_name, message):
@@ -82,6 +84,12 @@ class ChainOfThoughtsAgent(BaseAgent):
         ethics_program = self.guidance(ethics_prompt)
         return ethics_program(question=question)
 
+    def query_classification(self, question):
+        print(Fore.RED + Style.BRIGHT + "CLASSIFYING QUERY" + Style.RESET_ALL)
+        prediction = classify_sentence(self.bert_model, self.bert_tokenizer, question)
+        print(Fore.RED + Style.BRIGHT + str(prediction)+ Style.RESET_ALL)
+        return prediction
+    
     def query_identification(self, question, conversation_prompt):
         guidance.llm = self.llama_model
         conversation_program = self.guidance(conversation_prompt) 
@@ -111,6 +119,14 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.context = context
         self.history = history
         print(Fore.GREEN + Style.BRIGHT + "Starting guidance agent..." + Style.RESET_ALL)
+
+        classification_round= self.query_classification(query)
+        self.print_stage("query classification", "User query identified as " + classification_round)
+        if "declarative" in classification_round:
+            self.print_stage("answering", "User query is not a question")
+            phatic_round = self.phatic_answer(query, history, phatic_prompt)
+            return phatic_round["phatic_answer"]  
+        
         conversation_round= self.query_identification(self.question , conversation_prompt)
 
         if conversation_round["query_type"] == "Phatic": 
