@@ -48,19 +48,19 @@
     data() {
       return {
         profileStore: useProfileStore(),
+        username: '',
+        avatarUrl: '',
       };
     },
-    computed: {
-      username() {
-        return this.profileStore.username;
-      },
-      avatarUrl() {
-        return this.profileStore.avatarUrl;
-      },
+    mounted() {
+      this.username = this.profileStore.username;
+      this.avatarUrl = this.profileStore.avatarUrl;
     },
     methods: {
       updateProfile(data = {}) {
         this.profileStore.updateProfile(data);
+        this.username = data['username'];
+        this.avatarUrl = data['avatarUrl'];
 
         this.$emit('update-profile', data);
       },
