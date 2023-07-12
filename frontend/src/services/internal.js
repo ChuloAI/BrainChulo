@@ -58,8 +58,10 @@ class InternalService {
     }
 
     /* Query the LLM */
-    async queryLLM(conversationId, query) {
-        return await this.request(`/llm/${conversationId}/`, 'POST', {}, {}, {query: query});
+    async queryLLM(conversationId, query, params = {}) {
+        // if no conversation id is passed, only query the LLM without context
+        conversationId = conversationId || 'query';
+        return await this.request(`/llm/${conversationId}/`, 'POST', params, {}, {query: query});
     }
 
     /* Upvote a message */
