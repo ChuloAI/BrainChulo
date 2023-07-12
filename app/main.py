@@ -78,6 +78,14 @@ def on_startup():
     create_db_and_tables()
 
 
+@app.post('/llm/query/', response_model=str)
+def llm_query(*, query: str, session: Session = Depends(get_session)):
+    """
+    Query the LLM
+    """
+    return convo.predict(query, [])
+
+
 @app.post("/conversations", response_model=Conversation)
 def create_conversation(*, session: Session = Depends(get_session), conversation: Conversation):
     """
