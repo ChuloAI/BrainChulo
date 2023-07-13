@@ -1,16 +1,19 @@
 <script>
-  import { Node } from 'vue-flow';
+  import { Handle, Position } from '@vue-flow/core';
   import InternalService from '@/services/internal';
 
   export default {
     name: 'LLMQueryNode',
-    extends: Node,
+    components: {
+      Handle,
+    },
     data() {
       return {
         query: '',
         parameters: {},
         results: [],
         expandParameters: false,
+        Position: Position,
       };
     },
     methods: {
@@ -24,6 +27,7 @@
 
 <template>
   <div>
+    <Handle type="target" :position="Position.Top" />
     <h1>LLM Query</h1>
     <div class="node-content">
       <textarea v-model="query" placeholder="Enter your query"></textarea>
@@ -47,5 +51,7 @@
         Make Query
       </button>
     </div>
+
+    <Handle type="source" :position="Position.Bottom" />
   </div>
 </template>
