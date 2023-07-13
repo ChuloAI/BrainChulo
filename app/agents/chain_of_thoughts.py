@@ -45,24 +45,13 @@ def get_llm():
  
 class ChainOfThoughtsAgent(BaseAgent):
   
-    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model, phatic_model, phatic_tokenizer, subject_extraction_model, subject_extraction_tokenizer, synthesis_model, synthesis_tokenizer, matching_model, matching_tokenizer):
+    def __init__(self, guidance, llama_model, llama_model2,):
         self.guidance = guidance
          # We first load the model in charge of reasoning along the guidance program
         self.llama_model = llama_model
         # We then load the model in charge of correctly identifying the data within the context and provide an answer
         self.llama_model2 = llama_model2
-        self.bert_tokenizer = bert_tokenizer
-        self.bert_model = bert_model 
-        self.bert_tokenizer = bert_tokenizer
-        self.phatic_model = phatic_model
-        self.phatic_tokenizer = phatic_tokenizer
-        self.subject_extraction_model = subject_extraction_model
-        self.subject_extraction_tokenizer = subject_extraction_tokenizer
-        self.synthesis_model = synthesis_model
-        self.synthesis_tokenizer= synthesis_tokenizer
-        self.matching_model = matching_model
-        self.matching_tokenizer = matching_tokenizer
-
+   
     
     def print_stage(self, stage_name, message):
         print(Fore.CYAN + Style.BRIGHT + f"Entering {stage_name} round" + Style.RESET_ALL)
@@ -95,13 +84,13 @@ class ChainOfThoughtsAgent(BaseAgent):
 
     def query_classification(self, question):
         print(Fore.RED + Style.BRIGHT + "Classifying query..." + Style.RESET_ALL)
-        prediction = classify_sentence(self.bert_model, self.bert_tokenizer, question)
+        prediction = classify_sentence(question)
         print(Fore.RED + Style.BRIGHT + str(prediction)+ Style.RESET_ALL)
         return prediction
     
     def query_identification(self, question):
         print(Fore.RED + Style.BRIGHT + "Classifying question..." + Style.RESET_ALL)
-        prediction = classify_question(self.phatic_model, self.phatic_tokenizer, question)
+        prediction = classify_question(question)
         print(Fore.RED + Style.BRIGHT + str(prediction)+ Style.RESET_ALL)
         return prediction
 
@@ -110,16 +99,16 @@ class ChainOfThoughtsAgent(BaseAgent):
         return phatic_program(question=question, history=history)
 
     def topic_extraction(self, question):
-        subject= generate_subject(self.subject_extraction_model, self.subject_extraction_tokenizer, question)
+        subject= generate_subject(question)
         return subject
     
     def data_summary(self, context):
         print("STARTING SUMMARY")
-        summary = generate_summary(self.synthesis_model, self.synthesis_tokenizer, context)
+        summary = generate_summary(context)
         return summary
     
     def data_matching(self, subject, summary):
-        subject= predict_match(self.matching_model, self.matching_tokenizer, subject, summary)
+        subject= predict_match(subject, summary)
         return subject
     
     def data_retrieval(self, question):
@@ -167,9 +156,9 @@ class ChainOfThoughtsAgent(BaseAgent):
         topic_extraction_round = self.topic_extraction(query)
         self.print_stage("topic extraction", "Query subject identified as " + topic_extraction_round)
         time.sleep(1)
-        self.print_stage("topic extraction", "Evaluating correspondance between " + topic_extraction_round + " and " + str(data_summary_round))
+        self.print_stage("data matching", "Evaluating correspondance between " + topic_extraction_round + " and " + str(data_summary_round))
         data_matching_round = self.data_matching(str(topic_extraction_round), str(data_summary_round))
-        self.print_stage("topic extraction", "Match between subject and matrix estimated at " + str(data_matching_round))
+        print(Fore.CYAN + Style.BRIGHT + "Match between subject and matrix estimated at " + str(data_matching_round) + Style.RESET_ALL)
 
         if data_matching_round == 1:
             self.print_stage("answering", "Matching information found")

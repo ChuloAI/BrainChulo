@@ -85,7 +85,7 @@ def ingest_file(file_path):
 
         return retriever
 
-def classify_sentence(model, tokenizer, sentence):
+def classify_sentence(sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -113,7 +113,7 @@ def classify_sentence(model, tokenizer, sentence):
     return "declarative" if predicted.item() == 0 else "interrogative"
 
 
-def classify_question(model, tokenizer, sentence):
+def classify_question(sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -141,7 +141,7 @@ def classify_question(model, tokenizer, sentence):
     return "phatic" if predicted.item() == 0 else "referential"
 
 
-def generate_subject(model, tokenizer, question):
+def generate_subject(question):
     # Tokenize the question
     bart_extraction_tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
     bart_extraction_model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/results/checkpoint-12000')
@@ -156,7 +156,7 @@ def generate_subject(model, tokenizer, question):
     print(str(subject))
     return subject
 
-def generate_summary(model, tokenizer, document_matrix):
+def generate_summary(document_matrix):
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
     model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/bart_synthesis_results/checkpoint-13000')  # Replace with your trained model's path
     #document_matrix = str(document_matrix)
@@ -178,21 +178,8 @@ def generate_summary(model, tokenizer, document_matrix):
     
     return summary
 
-def predict_match(model, tokenizer, subject, summary):
-    model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
 
-    model.eval()
-
-    model.to('cuda' if torch.cuda.is_available() else 'cpu')
-    with torch.no_grad():  # deactivate autograd engine to reduce memory usage and speed up computations
-        inputs = tokenizer(subject, summary, return_tensors='pt', truncation=True, padding='max_length', max_length=256)
-        inputs = inputs.to('cuda' if torch.cuda.is_available() else 'cpu')  # Move the inputs to the GPU if available
-        outputs = model(**inputs)
-        predicted_class_idx = outputs.logits.argmax(-1).item()  # get the class index with the highest logit
-    return predicted_class_idx
-
-def predict_match(model, tokenizer, subject, summary):
+def predict_match(subject, summary):
     model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
     model.eval()

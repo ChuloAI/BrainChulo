@@ -66,40 +66,7 @@ def get_llama_model2():
     return llama_model2
 
 
-def load_bert():
-    print("Loading u-bert node...")
-    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/results/checkpoint-13500')
-    print("u-bert node loaded!")
-    return {"tokenizer": tokenizer, "model": model}
 
-def load_phatic_bert():
-    print("Loading phatic alphabert node...")
-    tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/phatic_referential_results/checkpoint-18000')
-    print("alphabert node loaded!")
-    return {"phatic_tokenizer": tokenizer, "phatic_model": model}
-
-def load_subject_extraction_bart():
-    print("Loading subject extraction node...")
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-    model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/results/checkpoint-12000')
-    print("subject extraction bart node loaded!")
-    return {"subject_extraction_tokenizer": tokenizer, "subject_extraction_model": model}
-
-def load_synthesis_bart():
-    print("Loading synthesis node...")
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-    model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/bart_synthesis_results/checkpoint-13000')
-    print("subject synthesis bart node loaded!")
-    return {"synthesis_tokenizer": tokenizer, "synthesis_model": model}
-
-def load_matching_bart():
-    print("Loading matching bart node...")
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-    model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
-    print("subject matching bart node loaded!")
-    return {"matching_tokenizer": tokenizer, "matching_model": model}
 
 class DocumentBasedConversation:
     def __init__(self):
@@ -107,27 +74,7 @@ class DocumentBasedConversation:
         Initializes an instance of the class. It sets up LLM, text splitter, vector store, prompt template, retriever,
         conversation chain, tools, and conversation agent if USE_AGENT is True.
         """
-        self.bert = load_bert()
-        self.phatic_bert = load_phatic_bert()
-        self.subject_extraction_bart = load_subject_extraction_bart()
-        self.synthesis_bart = load_synthesis_bart()
-        self.matching_bart = load_matching_bart()
-
-        self.bert_model  = self.bert["model"]
-        self.bert_tokenizer=self.bert["tokenizer"]
-    
-        self.phatic_model = self.phatic_bert["phatic_model"]
-        self.phatic_tokenizer=self.phatic_bert["phatic_tokenizer"]
-
-        self.subject_extraction_model = self.subject_extraction_bart["subject_extraction_model"]
-        self.subject_extraction_tokenizer = self.subject_extraction_bart["subject_extraction_tokenizer"]
-        
-        self.synthesis_model = self.synthesis_bart["synthesis_model"]
-        self.synthesis_tokenizer = self.synthesis_bart["synthesis_tokenizer"]
-
-        self.matching_model = self.matching_bart["matching_model"]
-        self.matching_tokenizer = self.matching_bart["matching_tokenizer"]
-
+     
 
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, chunk_overlap=20, length_function=len)
@@ -142,7 +89,7 @@ class DocumentBasedConversation:
             "Search Conversations": self.search_conversations,
         }
         self.andromeda = AndromedaChain(config.andromeda_url)
-        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2, bert_tokenizer, bert_model, phatic_tokenizer, phatic_model, subject_extraction_model, subject_extraction_tokenizer, synthesis_model, synthesis_tokenizer, matching_model, matching_tokenizer)
+        self.document_qa_agent = ChainOfThoughtsAgent(guidance, llama_model,llama_model2 )
 
 
     def load_document(self, document_path, conversation_id=None):
