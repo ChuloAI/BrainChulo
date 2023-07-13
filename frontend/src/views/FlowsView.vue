@@ -8,10 +8,11 @@
   import { Background, BackgroundVariant } from '@vue-flow/background';
   import { MiniMap } from '@vue-flow/minimap';
   import LLMQueryNode from '@/nodes/LLMQueryNode.vue';
+  import TextNode from '../nodes/TextNode.vue';
 
   const { nodes, addNodes, addEdges, onConnect, dimensions } = useVueFlow();
 
-  const nodeTypes = { 'llm-query': markRaw(LLMQueryNode) };
+  const nodeTypes = { 'llm-query': markRaw(LLMQueryNode), text: markRaw(TextNode) };
 
   onConnect((params) => addEdges(params));
 
@@ -21,10 +22,24 @@
       {
         id: '1',
         type: 'llm-query',
-        position: { x: 1050, y: 500 },
+        position: { x: 750, y: 300 },
         label: 'LLM Query Node 1',
+        connectable: true,
+      },
+      {
+        id: '2',
+        type: 'text',
+        position: { x: 1050, y: 300 },
+        label: 'Text Node 1',
+        connectable: true,
       },
     ]);
+
+    addEdges({
+      id: 'e1-2',
+      source: '1',
+      target: '2',
+    });
   });
 
   function addRandomNode() {
