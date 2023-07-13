@@ -5,18 +5,22 @@ from langchain.text_splitter import CharacterTextSplitter, TokenTextSplitter, Re
 from langchain import HuggingFacePipeline
 from colorama import Fore, Style
 from transformers import BertTokenizerFast, BertForSequenceClassification
+from transformers import BartTokenizer, BartForSequenceClassification, BartForConditionalGeneration
+
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
 from langchain.llms import LlamaCpp
+from torch import nn
+
 import torch
 import re
 import os
+import json
 
 
 load_dotenv()
 
 TEST_FILE = os.getenv("TEST_FILE")
-EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
 
 EMBEDDINGS_MAP = {
     **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
@@ -85,7 +89,7 @@ def classify_sentence(model, tokenizer, sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/results/checkpoint-13500')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/results/checkpoint-13500')
     encoding = tokenizer.encode_plus(
       sentence,
       truncation=True,
@@ -113,7 +117,7 @@ def classify_question(model, tokenizer, sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/ChatGPT_Automation/phatic_referential_results/checkpoint-18000')
+    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/phatic_referential_results/checkpoint-18000')
     encoding = tokenizer.encode_plus(
       sentence,
       truncation=True,
@@ -137,6 +141,70 @@ def classify_question(model, tokenizer, sentence):
     return "phatic" if predicted.item() == 0 else "referential"
 
 
+def generate_subject(model, tokenizer, question):
+    # Tokenize the question
+    bart_extraction_tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+    bart_extraction_model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/results/checkpoint-12000')
+
+    inputs = bart_extraction_tokenizer(question, return_tensors='pt', max_length=128, truncation=True, padding='max_length')
+
+    # Generate prediction
+    outputs = bart_extraction_model.generate(**inputs)
+
+    # Decode the output
+    subject = bart_extraction_tokenizer.decode(outputs[0], skip_special_tokens=True)
+    print(str(subject))
+    return subject
+
+def generate_summary(model, tokenizer, document_matrix):
+    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+    model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/bart_synthesis_results/checkpoint-13000')  # Replace with your trained model's path
+    #document_matrix = str(document_matrix)
+    # Remove newline characters, replace single quotes with double quotes, and load as JSON
+    print(type(document_matrix))
+    input_text = ' '.join([doc['document_content'].replace('\n', ' ').replace('\t', ' ') for doc in document_matrix])
+
+    # Join all the documents in the document matrix into a single string
+    input_text = ' '.join([doc['document_content'].replace('\n', ' ').replace('\t', ' ') for doc in document_matrix])
+
+    # Encode the input_text to input_ids
+    input_ids = tokenizer.encode(input_text, return_tensors='pt')
+
+    # Generate summary with the model
+    summary_ids = model.generate(input_ids, num_beams=4, max_length=256, early_stopping=True)
+
+    # Decode the summary ids and return the summary
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    
+    return summary
+
+def predict_match(model, tokenizer, subject, summary):
+    model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
+    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+
+    model.eval()
+
+    model.to('cuda' if torch.cuda.is_available() else 'cpu')
+    with torch.no_grad():  # deactivate autograd engine to reduce memory usage and speed up computations
+        inputs = tokenizer(subject, summary, return_tensors='pt', truncation=True, padding='max_length', max_length=256)
+        inputs = inputs.to('cuda' if torch.cuda.is_available() else 'cpu')  # Move the inputs to the GPU if available
+        outputs = model(**inputs)
+        predicted_class_idx = outputs.logits.argmax(-1).item()  # get the class index with the highest logit
+    return predicted_class_idx
+
+def predict_match(model, tokenizer, subject, summary):
+    model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
+    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+    model.eval()
+    model.to('cuda' if torch.cuda.is_available() else 'cpu')
+    with torch.no_grad():  # deactivate autograd engine to reduce memory usage and speed up computations
+        inputs = tokenizer(subject, summary, return_tensors='pt', truncation=True, padding='max_length', max_length=256)
+        inputs = inputs.to('cuda' if torch.cuda.is_available() else 'cpu')  # Move the inputs to the GPU if available
+        outputs = model(**inputs)
+        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)  # convert logits to probabilities
+        predicted_class_prob = probs[:, 1].item()  # get the probability of class '1'
+        predicted_class_idx = int(predicted_class_prob > 0.9999)  # classify as '1' if probability of class '1' is > 0.9999
+    return predicted_class_idx
 
 def load_tools():  
     #llm = LlamaCpp(model_path=model_path, n_ctx=model_n_ctx, callbacks=callbacks, verbose=False,n_gpu_layers=n_gpu_layers, use_mlock=use_mlock,top_p=0.9, n_batch=n_batch)

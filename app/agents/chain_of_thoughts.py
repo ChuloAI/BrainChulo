@@ -1,5 +1,5 @@
 from agents.base import BaseAgent
-from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence, classify_question
+from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence, classify_question, generate_subject, generate_summary, predict_match
 from langchain.llms import LlamaCpp
 import os
 import time
@@ -45,7 +45,7 @@ def get_llm():
  
 class ChainOfThoughtsAgent(BaseAgent):
   
-    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model, phatic_model, phatic_tokenizer):
+    def __init__(self, guidance, llama_model, llama_model2, bert_tokenizer, bert_model, phatic_model, phatic_tokenizer, subject_extraction_model, subject_extraction_tokenizer, synthesis_model, synthesis_tokenizer, matching_model, matching_tokenizer):
         self.guidance = guidance
          # We first load the model in charge of reasoning along the guidance program
         self.llama_model = llama_model
@@ -56,6 +56,12 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.bert_tokenizer = bert_tokenizer
         self.phatic_model = phatic_model
         self.phatic_tokenizer = phatic_tokenizer
+        self.subject_extraction_model = subject_extraction_model
+        self.subject_extraction_tokenizer = subject_extraction_tokenizer
+        self.synthesis_model = synthesis_model
+        self.synthesis_tokenizer= synthesis_tokenizer
+        self.matching_model = matching_model
+        self.matching_tokenizer = matching_tokenizer
 
     
     def print_stage(self, stage_name, message):
@@ -103,6 +109,19 @@ class ChainOfThoughtsAgent(BaseAgent):
         phatic_program = self.guidance(phatic_prompt)
         return phatic_program(question=question, history=history)
 
+    def topic_extraction(self, question):
+        subject= generate_subject(self.subject_extraction_model, self.subject_extraction_tokenizer, question)
+        return subject
+    
+    def data_summary(self, context):
+        print("STARTING SUMMARY")
+        summary = generate_summary(self.synthesis_model, self.synthesis_tokenizer, context)
+        return summary
+    
+    def data_matching(self, subject, summary):
+        subject= predict_match(self.matching_model, self.matching_tokenizer, subject, summary)
+        return subject
+    
     def data_retrieval(self, question):
         if self.llama_model2 is not None:
             guidance.llm = self.llama_model2
@@ -123,6 +142,13 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.history = history
         print(Fore.GREEN + Style.BRIGHT + "Starting guidance agent..." + Style.RESET_ALL)
 
+        topic_extraction_round = self.topic_extraction(query) ##extract the topic from the beginning
+        time.sleep(1)
+        print(Fore.GREEN + Style.BRIGHT + topic_extraction_round + Style.RESET_ALL)
+        data_summary_round = self.data_summary(context) ##generate the summary immediately as well just in case
+        print(Fore.GREEN + Style.BRIGHT + data_summary_round + Style.RESET_ALL)
+        time.sleep(1)
+
         classification_round= self.query_classification(query)
         self.print_stage("query classification", "User query identified as " + classification_round)
         if "declarative" in classification_round:
@@ -138,9 +164,14 @@ class ChainOfThoughtsAgent(BaseAgent):
             return phatic_round["phatic_answer"]  
 
         self.print_stage("data retrieval", "User query identified as referential")
-        referential_round = self.data_retrieval(self.question )
+        topic_extraction_round = self.topic_extraction(query)
+        self.print_stage("topic extraction", "Query subject identified as " + topic_extraction_round)
+        time.sleep(1)
+        self.print_stage("topic extraction", "Evaluating correspondance between " + topic_extraction_round + " and " + str(data_summary_round))
+        data_matching_round = self.data_matching(str(topic_extraction_round), str(data_summary_round))
+        self.print_stage("topic extraction", "Match between subject and matrix estimated at " + str(data_matching_round))
 
-        if referential_round["answerable"] == "Yes":
+        if data_matching_round == 1:
             self.print_stage("answering", "Matching information found")
             return self.answer_question(self.question, answer_prompt)
         else:
