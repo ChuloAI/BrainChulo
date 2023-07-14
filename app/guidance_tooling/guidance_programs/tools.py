@@ -11,7 +11,7 @@ from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
 from langchain.llms import LlamaCpp
 from torch import nn
-
+import gc
 import torch
 import re
 import os
@@ -113,7 +113,10 @@ def classify_sentence(sentence):
     print(outputs)
     # Get the predicted class
     _, predicted = torch.max(outputs.logits, 1)
-    
+    del model
+    torch.cuda.empty_cache()  # clear unused memory in PyTorch
+    gc.collect()  # enforce garbage collection
+
     # Return the predicted class (0 for 'declarative', 1 for 'interrogative')
     return "declarative" if predicted.item() == 0 else "interrogative"
 
@@ -141,7 +144,10 @@ def classify_question(sentence):
     print(outputs)
     # Get the predicted class
     _, predicted = torch.max(outputs.logits, 1)
-    
+    del model
+    torch.cuda.empty_cache()  # clear unused memory in PyTorch
+    gc.collect()  # enforce garbage collection
+
     # Return the predicted class (0 for 'declarative', 1 for 'interrogative')
     return "phatic" if predicted.item() == 0 else "referential"
 
@@ -159,6 +165,10 @@ def generate_subject(question):
     # Decode the output
     subject = bart_extraction_tokenizer.decode(outputs[0], skip_special_tokens=True)
     print(str(subject))
+    del bart_extraction_model
+    torch.cuda.empty_cache()  # clear unused memory in PyTorch
+    gc.collect()  # enforce garbage collection
+
     return subject
 
 def generate_summary(document_matrix):
@@ -180,7 +190,9 @@ def generate_summary(document_matrix):
 
     # Decode the summary ids and return the summary
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    
+    del model
+    torch.cuda.empty_cache()  # clear unused memory in PyTorch
+    gc.collect()  # enforce garbage collection
     return summary
 
 
@@ -196,6 +208,9 @@ def predict_match(subject, summary):
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)  # convert logits to probabilities
         predicted_class_prob = probs[:, 1].item()  # get the probability of class '1'
         predicted_class_idx = int(predicted_class_prob > 0.9999)  # classify as '1' if probability of class '1' is > 0.9999
+    del model
+    torch.cuda.empty_cache()  # clear unused memory in PyTorch
+    gc.collect()  # enforce garbage collection
     return predicted_class_idx
 
 def load_tools():  
