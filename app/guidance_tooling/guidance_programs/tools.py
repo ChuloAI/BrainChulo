@@ -19,6 +19,11 @@ import json
 
 
 load_dotenv()
+QUESTION_BERT= os.getenv("QUESTION_BERT_MODEL_PATH")
+PHATIC_BERT= os.getenv("PHATIC_BERT_MODEL_PATH")
+TOPIC_BART= os.getenv("TOPIC_BART_MODEL_PATH")
+SYNTHESIS_BART= os.getenv("SYNTHESIS_BART_MODEL_PATH")
+MATCHING_BART= os.getenv("MATCHING_BART_MODEL_PATH")
 
 TEST_FILE = os.getenv("TEST_FILE")
 
@@ -89,7 +94,7 @@ def classify_sentence(sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/results/checkpoint-13500')
+    model = BertForSequenceClassification.from_pretrained(QUESTION_BERT)
     encoding = tokenizer.encode_plus(
       sentence,
       truncation=True,
@@ -117,7 +122,7 @@ def classify_question(sentence):
     # Prepare the sentence for BERT by tokenizing, padding and creating attention mask
     print("FUNCTION STARTED")
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-    model = BertForSequenceClassification.from_pretrained('/home/karajan/labzone/training/ChatGPT_Automation/phatic_referential_results/checkpoint-18000')
+    model = BertForSequenceClassification.from_pretrained(PHATIC_BERT)
     encoding = tokenizer.encode_plus(
       sentence,
       truncation=True,
@@ -144,7 +149,7 @@ def classify_question(sentence):
 def generate_subject(question):
     # Tokenize the question
     bart_extraction_tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-    bart_extraction_model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/results/checkpoint-12000')
+    bart_extraction_model = BartForConditionalGeneration.from_pretrained(TOPIC_BART)
 
     inputs = bart_extraction_tokenizer(question, return_tensors='pt', max_length=128, truncation=True, padding='max_length')
 
@@ -158,7 +163,7 @@ def generate_subject(question):
 
 def generate_summary(document_matrix):
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
-    model = BartForConditionalGeneration.from_pretrained('/home/karajan/labzone/training/matrix/bart_synthesis_results/checkpoint-13000')  # Replace with your trained model's path
+    model = BartForConditionalGeneration.from_pretrained(SYNTHESIS_BART)  # Replace with your trained model's path
     #document_matrix = str(document_matrix)
     # Remove newline characters, replace single quotes with double quotes, and load as JSON
     print(type(document_matrix))
@@ -180,7 +185,7 @@ def generate_summary(document_matrix):
 
 
 def predict_match(subject, summary):
-    model = BartForSequenceClassification.from_pretrained('/home/karajan/labzone/training/matrix/bart_summary_results_2/checkpoint-6000')
+    model = BartForSequenceClassification.from_pretrained(MATCHING_BART)
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
     model.eval()
     model.to('cuda' if torch.cuda.is_available() else 'cpu')
