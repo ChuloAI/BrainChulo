@@ -2,17 +2,76 @@
   <main class="about h-screen flex flex-col">
     <NavBar></NavBar>
 
-    <h1>Flows</h1>
+    <div class="flex justify-center items-center bg-gray-600 p-2">
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" @click="runFlow">
+        <svg class="fill-current w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M13 10.732l-5.61 3.22A1 1 0 0 1 6 13V7a1 1 0 0 1 1.39-.92L13 9.268v1.464z" />
+        </svg>
+        <span class="text-base">Play</span>
+      </button>
+    </div>
+
+    <baklava-editor :view-model="baklava" />
   </main>
 </template>
 
 <script>
   import NavBar from '@/components/NavBar.vue';
+  import { defineComponent } from 'vue';
+  import { EditorComponent, DependencyEngine, useBaklava, applyResult } from 'baklavajs';
+  import '@baklavajs/themes/dist/syrup-dark.css';
 
-  export default {
-    name: 'FlowsView',
+  import { DisplayNode } from '@/nodes/DisplayNode';
+  import { LLMQueryNode } from '@/nodes/LLMQueryNode';
+
+  export default defineComponent({
     components: {
+      'baklava-editor': EditorComponent,
       NavBar,
     },
-  };
+    setup() {
+      const baklava = useBaklava();
+
+      const engine = new DependencyEngine(baklava.editor);
+
+      baklava.commandHandler.registerCommand('Run', {
+        canExecute: () => {
+          return true;
+        },
+        execute: () => {
+          engine.runOnce();
+        },
+      });
+
+      baklava.editor.registerNodeType(LLMQueryNode);
+      baklava.editor.registerNodeType(DisplayNode);
+
+      const runFlow = () => {
+        engine.runOnce();
+      };
+
+      const token = Symbol();
+      engine.events.afterRun.subscribe(token, (result) => {
+        engine.pause();
+        applyResult(result, baklava.editor);
+        engine.resume();
+      });
+
+      // Add some nodes for demo purposes
+      function addNodeWithCoordinates(nodeType, x, y) {
+        const n = new nodeType();
+        baklava.displayedGraph.addNode(n);
+        n.position.x = x;
+        n.position.y = y;
+        return n;
+      }
+      const node1 = addNodeWithCoordinates(LLMQueryNode, 300, 140);
+      const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
+      baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
+
+      return { baklava, runFlow };
+    },
+  });
 </script>
+
+<style scoped></style>

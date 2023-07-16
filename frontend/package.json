@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "baklavajs": "^2.0.2-beta.4",
     "highlight.js": "^11.8.0",
     "marked": "^5.0.2",
     "marked-highlight": "^2.0.0",
