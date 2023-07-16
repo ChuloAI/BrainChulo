@@ -1,7 +1,5 @@
-<script setup>
-import ChatWindow from './components/ChatWindow.vue'
-</script>
+<script setup></script>
 
 <template>
-  <ChatWindow username="Human" />
+  <router-view></router-view>
 </template>

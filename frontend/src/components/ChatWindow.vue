@@ -1,40 +1,31 @@
-<template :class="{'dark': isDarkMode}">
-  <div class="h-screen flex flex-col">
+<template :class="{ dark: isDarkMode }">
+  <div class="flex flex-col chat-window">
     <!-- toolbar -->
-    <nav class="bg-gray-800">
-      <div class="px-2 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div class="relative flex items-center justify-between h-16">
-          <div class="flex items-center justify-center flex-1 sm:items-stretch sm:justify-start">
-            <div class="flex items-center">
-              <img class="hidden h-8 w-auto sm:block" src="../assets/logo.png" alt="Logo" />
-              <h1 class="hidden ml-3 text-2xl font-bold text-white uppercase sm:block">BrainChulo</h1>
-            </div>
-          </div>
-          <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <navbar-dropdown :username="username" :avatar-url="avatarUrl" @update-profile="updateProfile" @clear-messages="clearMessages"></navbar-dropdown>
-          </div>
-        </div>
-      </div>
-    </nav>
     <div class="overflow-hidden w-full h-full relative flex z-0">
       <!-- sidebar -->
-      <SideBar :conversations="conversations" @add-conversation="onAddConversation" :selectedConversationId="parseInt(conversation_id)" @select-conversation="onSelectConversation" @rename-conversation="onRenameConversation" @delete-conversation="onDeleteConversation"></SideBar>
+      <SideBar
+        :conversations="conversations"
+        @add-conversation="onAddConversation"
+        :selectedConversationId="parseInt(conversation_id)"
+        @select-conversation="onSelectConversation"
+        @rename-conversation="onRenameConversation"
+        @delete-conversation="onDeleteConversation"></SideBar>
       <!-- main body -->
       <div class="relative flex h-full max-w-full flex-1 overflow-hidden">
         <div class="flex-grow overflow-y-auto" ref="messageContainer">
           <div class="mx-auto max-w-2xl mt-5">
-            <chat-bubble
-              v-for="message, index in messages"
-              :key="index"
-              :message="message"
-              @messageRendered="onMessageRendered"
-            ></chat-bubble>
+            <chat-bubble v-for="(message, index) in messages" :key="index" :message="message" @messageRendered="onMessageRendered"></chat-bubble>
           </div>
         </div>
         <div class="absolute bottom-0 left-0 w-full border-t md:border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white pt-4">
           <form @submit.prevent="sendMessage" class="px-4 py-2 w-3/4 mx-auto">
             <div class="flex items-center">
-              <input ref="messageInput" v-model="messageInput" type="text" class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white" placeholder="Type your message..." />
+              <input
+                ref="messageInput"
+                v-model="messageInput"
+                type="text"
+                class="form-input flex-1 h-10 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-400 focus:ring-white"
+                placeholder="Type your message..." />
               <button
                 type="submit"
                 class="send-button h-10 ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
@@ -58,8 +49,8 @@
               <div class="upload">
                 <ul v-if="files.length">
                   <li v-for="file in files" :key="file.id">
-                    <span>{{file.name}}</span>
-                    <span v-if="file.error">{{file.error}}</span>
+                    <span>{{ file.name }}</span>
+                    <span v-if="file.error">{{ file.error }}</span>
                     <span v-else-if="file.success">success</span>
                     <span v-else-if="file.active">active</span>
                     <span v-else></span>
@@ -77,15 +68,14 @@
 <script>
   import SideBar from './SideBar.vue';
   import ChatBubble from './ChatBubble.vue';
-  import NavbarDropdown from './NavbarDropdown.vue';
   import InternalService from '../services/internal';
   import FileUpload from 'vue-upload-component';
+  import eventBus from '../services/eventBus';
 
   export default {
     components: {
       SideBar,
       ChatBubble,
-      NavbarDropdown,
       FileUpload,
     },
     data() {
@@ -104,6 +94,9 @@
     },
     mounted() {
       this.$refs.messageInput.focus();
+
+      eventBus.$on('update-profile', this.updateProfile);
+      eventBus.$on('clear-messages', this.clearMessages);
     },
     methods: {
       async onSetup() {
@@ -129,24 +122,14 @@
       },
 
       updateProfile(data) {
-        localStorage.setItem('username', data['username']);
-        localStorage.setItem('avatarUrl', data['avatarUrl']);
-
         this.username = data['username'];
         this.avatarUrl = data['avatarUrl'];
 
         // refresh the conversation messages to include new avatar
-        this.onSelectConversation(this.conversation_id)
+        this.onSelectConversation(this.conversation_id);
       },
       async clearMessages() {
-        if(!window.confirm('Are you sure?'))
-          return;
-        
         this.messages = [];
-        localStorage.removeItem('conversation_id');
-
-        await InternalService.resetDatabase();
-
         await this.onSetup();
       },
       async sendMessage() {
@@ -200,7 +183,7 @@
         this.$refs.messageContainer.scrollTo(0, this.$refs.messageContainer.scrollHeight);
       },
       async onInputFile(newFile) {
-        if(!newFile) return;
+        if (!newFile) return;
 
         // implement file upload
         const response = await InternalService.uploadFile(this.conversation_id, newFile);
@@ -210,7 +193,7 @@
           text: `<span style="color: brown; font-weight: bold;">${response.text}</span>`,
           is_user: false,
           conversation_id: this.conversation_id,
-        }
+        };
 
         const messageResponse = await InternalService.sendMessage(this.conversation_id, message);
 
@@ -240,7 +223,7 @@
 
         this.conversations = await InternalService.getConversations();
 
-        if(this.conversations.length === 0) {
+        if (this.conversations.length === 0) {
           await this.onSetup();
         } else {
           this.conversation_id = this.conversations[0].id;
@@ -258,29 +241,32 @@
 </script>
 
 <style scoped>
-.overflow-y-auto {
-  overflow-y: scroll; /* add a scrollbar when the content overflows */
-  height: 80%;
-}
+  .chat-window {
+    height: calc(100% - 64px);
+  }
+  .overflow-y-auto {
+    overflow-y: scroll; /* add a scrollbar when the content overflows */
+    height: 80%;
+  }
 
-.send-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+  .send-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
 
-.send-button img {
-  width: 20px;
-  height: 20px;
-}
+  .send-button img {
+    width: 20px;
+    height: 20px;
+  }
 
-.send-button:hover {
-  background-color: #0056b3;
-}
+  .send-button:hover {
+    background-color: #0056b3;
+  }
 </style>

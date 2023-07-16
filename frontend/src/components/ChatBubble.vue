@@ -27,6 +27,7 @@
   import hljs from 'highlight.js';
   import InternalService from '../services/internal';
   import AvatarImg from './AvatarImg.vue';
+  import { useProfileStore } from '../stores/profile';
 
   marked.use(
     markedHighlight({
@@ -50,6 +51,7 @@
     data: function () {
       return {
         msg: this.message,
+        profileStore: useProfileStore(),
       };
     },
     watch: {
@@ -60,7 +62,7 @@
     computed: {
       avatarUrl() {
         if (this.message.is_user) {
-          const savedAvatar = localStorage.getItem('avatarUrl');
+          const savedAvatar = this.profileStore.avatarUrl;
           if (savedAvatar) {
             return savedAvatar;
           }
