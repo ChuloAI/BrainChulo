@@ -1,5 +1,5 @@
 from agents.base import BaseAgent
-from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence, classify_question, generate_subject, generate_summary, predict_match
+from guidance_tooling.guidance_programs.tools import ingest_file, clean_text, classify_sentence, classify_question, generate_subject, generate_summary, predict_match, test_search_documents
 from langchain.llms import LlamaCpp
 import os
 import time
@@ -129,7 +129,7 @@ class ChainOfThoughtsAgent(BaseAgent):
         self.context = context
         self.history = history
         print(Fore.GREEN + Style.BRIGHT + "Starting guidance agent..." + Style.RESET_ALL)
-
+        
         topic_extraction_round = self.topic_extraction(query) ##extract the topic from the beginning
         time.sleep(1)
         print(Fore.GREEN + Style.BRIGHT + topic_extraction_round + Style.RESET_ALL)

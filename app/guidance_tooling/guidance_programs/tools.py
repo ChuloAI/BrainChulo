@@ -26,7 +26,7 @@ SYNTHESIS_BART= os.getenv("SYNTHESIS_BART_MODEL_PATH")
 MATCHING_BART= os.getenv("MATCHING_BART_MODEL_PATH")
 
 TEST_FILE = os.getenv("TEST_FILE")
-
+EMBEDDINGS_MODEL = os.getenv("EMBEDDINGS_MODEL")
 EMBEDDINGS_MAP = {
     **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
     **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl"]}
@@ -154,7 +154,7 @@ def classify_question(sentence):
 
 def generate_subject(question):
     # Tokenize the question
-    bart_extraction_tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+    bart_extraction_tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
     bart_extraction_model = BartForConditionalGeneration.from_pretrained(TOPIC_BART)
 
     inputs = bart_extraction_tokenizer(question, return_tensors='pt', max_length=128, truncation=True, padding='max_length')
@@ -198,7 +198,7 @@ def generate_summary(document_matrix):
 
 def predict_match(subject, summary):
     model = BartForSequenceClassification.from_pretrained(MATCHING_BART)
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+    tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
     model.eval()
     model.to('cuda' if torch.cuda.is_available() else 'cpu')
     with torch.no_grad():  # deactivate autograd engine to reduce memory usage and speed up computations
@@ -207,11 +207,31 @@ def predict_match(subject, summary):
         outputs = model(**inputs)
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)  # convert logits to probabilities
         predicted_class_prob = probs[:, 1].item()  # get the probability of class '1'
-        predicted_class_idx = int(predicted_class_prob > 0.9999)  # classify as '1' if probability of class '1' is > 0.9999
+        print(predicted_class_prob)
+        predicted_class_idx = int(predicted_class_prob > 0.5)  # classify as '1' if probability of class '1' is > 0.9999
     del model
     torch.cuda.empty_cache()  # clear unused memory in PyTorch
     gc.collect()  # enforce garbage collection
     return predicted_class_idx
+
+def test_search_documents(self, search_input, conversation_id=None):
+        """
+        Search for the given input in the vector store and return the top 10 most similar documents with their scores.
+        This function is used as a helper function for the SearchLongTermMemory tool
+
+        Args:
+          search_input (str): The input to search for in the vector store.
+
+        Returns:
+          List[Tuple[str, float]]: A list of tuples containing the document text and their similarity score.
+        """
+
+        #print(f"Searching for: {search_input} in LTM")
+        docs = self.vector_store_docs.similarity_search_with_score(
+            search_input, k=4, filter=filter
+        )
+        return [{"document_content": doc[0].page_content, "similarity": doc[1]} for doc in docs]
+
 
 def load_tools():  
     #llm = LlamaCpp(model_path=model_path, n_ctx=model_n_ctx, callbacks=callbacks, verbose=False,n_gpu_layers=n_gpu_layers, use_mlock=use_mlock,top_p=0.9, n_batch=n_batch)

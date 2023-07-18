@@ -72,7 +72,7 @@ class Settings:
         self.test_file = os.getenv("TEST_FILE", "/data/uploads/the_trial.txt")
         self.embeddings_map = {
             **{name: HuggingFaceInstructEmbeddings for name in ["hkunlp/instructor-xl", "hkunlp/instructor-large"]},
-            **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl"]},
+            **{name: HuggingFaceEmbeddings for name in ["all-MiniLM-L6-v2", "sentence-t5-xxl","sentence-t5-xl", "sentence-t5-large"]},
         }
         self.persist_directory = os.getenv("PERSIST_DIRECTORY", "./persist_directory")
 
@@ -82,7 +82,11 @@ class Settings:
         self.model_path = self.model_root_path + os.getenv("MODEL_PATH")
         self.guidance_reasoning_model_path = self.model_root_path  + os.getenv("GUIDANCE_REASONING_MODEL_PATH")
         self.guidance_extraction_model_path = self.model_root_path  + os.getenv("GUIDANCE_EXTRACTION_MODEL_PATH")
-        
+        self.question_bert_model_path = self.model_root_path + os.getenv("QUESTION_BERT_MODEL_PATH")
+        self.phatic_bert_model_path = self.model_root_path + os.getenv("PHATIC_BERT_MODEL_PATH")
+        self.topic_bart_model_path = self.model_root_path + os.getenv("TOPIC_BART_MODEL_PATH") 
+        self.synthesis_bart_model_path = self.model_root_path + os.getenv("SYNTHESIS_BART_MODEL_PATH") 
+        self.matching_bart_model_path = self.model_root_path + os.getenv("MATCHING_BART_MODEL_PATH") 
 
         # Where all data is stored
         self.data_path = os.getenv("DATA_PATH", f"{self.backend_root_path}/data")

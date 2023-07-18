@@ -5,7 +5,7 @@ from colorama import Fore, Style
 from guidance_tooling.guidance_programs.tools import clean_text
 from transformers import BertTokenizerFast, BertForSequenceClassification
 from transformers import BartTokenizer, BartForConditionalGeneration,BartForSequenceClassification
-
+from guidance_tooling.guidance_programs.tools import generate_subject
 from andromeda_chain import AndromedaChain
 from agents import ChainOfThoughtsAgent
 from settings import logger, load_config
@@ -148,6 +148,7 @@ class DocumentBasedConversation:
       Raises:
         OutputParserException: If the response from the conversation agent could not be parsed.
       """
+      #subject= generate_subject(input)
       context = self.search_documents(input)
       
       str_context = str(context)
