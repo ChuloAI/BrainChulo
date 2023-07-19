@@ -20,7 +20,7 @@
   import { defineComponent } from 'vue';
   import { EditorComponent, DependencyEngine, useBaklava, applyResult } from 'baklavajs';
   import '@baklavajs/themes/dist/syrup-dark.css';
-
+  import '@/assets/flows.css';
   import { DisplayNode } from '@/nodes/DisplayNode';
   import { LLMQueryNode } from '@/nodes/LLMQueryNode';
 

@@ -17,7 +17,13 @@ export const LLMQueryNode = defineNode({
     outputText: () => new NodeInterface("Output Text", "")
   },
   async calculate({ query }) {
+    const node = this;
+    document.getElementById(node.id).classList.add('active')
+
     const userMessageResponse = await InternalService.queryLLM(null, query);
+
+    document.getElementById(node.id).classList.remove('active')
+
     console.log(userMessageResponse);
     return { outputText: userMessageResponse };
   }

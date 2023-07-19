@@ -10,7 +10,10 @@ export const DisplayNode = defineNode({
     display: () => new TextInterface("Display")
   },
   calculate({ text }) {
+    document.getElementById(this.id).classList.add('active');
     console.log(text)
+
+    document.getElementById(this.id).classList.remove('active');
     return {
       display: text
     };
