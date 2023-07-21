@@ -8,8 +8,9 @@ from colorama import Fore, Style
 from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from prompt_templates.qa_agent import *
+from prompt_templates.exllama import *
 from settings import load_config
-
+import requests  # Add requests for the API
 import re 
 
 config = load_config()
@@ -22,6 +23,8 @@ TEST_MODE = os.getenv("TEST_MODE")
 ETHICS = os.getenv("ETHICS")
 QA_MODEL = os.getenv("MODEL_PATH")
 model_path = config.model_path
+HOST = '86.242.95.136:449'  # API details
+URI = f'http://{HOST}/api/v1/generate'
 
 
 if ETHICS == "ON":
@@ -47,8 +50,6 @@ class ChainOfThoughtsAgent(BaseAgent):
   
     def __init__(self, guidance, llama_model2):
         self.guidance = guidance
-         # We first load the model in charge of reasoning along the guidance program
-        # We then load the model in charge of correctly identifying the data within the context and provide an answer
         self.llama_model2 = llama_model2
    
     
@@ -123,48 +124,141 @@ class ChainOfThoughtsAgent(BaseAgent):
         answer_program = self.guidance(answer_prompt)
         answer_round = answer_program(question=question, search=self.searchQA)
         return answer_round["final_answer"] 
+    
+    def questions_listing(self, question, context):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+### Human:
+Make a list of 5 questions you should ask yourself to infer the answer to '{question}' from a piece of text.
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 200,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
+        
+    def questions_answering(self, question, context, questions):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+### Human:
+Answer '{questions}' relatively to '{context}'
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 400,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
+
+    def api_data_matching(self, question, context, questions):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+### Human:
+Infer the answer to '{question}' from: "{context}".
+Here are the questions you should ask yourself: {questions}
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 200,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
+    
+    def api_data_evaluation(self, question, context):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+### Human:
+Evaluate if the answer to '{question}' is found or can be inferred from: "{context}".
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 200,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
+        
+    def phatic_api_answer(self, question, history, context):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions taking into accounrt their chat history.
+### Human:
+History: {history}  
+Context: {context}
+Latest user's message: '{question}
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 200,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
 
     def run(self, query: str, context, history) -> str:
         self.question = query 
         self.context = context
         self.history = history
         print(Fore.GREEN + Style.BRIGHT + "Starting guidance agent..." + Style.RESET_ALL)
-        
-        topic_extraction_round = self.topic_extraction(query) ##extract the topic from the beginning
-        time.sleep(1)
-        print(Fore.GREEN + Style.BRIGHT + topic_extraction_round + Style.RESET_ALL)
-        data_summary_round = self.data_summary(context) ##generate the summary immediately as well just in case
-        print(Fore.GREEN + Style.BRIGHT + data_summary_round + Style.RESET_ALL)
-        time.sleep(1)
-
         classification_round= self.query_classification(query)
         self.print_stage("query classification", "User query identified as " + classification_round)
+        topic_extraction_round = self.topic_extraction(query)
+        data_summary_round = self.data_summary(context) ##generate the summary immediately as well just in case
+        print(Fore.GREEN + Style.BRIGHT + data_summary_round + Style.RESET_ALL)
+        data_matching_round = self.data_matching(str(topic_extraction_round), str(data_summary_round))
         if "declarative" in classification_round:
             self.print_stage("answering", "User query is not a question")
-            phatic_round = self.phatic_answer(query, history, phatic_prompt)
-            return phatic_round["phatic_answer"]  
-        
+            phatic_round = self.phatic_api_answer(self.question , history)
+            return phatic_round
+         
         conversation_round= self.query_identification(self.question)
 
         if "phatic" in conversation_round: 
             self.print_stage("answering", "User query identified as phatic")
-            phatic_round = self.phatic_answer(self.question , history, phatic_prompt)
-            return phatic_round["phatic_answer"]  
-
+            phatic_round = self.phatic_api_answer(self.question , history)
+            return phatic_round
+        
         self.print_stage("data retrieval", "User query identified as referential")
-        topic_extraction_round = self.topic_extraction(query)
-        self.print_stage("topic extraction", "Query subject identified as " + topic_extraction_round)
+  
         time.sleep(1)
-        self.print_stage("data matching", "Evaluating correspondance between " + topic_extraction_round + " and " + str(data_summary_round))
-        data_matching_round = self.data_matching(str(topic_extraction_round), str(data_summary_round))
-        print(Fore.CYAN + Style.BRIGHT + "Match between subject and matrix estimated at " + str(data_matching_round) + Style.RESET_ALL)
-
         if data_matching_round == 1:
-            self.print_stage("answering", "Matching information found")
-            return self.answer_question(self.question, answer_prompt)
+            questions_listing_round = self.questions_listing(self.question, str(context))
+            questions_answer_round =self.questions_answering(self.question, str(context), str(questions_listing_round))
+            api_matching_round = self.api_data_matching(self.question, str(questions_answer_round), str(questions_listing_round))
+            print(Fore.CYAN + Style.BRIGHT  + str(api_matching_round) + Style.RESET_ALL)
+
+            return api_matching_round
         else:
-            return "I don't have enough information to answer."
-
-
+            api_matching_eval= self.api_data_evaluation(self.question, str(context))
+            print(Fore.CYAN + Style.BRIGHT  + str(api_matching_eval) + Style.RESET_ALL)
+            return api_matching_eval
 
   

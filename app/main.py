@@ -78,6 +78,14 @@ def on_startup():
     create_db_and_tables()
 
 
+@app.post('/llm/query/', response_model=str)
+def llm_query(*, query: str, session: Session = Depends(get_session)):
+    """
+    Query the LLM
+    """
+    return convo.predict(query, [])
+
+
 @app.post("/conversations", response_model=Conversation)
 def create_conversation(*, session: Session = Depends(get_session), conversation: Conversation):
     """
@@ -177,10 +185,11 @@ def llm(*, conversation_id: str, query: str, session: Session = Depends(get_sess
     """
     conversation_data = get_conversation(conversation_id, session)
     history = conversation_data.messages
-    if config.use_flow_agents:
-        return convo.predict(query, conversation_id)
-    else:
-        return convo.predict(query, history)
+
+    return convo.predict(query, conversation_id)
+
+    # we could also work from history only
+    # return convo.predict(query, history)
 
 
 @app.post("/conversations/{conversation_id}/messages/{message_id}/upvote", response_model=Message)

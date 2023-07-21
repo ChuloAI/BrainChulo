@@ -36,17 +36,7 @@ GUIDANCE_MODEL = os.getenv("GUIDANCE_MODEL_PATH")
 
 
 def get_llama_model2():
-    
-    print("Loading second guidance model...")
-    llama_model2 = guidance.llms.LlamaCpp(
-            model = guidance_extraction_model_path,
-            tokenizer = "openaccess-ai-collective/manticore-13b-chat-pyg",
-            before_role = "<|",
-            after_role = "|>",
-            n_gpu_layers=300,
-            n_threads=12,
-            caching=False, )
-    print("Loading second guidance model...")
+    llama_model2 = None
     return llama_model2
 
 
