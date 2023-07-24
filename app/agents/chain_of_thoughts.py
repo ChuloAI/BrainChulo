@@ -151,7 +151,9 @@ class ChainOfThoughtsAgent(BaseAgent):
         data_matching_round = self.data_matching(str(topic_extraction_round), str(data_summary_round))
         
         if data_matching_round == 1:
-            questions_listing_round = questions_listing(self.question, str(context))
+            document_evaluation_round = document_evaluation(str(context))
+            print(document_evaluation_round)
+            questions_listing_round = questions_listing(self.question, str(document_evaluation_round))
             print(Fore.CYAN + Style.BRIGHT  + "The questions are:" + str(questions_listing_round) + Style.RESET_ALL)
             questions_answer_round = questions_answering(self.question, str(context), str(questions_listing_round))
             print(Fore.CYAN + Style.BRIGHT  + "The answers to the questions are:" + str(questions_answer_round) + Style.RESET_ALL)

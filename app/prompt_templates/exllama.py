@@ -2,10 +2,11 @@ import requests
 HOST = '86.242.95.136:449'  # API details
 URI = f'http://{HOST}/api/v1/generate'
 
-def questions_listing(question, context):
+def questions_listing(question, document):
         prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
 ### Human:
-Make a list of 5 questions you should ask yourself to infer the answer to '{question}' from a given context.
+Here is a document description: {document}
+Make a list of 5 questions you should ask yourself to infer the answer to '{question}' from an excerpt of the document described above.
 
 ### Assistant: '''
         print(str(prompt))
@@ -101,3 +102,23 @@ Latest user's message: '{question}
             result = response.json()['results'][0]['text']
             return result
     
+
+
+def document_evaluation(context):
+        prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
+### Human:
+Identify the kind of document the following context is taken from: "{context}".
+
+### Assistant: '''
+        print(str(prompt))
+        request = {
+            'prompt': prompt,
+            'max_new_tokens': 200,
+            'preset': 'Divine Intellect',
+            }
+
+        response = requests.post(URI, json=request)
+
+        if response.status_code == 200:
+            result = response.json()['results'][0]['text']
+            return result
