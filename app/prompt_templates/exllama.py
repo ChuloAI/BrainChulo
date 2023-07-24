@@ -44,7 +44,7 @@ def api_data_matching(question, context, questions):
         prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
 ### Human:
 Infer the answer to '{question}' from: "{context}".
-Here are the questions you should ask yourself: {questions}
+Here are the questions you should ask yourself: {questions}. Your answer must be a synthesis of your responses while also providing the user with the requested
 
 ### Assistant: '''
         print(str(prompt))
