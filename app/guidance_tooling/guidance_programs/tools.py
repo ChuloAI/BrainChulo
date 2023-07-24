@@ -208,7 +208,7 @@ def predict_match(subject, summary):
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)  # convert logits to probabilities
         predicted_class_prob = probs[:, 1].item()  # get the probability of class '1'
         print(predicted_class_prob)
-        predicted_class_idx = int(predicted_class_prob > 0.01)  # classify as '1' if probability of class '1' is > 0.1
+        predicted_class_idx = int(predicted_class_prob > 0.001)  # classify as '1' if probability of class '1' is > 0.1
     del model
     torch.cuda.empty_cache()  # clear unused memory in PyTorch
     gc.collect()  # enforce garbage collection

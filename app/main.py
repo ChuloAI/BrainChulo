@@ -26,7 +26,7 @@ if config.use_flow_agents:
 
     convo = DocumentBasedConversationFlowAgent()
 else:
-    logger.info("Using experimental Guidance LLaMA cpp implementation.")
+    logger.info("Using experimental exllama implementation.")
     from conversations.document_based import DocumentBasedConversation
 
     convo = DocumentBasedConversation()

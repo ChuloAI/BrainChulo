@@ -19,3 +19,8 @@ venv/
 index.json
 
 generated_alembic.ini
+text-generation-webui/
+
+repositories/
+
+app/conversations/document_based.py
