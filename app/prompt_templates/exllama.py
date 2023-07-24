@@ -1,11 +1,11 @@
 import requests
-HOST = '0.0.0.0:5000'  # API details
+HOST = '86.242.95.136:449'  # API details
 URI = f'http://{HOST}/api/v1/generate'
 
 def questions_listing(question, context):
         prompt = f'''A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.
 ### Human:
-Make a list of 5 questions you should ask yourself to infer the answer to '{question}' from a piece of text.
+Make a list of 5 questions you should ask yourself to infer the answer to '{question}' from a given context.
 
 ### Assistant: '''
         print(str(prompt))
