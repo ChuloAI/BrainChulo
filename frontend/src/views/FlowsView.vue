@@ -49,8 +49,8 @@
         },
       });
 
-      baklava.editor.registerNodeType(LLMQueryNode);
-      baklava.editor.registerNodeType(DisplayNode);
+      baklava.editor.registerNodeType(LLMQueryNode, { category: 'Intelligence' });
+      baklava.editor.registerNodeType(DisplayNode, { category: 'Interface' });
 
       const runFlow = () => {
         engine.runOnce();
