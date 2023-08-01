@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.0.18",
     "baklavajs": "^2.0.2-beta.5",
     "highlight.js": "^11.8.0",
     "marked": "^5.0.2",
