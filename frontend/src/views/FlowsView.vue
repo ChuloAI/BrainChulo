@@ -4,10 +4,12 @@
 
     <div class="flex justify-center items-center bg-gray-600 p-2">
       <button id="playButton" class="font-bold py-2 px-4 rounded flex items-center justify-center" :class="runBtnClass" @click="runFlow" :disabled="isRunning">
-        <svg class="fill-current w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-          <path d="M13 10.732l-5.61 3.22A1 1 0 0 1 6 13V7a1 1 0 0 1 1.39-.92L13 9.268v1.464z" />
-        </svg>
+        <PlayIcon class="w-6 h-6 mr-2" />
         <span class="text-base">{{ runBtnText }}</span>
+      </button>
+      <button id="saveButton" class="mx-2 font-bold py-2 px-4 rounded flex items-center justify-center bg-blue-500 text-white" @click="saveFlow">
+        <CloudArrowDownIcon class="w-6 h-6 mr-2" />
+        <span class="text-base">Save</span>
       </button>
     </div>
 
@@ -18,7 +20,8 @@
 <script>
   import NavBar from '@/components/NavBar.vue';
   import { defineComponent, ref, computed } from 'vue';
-  import { EditorComponent, DependencyEngine, useBaklava, applyResult } from 'baklavajs';
+  import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate } from 'baklavajs';
+  import { CloudArrowDownIcon, PlayIcon } from '@heroicons/vue/20/solid';
   import '@baklavajs/themes/dist/syrup-dark.css';
   import '@/assets/flows.css';
   import { DisplayNode } from '@/nodes/DisplayNode';
@@ -28,6 +31,8 @@
     components: {
       'baklava-editor': EditorComponent,
       NavBar,
+      CloudArrowDownIcon,
+      PlayIcon,
     },
     setup() {
       const baklava = useBaklava();
@@ -49,6 +54,12 @@
 
       const runFlow = () => {
         engine.runOnce();
+      };
+
+      const saveFlow = () => {
+        let gt = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
+        let state = gt.save();
+        console.log(state);
       };
 
       const runBtnClass = computed(() => {
@@ -92,7 +103,7 @@
       const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
-      return { baklava, runFlow, runBtnClass, runBtnText, isRunning };
+      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning };
     },
   });
 </script>
