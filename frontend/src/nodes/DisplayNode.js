@@ -2,7 +2,7 @@ import { defineNode, NodeInterface, TextInterface } from "baklavajs";
 
 export const DisplayNode = defineNode({
   type: "DisplayNode",
-  title: "Display",
+  title: "Display Text",
   inputs: {
     text: () => new NodeInterface("Text", "HI")
   },
