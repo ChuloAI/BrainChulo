@@ -3,7 +3,7 @@ import shutil
 from fastapi import FastAPI, Depends, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session, desc
-from models.all import Conversation, Message, ConversationWithMessages
+from models.all import Conversation, Message, ConversationWithMessages, Flow
 from typing import List
 from settings import load_config, logger
 from plugins import load_plugins
@@ -231,6 +231,36 @@ def reset_message_vote(*, session: Session = Depends(get_session), conversation_
     session.refresh(message)
 
     return message
+
+
+@app.get("/flows", response_model=List[Flow])
+def read_flows(session: Session = Depends(get_session)):
+    return session.query(Flow).order_by(desc(Flow.id)).all()
+
+
+@app.get("/flows/{flow_id}", response_model=Flow)
+def read_flow(flow_id: int):
+    pass
+
+
+@app.post("/flows", response_model=Flow)
+def create_flow(*, session: Session = Depends(get_session), flow: Flow):
+    flow = Flow.from_orm(flow)
+    session.add(flow)
+    session.commit()
+    session.refresh(flow)
+    print(str(flow))
+    return flow
+
+
+@app.put("/flows/{flow_id}", response_model=Flow)
+def update_flow(flow_id: int, flow: Flow):
+    pass
+
+
+@app.delete("/flows/{flow_id}")
+def delete_flow(flow_id: int):
+    pass
 
 
 @app.post("/reset", response_model=dict)
