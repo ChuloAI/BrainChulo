@@ -11,19 +11,28 @@
         <CloudArrowDownIcon class="w-6 h-6 mr-2" />
         <span class="text-base">Save</span>
       </button>
+      <DropDown
+        :options="flows"
+        :selectedOption="currentFlow"
+        @change="handleFlowChange"
+        class="absolute right-0 mx-2 font-bold py-2 px-4 rounded flex items-center justify-center"></DropDown>
     </div>
-
     <baklava-editor :view-model="baklava" />
   </main>
 </template>
+, onBeforeMount , watch
 
 <script>
   import NavBar from '@/components/NavBar.vue';
-  import { defineComponent, ref, computed } from 'vue';
+  import DropDown from '@/components/DropDown.vue';
+  import { defineComponent, ref, computed, onBeforeMount, watch } from 'vue';
   import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate } from 'baklavajs';
   import { CloudArrowDownIcon, PlayIcon } from '@heroicons/vue/20/solid';
   import '@baklavajs/themes/dist/syrup-dark.css';
   import '@/assets/flows.css';
+  import { useFlowStore } from '@/stores/flow';
+
+  /* Load Nodes */
   import { DisplayNode } from '@/nodes/DisplayNode';
   import { LLMQueryNode } from '@/nodes/LLMQueryNode';
 
@@ -31,12 +40,38 @@
     components: {
       'baklava-editor': EditorComponent,
       NavBar,
+      DropDown,
       CloudArrowDownIcon,
       PlayIcon,
     },
     setup() {
       const baklava = useBaklava();
       const engine = new DependencyEngine(baklava.editor);
+      const flowStore = useFlowStore();
+      const currentFlow = computed(() => flowStore.currentFlow);
+      const flows = ref([]);
+
+      onBeforeMount(async () => {
+        flows.value = await flowStore.fetchFlows();
+        if (currentFlow.value === null && flows.value.length > 0) {
+          currentFlow.value = flows.value[0];
+        }
+      });
+
+      watch(
+        () => flows.value.length,
+        (newLength) => {
+          if (currentFlow.value === null && newLength > 0) {
+            handleFlowChange(flows.value[0]);
+          }
+          console.log(`flows.value.length changed to ${newLength}`);
+        }
+      );
+
+      const handleFlowChange = (flow) => {
+        flowStore.setCurrentFlow(flow);
+        currentFlow.value = flow;
+      };
 
       const isRunning = ref(false);
 
@@ -103,7 +138,7 @@
       const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
-      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning };
+      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, handleFlowChange };
     },
   });
 </script>
