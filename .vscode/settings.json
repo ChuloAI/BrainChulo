@@ -6,10 +6,10 @@
         "--experimental"
     ],
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.python"
     },
     "python.formatting.provider": "none",
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "ms-python.python",
     "black-formatter.args": [
         "--line-length=180",
         "--skip-string-normalization"
