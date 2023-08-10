@@ -60,12 +60,14 @@ class Settings:
         if self.root_path.endswith("app"):
             self.root_path = self.root_path[:-4]
 
-        self.model_root_path = os.path.join(self.root_path, "models")
+        #self.model_root_path = os.path.join(self.root_path, "models")
+        self.model_root_path = "/home/pwalch/textgen/models" # changed the model path
         self.backend_root_path = os.path.join(self.root_path, "app")
 
         # let's ensure the models and backend path is accurate when mounting docker volumes
         if self.root_path.startswith("/code"):
-            self.model_root_path = "/models"
+            #self.model_root_path = "/models"
+            self.model_root_path = "/home/pwalch/textgen/models" # changed the model path
             self.backend_root_path = self.root_path
 
         # Guidance new settings
