@@ -3,10 +3,13 @@
     <NavBar></NavBar>
 
     <div class="flex justify-center items-center bg-gray-600 p-2">
-      <EditableTextField
-        :text="currentFlowName"
-        @edit="handleFlowEdit"
-        class="absolute left-0 mx-2 font-bold py-2 px-4 rounded flex items-center justify-center bg-gray-500 text-white" />
+      <span class="absolute left-0 flex items-center justify-center">
+        <EditableTextField :text="currentFlowName" @edit="handleFlowEdit" class="flex mx-2 font-bold py-2 px-4 rounded bg-gray-500 text-white" />
+        <button class="mx-2 font-bold py-2 px-4 rounded flex bg-green-500 text-white" @click="addFlow" title="Add Flow">
+          <PlusIcon class="w-6 h-6" />
+        </button>
+      </span>
+
       <button id="playButton" class="font-bold py-2 px-4 rounded flex items-center justify-center" :class="runBtnClass" @click="runFlow" :disabled="isRunning">
         <PlayIcon class="w-6 h-6 mr-2" />
         <span class="text-base">{{ runBtnText }}</span>
@@ -32,7 +35,7 @@
   import EditableTextField from '@/components/EditableTextField.vue';
   import { defineComponent, ref, computed, onBeforeMount, watch } from 'vue';
   import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate } from 'baklavajs';
-  import { CloudArrowDownIcon, PlayIcon } from '@heroicons/vue/20/solid';
+  import { CloudArrowDownIcon, PlayIcon, PlusIcon } from '@heroicons/vue/20/solid';
   import '@baklavajs/themes/dist/syrup-dark.css';
   import '@/assets/flows.css';
   import { useFlowStore } from '@/stores/flow';
@@ -49,6 +52,7 @@
       EditableTextField,
       CloudArrowDownIcon,
       PlayIcon,
+      PlusIcon,
     },
     setup() {
       const baklava = useBaklava();
@@ -81,6 +85,11 @@
 
       const handleFlowEdit = async (text) => {
         await flowStore.updateCurrentFlowName(text);
+      };
+
+      const addFlow = async () => {
+        const newFlow = await flowStore.addFlow();
+        flowStore.setCurrentFlow(newFlow);
       };
 
       const isRunning = ref(false);
@@ -148,7 +157,7 @@
       const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
-      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, currentFlowName, handleFlowChange, handleFlowEdit };
+      return { baklava, runFlow, saveFlow, addFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, currentFlowName, handleFlowChange, handleFlowEdit };
     },
   });
 </script>
