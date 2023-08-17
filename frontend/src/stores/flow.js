@@ -13,7 +13,7 @@ export const useFlowStore = defineStore('flow', {
 
       if (flows.length < 1) {
         await internalService.request('/flows', 'POST', { name: 'New Flow' });
-        return this.fetchFlows();
+        return await this.fetchFlows();
       }
 
       this.allFlows = flows.map((flow) => {
@@ -27,6 +27,17 @@ export const useFlowStore = defineStore('flow', {
     },
     setCurrentFlow(newFlow) {
       this.currentFlow = this.allFlows.find((flow) => flow.id === newFlow.id);
+    },
+    async updateCurrentFlowName(newName) {
+      await internalService.request(`/flows/${this.currentFlowId}`, 'PUT', { name: newName });
+      await this.fetchFlows();
+      this.setCurrentFlow(this.getCurrentFlow);
     }
   },
+  getters: {
+    getFlows: (state) => state.allFlows,
+    getCurrentFlow: (state) => state.currentFlow,
+    currentFlowId: (state) => state.currentFlow?.id,
+    currentFlowName: (state) => state.currentFlow?.label,
+  }
 });

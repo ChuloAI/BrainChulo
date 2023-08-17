@@ -3,6 +3,10 @@
     <NavBar></NavBar>
 
     <div class="flex justify-center items-center bg-gray-600 p-2">
+      <EditableTextField
+        :text="currentFlowName"
+        @edit="handleFlowEdit"
+        class="absolute left-0 mx-2 font-bold py-2 px-4 rounded flex items-center justify-center bg-gray-500 text-white" />
       <button id="playButton" class="font-bold py-2 px-4 rounded flex items-center justify-center" :class="runBtnClass" @click="runFlow" :disabled="isRunning">
         <PlayIcon class="w-6 h-6 mr-2" />
         <span class="text-base">{{ runBtnText }}</span>
@@ -25,6 +29,7 @@
 <script>
   import NavBar from '@/components/NavBar.vue';
   import DropDown from '@/components/DropDown.vue';
+  import EditableTextField from '@/components/EditableTextField.vue';
   import { defineComponent, ref, computed, onBeforeMount, watch } from 'vue';
   import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate } from 'baklavajs';
   import { CloudArrowDownIcon, PlayIcon } from '@heroicons/vue/20/solid';
@@ -41,6 +46,7 @@
       'baklava-editor': EditorComponent,
       NavBar,
       DropDown,
+      EditableTextField,
       CloudArrowDownIcon,
       PlayIcon,
     },
@@ -48,14 +54,16 @@
       const baklava = useBaklava();
       const engine = new DependencyEngine(baklava.editor);
       const flowStore = useFlowStore();
-      const currentFlow = computed(() => flowStore.currentFlow);
-      const flows = ref([]);
+      const currentFlow = computed(() => flowStore.getCurrentFlow);
+      const currentFlowName = computed(() => flowStore.currentFlowName);
+      const flows = ref(flowStore.getFlows);
+
+      const setupFlowsDropdown = async () => {
+        flows.value = await flowStore.fetchFlows();
+      };
 
       onBeforeMount(async () => {
-        flows.value = await flowStore.fetchFlows();
-        if (currentFlow.value === null && flows.value.length > 0) {
-          currentFlow.value = flows.value[0];
-        }
+        await setupFlowsDropdown();
       });
 
       watch(
@@ -64,13 +72,15 @@
           if (currentFlow.value === null && newLength > 0) {
             handleFlowChange(flows.value[0]);
           }
-          console.log(`flows.value.length changed to ${newLength}`);
         }
       );
 
       const handleFlowChange = (flow) => {
         flowStore.setCurrentFlow(flow);
-        currentFlow.value = flow;
+      };
+
+      const handleFlowEdit = async (text) => {
+        await flowStore.updateCurrentFlowName(text);
       };
 
       const isRunning = ref(false);
@@ -138,7 +148,7 @@
       const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
-      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, handleFlowChange };
+      return { baklava, runFlow, saveFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, currentFlowName, handleFlowChange, handleFlowEdit };
     },
   });
 </script>
