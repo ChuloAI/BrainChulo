@@ -72,12 +72,25 @@ class ConversationWithMessages(ConversationRead):
     messages: List[MessageRead] = []
 
 
-class Flow(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class FlowBase(SQLModel):
     name: str
     state: dict = Field(default={}, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+class Flow(FlowBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+class FlowRead(FlowBase):
+    id: int
+
+class FlowCreate(FlowBase):
+    pass
+
+class FlowUpdate(SQLModel):
+    name: Optional[str] = None
+    state: Optional[dict] = Field(default={}, sa_column=Column(JSON))
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = datetime.utcnow
 
 load_plugin_tables()

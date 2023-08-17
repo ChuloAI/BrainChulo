@@ -3,7 +3,7 @@ import shutil
 from fastapi import FastAPI, Depends, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session, desc
-from models.all import Conversation, Message, ConversationWithMessages, Flow
+from models.all import Conversation, Message, ConversationWithMessages, Flow, FlowRead, FlowCreate, FlowUpdate
 from typing import List
 from settings import load_config, logger
 from plugins import load_plugins
@@ -239,13 +239,13 @@ def read_flows(session: Session = Depends(get_session)):
     return session.query(Flow).order_by(desc(Flow.id)).all()
 
 
-@app.get("/flows/{flow_id}", response_model=Flow)
+@app.get("/flows/{flow_id}", response_model=FlowRead)
 def read_flow(flow_id: int):
     pass
 
 
-@app.post("/flows", response_model=Flow)
-def create_flow(*, session: Session = Depends(get_session), flow: Flow):
+@app.post("/flows", response_model=FlowRead)
+def create_flow(*, session: Session = Depends(get_session), flow: FlowCreate):
     flow = Flow.from_orm(flow)
     session.add(flow)
     session.commit()
@@ -254,9 +254,14 @@ def create_flow(*, session: Session = Depends(get_session), flow: Flow):
     return flow
 
 
-@app.put("/flows/{flow_id}", response_model=Flow)
-def update_flow(flow_id: int, flow: Flow):
-    pass
+@app.put("/flows/{flow_id}", response_model=FlowRead)
+def update_flow(*, session: Session = Depends(get_session), flow_id: int, flow: FlowUpdate):
+    db_flow = session.get(Flow, flow_id)
+    db_flow.name = flow.name
+    session.add(db_flow)
+    session.commit()
+    session.refresh(db_flow)
+    return db_flow
 
 
 @app.delete("/flows/{flow_id}")
