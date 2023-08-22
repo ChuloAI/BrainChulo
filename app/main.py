@@ -265,8 +265,15 @@ def update_flow(*, session: Session = Depends(get_session), flow_id: int, flow: 
 
 
 @app.delete("/flows/{flow_id}")
-def delete_flow(flow_id: int):
-    pass
+def delete_flow(*, session: Session = Depends(get_session), flow_id: int):
+    flow = session.get(Flow, flow_id)
+    if not flow:
+        raise HTTPException(404, detail="Flow not found")
+
+    session.delete(flow)
+    session.commit()
+
+    return {"text": "Flow deleted."}
 
 
 @app.post("/reset", response_model=dict)

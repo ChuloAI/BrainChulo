@@ -25,6 +25,15 @@ export const useFlowStore = defineStore('flow', {
       return this.allFlows;
     },
     setCurrentFlow(newFlow) {
+      if(!newFlow && this.allFlows.length > 0) {
+        this.currentFlow = this.allFlows[0];
+        return;
+      }
+      else if(!newFlow) {
+        this.currentFlow = null;
+        return;
+      }
+
       this.currentFlow = this.allFlows.find((flow) => flow.id === newFlow.id);
     },
     async updateCurrentFlowName(newName) {
@@ -38,6 +47,16 @@ export const useFlowStore = defineStore('flow', {
       await this.fetchFlows();
 
       return newFlow;
+    },
+
+    async deleteCurrentFlow() {
+      await this.deleteFlow(this.currentFlowId);
+      this.setCurrentFlow(null);
+    },
+
+    async deleteFlow(flowId) {
+      await internalService.request(`/flows/${flowId}`, 'DELETE');
+      await this.fetchFlows();
     }
   },
   getters: {

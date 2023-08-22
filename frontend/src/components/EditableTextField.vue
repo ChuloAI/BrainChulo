@@ -1,15 +1,18 @@
 <template>
-  <span class="editable-text-field" @click="startEditing">
-    <span v-if="!isEditing">
-      {{ text }}
-      <PencilIcon title="Edit" class="ml-2 w-4 h-4 text-gray-100 inline" />
+  <div class="flex items-center">
+    <span class="editable-text-field" @click="startEditing">
+      <span v-if="!isEditing">
+        {{ text }}
+        <PencilIcon title="Edit" class="ml-2 w-4 h-4 text-gray-100 inline" />
+      </span>
+      <input v-else ref="inputField" v-model="editedText" @blur="finishEditing" @keydown.enter="finishEditing" class="editable-input-field" />
     </span>
-    <input v-else ref="inputField" v-model="editedText" @blur="finishEditing" @keydown.enter="finishEditing" class="editable-input-field" />
-  </span>
+    <TrashIcon v-if="!isEditing && isDeletable" title="Delete" class="ml-2 w-4 h-4 text-gray-100 inline cursor-pointer" @click="confirmDelete" />
+  </div>
 </template>
 
 <script>
-  import { PencilIcon } from '@heroicons/vue/20/solid';
+  import { PencilIcon, TrashIcon } from '@heroicons/vue/20/solid';
 
   export default {
     props: {
@@ -18,9 +21,15 @@
         required: false,
         default: '',
       },
+      isDeletable: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
     },
     components: {
       PencilIcon,
+      TrashIcon,
     },
     data() {
       return {
@@ -39,6 +48,12 @@
       finishEditing() {
         this.isEditing = false;
         this.$emit('edit', this.editedText);
+      },
+      confirmDelete() {
+        if (!this.isDeletable) return;
+        if (!confirm('Are you sure you want to delete this flow?')) return;
+
+        this.$emit('delete');
       },
     },
   };

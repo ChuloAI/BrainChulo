@@ -4,7 +4,12 @@
 
     <div class="flex justify-center items-center bg-gray-600 p-2">
       <span class="absolute left-0 flex items-center justify-center">
-        <EditableTextField :text="currentFlowName" @edit="handleFlowEdit" class="flex mx-2 font-bold py-2 px-4 rounded bg-gray-500 text-white" />
+        <EditableTextField
+          :text="currentFlowName"
+          :isDeletable="true"
+          @edit="handleFlowEdit"
+          @delete="handleFlowDelete"
+          class="flex mx-2 font-bold py-2 px-4 rounded bg-gray-500 text-white" />
         <button class="mx-2 font-bold py-2 px-4 rounded flex bg-green-500 text-white" @click="addFlow" title="Add Flow">
           <PlusIcon class="w-6 h-6" />
         </button>
@@ -87,6 +92,10 @@
         await flowStore.updateCurrentFlowName(text);
       };
 
+      const handleFlowDelete = async () => {
+        await flowStore.deleteCurrentFlow();
+      };
+
       const addFlow = async () => {
         const newFlow = await flowStore.addFlow();
         flowStore.setCurrentFlow(newFlow);
@@ -157,7 +166,21 @@
       const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
-      return { baklava, runFlow, saveFlow, addFlow, runBtnClass, runBtnText, isRunning, flows, currentFlow, currentFlowName, handleFlowChange, handleFlowEdit };
+      return {
+        baklava,
+        runFlow,
+        saveFlow,
+        addFlow,
+        runBtnClass,
+        runBtnText,
+        isRunning,
+        flows,
+        currentFlow,
+        currentFlowName,
+        handleFlowChange,
+        handleFlowEdit,
+        handleFlowDelete,
+      };
     },
   });
 </script>
