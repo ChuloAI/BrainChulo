@@ -1,7 +1,7 @@
 <template>
   <div class="dropdown">
     <button
-      class="dropdown-toggle bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center"
+      class="min-w-fit dropdown-toggle bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center min-w-40"
       @click="isOpen = !isOpen">
       <span>{{ label }}</span>
       <svg class="fill-current h-4 w-4 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -10,7 +10,9 @@
     </button>
     <ul class="dropdown-menu absolute text-gray-700 pt-1" v-show="isOpen" v-if="isOpen" v-click-away="closeDropdown">
       <li v-for="option in options" :key="option.id" @click="selectOption(option)">
-        <a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap min-w-64" href="#">{{ option.label }}</a>
+        <a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap" href="#">
+          {{ option.label }}
+        </a>
       </li>
     </ul>
   </div>
@@ -55,6 +57,10 @@
 </script>
 
 <style scoped>
+  .dropdown button span {
+    min-width: 120px;
+    text-align: left;
+  }
   .dropdown-menu {
     max-height: 200px;
     overflow-y: auto;
