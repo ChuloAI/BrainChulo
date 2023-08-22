@@ -10,7 +10,7 @@
     </button>
     <ul class="dropdown-menu absolute text-gray-700 pt-1" v-show="isOpen" v-if="isOpen" v-click-away="closeDropdown">
       <li v-for="option in options" :key="option.id" @click="selectOption(option)">
-        <a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap" href="#">{{ option.label }}</a>
+        <a class="rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap min-w-64" href="#">{{ option.label }}</a>
       </li>
     </ul>
   </div>
