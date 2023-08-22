@@ -76,6 +76,13 @@
       });
 
       watch(
+        () => flowStore.getFlows,
+        () => {
+          flows.value = flowStore.getFlows;
+        }
+      );
+
+      watch(
         () => flows.value.length,
         (newLength) => {
           if (currentFlow.value === null && newLength > 0) {
