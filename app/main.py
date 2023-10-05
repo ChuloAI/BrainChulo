@@ -257,7 +257,15 @@ def create_flow(*, session: Session = Depends(get_session), flow: FlowCreate):
 @app.put("/flows/{flow_id}", response_model=FlowRead)
 def update_flow(*, session: Session = Depends(get_session), flow_id: int, flow: FlowUpdate):
     db_flow = session.get(Flow, flow_id)
-    db_flow.name = flow.name
+    if db_flow is None:
+        raise HTTPException(404, detail="Flow not found")
+    
+    if flow.name and flow.name != db_flow.name:
+        db_flow.name = flow.name
+    
+    if flow.state and flow.state != db_flow.state:
+        db_flow.state = flow.state
+    
     session.add(db_flow)
     session.commit()
     session.refresh(db_flow)

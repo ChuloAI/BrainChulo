@@ -39,7 +39,7 @@
   import DropDown from '@/components/DropDown.vue';
   import EditableTextField from '@/components/EditableTextField.vue';
   import { defineComponent, ref, computed, onBeforeMount, watch } from 'vue';
-  import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate } from 'baklavajs';
+  import { EditorComponent, DependencyEngine, useBaklava, applyResult, GraphTemplate, Graph } from 'baklavajs';
   import { CloudArrowDownIcon, PlayIcon, PlusIcon } from '@heroicons/vue/20/solid';
   import '@baklavajs/themes/dist/syrup-dark.css';
   import '@/assets/flows.css';
@@ -65,6 +65,7 @@
       const flowStore = useFlowStore();
       const currentFlow = computed(() => flowStore.getCurrentFlow);
       const currentFlowName = computed(() => flowStore.currentFlowName);
+      const currentFlowState = computed(() => flowStore.currentFlowState);
       const flows = ref(flowStore.getFlows);
 
       const setupFlowsDropdown = async () => {
@@ -93,10 +94,11 @@
 
       const handleFlowChange = (flow) => {
         flowStore.setCurrentFlow(flow);
+        loadFlowState();
       };
 
       const handleFlowEdit = async (text) => {
-        await flowStore.updateCurrentFlowName(text);
+        await flowStore.updateCurrentFlow({ name: text });
       };
 
       const handleFlowDelete = async () => {
@@ -126,10 +128,34 @@
         engine.runOnce();
       };
 
-      const saveFlow = () => {
-        let gt = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
-        let state = gt.save();
+      const saveFlow = async () => {
+        // const graphTemplate = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
+        // const state = graphTemplate.save();
+        const state = baklava.editor.save();
         console.log(state);
+        await flowStore.updateCurrentFlow({ state });
+      };
+
+      const loadFlowState = async () => {
+        // const graphTemplate = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
+
+        if (!currentFlow.value || !currentFlow.value.state) return;
+
+        // graphTemplate.update(currentFlow.value.state);
+        // graphTemplate.createGraph();
+
+        // baklava.displayedGraph.load(currentFlow.value.state);
+        // baklava.editor.load(currentFlow.value.state);
+
+        const graphTemplate = new GraphTemplate(currentFlow.value.state, baklava.editor);
+        const newGraph = new Graph(baklava.editor, graphTemplate);
+        // newGraph.load(graphTemplate);
+
+        baklava.editor.addGraphTemplate(graphTemplate);
+        baklava.editor.load({
+          graph: newGraph,
+          graphTemplates: [graphTemplate],
+        });
       };
 
       const runBtnClass = computed(() => {
@@ -169,14 +195,15 @@
         n.position.y = y;
         return n;
       }
-      const node1 = addNodeWithCoordinates(LLMQueryNode, 300, 140);
-      const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
-      baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
+      // const node1 = addNodeWithCoordinates(LLMQueryNode, 300, 140);
+      // const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
+      // baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
 
       return {
         baklava,
         runFlow,
         saveFlow,
+        loadFlowState,
         addFlow,
         runBtnClass,
         runBtnText,
@@ -184,6 +211,7 @@
         flows,
         currentFlow,
         currentFlowName,
+        currentFlowState,
         handleFlowChange,
         handleFlowEdit,
         handleFlowDelete,

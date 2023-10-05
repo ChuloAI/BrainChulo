@@ -19,6 +19,7 @@ export const useFlowStore = defineStore('flow', {
         return {
           id: flow.id,
           label: flow.name,
+          state: flow.state,
         };
       });
 
@@ -36,8 +37,24 @@ export const useFlowStore = defineStore('flow', {
 
       this.currentFlow = this.allFlows.find((flow) => flow.id === newFlow.id);
     },
-    async updateCurrentFlowName(newName) {
-      await internalService.request(`/flows/${this.currentFlowId}`, 'PUT', { name: newName });
+    async updateCurrentFlow(newData) {
+      const { name, state } = newData;
+      const updates = {};
+
+      if (name) {
+        updates.name = name;
+      }
+
+      if (state) {
+        updates.state = state;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return;
+      }
+
+      await internalService.request(`/flows/${this.currentFlowId}`, 'PUT', updates);
+
       await this.fetchFlows();
       this.setCurrentFlow(this.getCurrentFlow);
     },
@@ -64,5 +81,6 @@ export const useFlowStore = defineStore('flow', {
     getCurrentFlow: (state) => state.currentFlow,
     currentFlowId: (state) => state.currentFlow?.id,
     currentFlowName: (state) => state.currentFlow?.label,
+    currentFlowState: (state) => state.currentFlow?.state
   }
 });
