@@ -110,7 +110,8 @@ class Settings:
         self.database_url = os.getenv("DATABASE_URL", "sqlite:///data/brainchulo.db")
 
         self.andromeda_url = os.getenv("ANDROMEDA_URL", "http://0.0.0.0:9000")
-
+        
+        self.use_llama_based_conversation = os.getenv("USE_LLAMA_BASED_CONVERSATION", "true") == "true"
         self.use_flow_agents = os.getenv("USE_FLOW_AGENTS", "false") == "true"
 
 

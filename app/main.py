@@ -20,7 +20,12 @@ engine = create_engine(sqlite_database_url, echo=True, connect_args=connect_args
 # Introducing a new feature flag
 # So GuidanceLLaMAcpp can coexist with FlowAgents
 
-if config.use_flow_agents:
+if config.use_llama_based_conversation:
+    logger.info("Using llama based conversation")
+    from conversations.llama_based import LlamaBasedConversation
+
+    convo = LlamaBasedConversation()
+elif config.use_flow_agents:
     logger.info("Using (experimental) flow agents")
     from conversations.document_based_flow import DocumentBasedConversationFlowAgent
 
@@ -83,7 +88,9 @@ def llm_query(*, query: str, session: Session = Depends(get_session)):
     """
     Query the LLM
     """
-    return convo.predict(query, [])
+    prediction = convo.predict(query, [])
+
+    return prediction
 
 
 @app.post("/conversations", response_model=Conversation)
@@ -179,14 +186,16 @@ def upload_file(*, conversation_id: int, file: UploadFile):
 
 
 @app.post('/llm/{conversation_id}/', response_model=str)
-def llm(*, conversation_id: str, query: str, session: Session = Depends(get_session)):
+def llm(*, session: Session = Depends(get_session), conversation_id: str, query: str):
     """
     Query the LLM
     """
     conversation_data = get_conversation(conversation_id, session)
     history = conversation_data.messages
 
-    return convo.predict(query, conversation_id)
+    prediction = convo.predict(query, history)
+
+    return prediction
 
     # we could also work from history only
     # return convo.predict(query, history)
