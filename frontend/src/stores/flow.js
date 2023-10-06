@@ -61,7 +61,7 @@ export const useFlowStore = defineStore('flow', {
     },
 
     async addFlow() {
-      const newFlow = await internalService.request('/flows', 'POST', { name: 'New Flow' });
+      const newFlow = await internalService.request('/flows', 'POST', { name: 'New Flow', state: {nodes: [], inputs: [], outputs: [], connections: []} });
       await this.fetchFlows();
 
       return newFlow;

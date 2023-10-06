@@ -91,8 +91,8 @@
         }
       );
 
-      const handleFlowChange = (flow) => {
-        flowStore.setCurrentFlow(flow);
+      const handleFlowChange = async (flow) => {
+        await flowStore.setCurrentFlow(flow);
         loadFlowState();
       };
 
@@ -102,11 +102,13 @@
 
       const handleFlowDelete = async () => {
         await flowStore.deleteCurrentFlow();
+        loadFlowState();
       };
 
       const addFlow = async () => {
         const newFlow = await flowStore.addFlow();
-        flowStore.setCurrentFlow(newFlow);
+        await flowStore.setCurrentFlow(newFlow);
+        loadFlowState();
       };
 
       const isRunning = ref(false);
@@ -128,9 +130,9 @@
       };
 
       const saveFlow = async () => {
-        // const graphTemplate = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
-        // const state = graphTemplate.save();
-        const state = baklava.editor.save();
+        const graphTemplate = GraphTemplate.fromGraph(baklava.displayedGraph, baklava.editor);
+        const state = graphTemplate.save();
+        // const state = baklava.editor.save();
         console.log(state);
         await flowStore.updateCurrentFlow({ state });
       };
@@ -150,11 +152,12 @@
         const newGraph = new Graph(baklava.editor, graphTemplate);
         // newGraph.load(graphTemplate);
 
-        baklava.editor.addGraphTemplate(graphTemplate);
-        baklava.editor.load({
-          graph: newGraph,
-          graphTemplates: [graphTemplate],
-        });
+        // baklava.editor.addGraphTemplate(graphTemplate);
+        // baklava.editor.load({
+        //   graph: newGraph,
+        //   graphTemplates: [graphTemplate],
+        // });
+        baklava.switchGraph(graphTemplate);
       };
 
       const runBtnClass = computed(() => {
@@ -187,13 +190,13 @@
       });
 
       // Add some nodes for demo purposes
-      function addNodeWithCoordinates(nodeType, x, y) {
-        const n = new nodeType();
-        baklava.displayedGraph.addNode(n);
-        n.position.x = x;
-        n.position.y = y;
-        return n;
-      }
+      // function addNodeWithCoordinates(nodeType, x, y) {
+      //   const n = new nodeType();
+      //   baklava.displayedGraph.addNode(n);
+      //   n.position.x = x;
+      //   n.position.y = y;
+      //   return n;
+      // }
       // const node1 = addNodeWithCoordinates(LLMQueryNode, 300, 140);
       // const node2 = addNodeWithCoordinates(DisplayNode, 550, 140);
       // baklava.displayedGraph.addConnection(node1.outputs.outputText, node2.inputs.text);
