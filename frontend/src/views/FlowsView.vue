@@ -32,7 +32,6 @@
     <baklava-editor :view-model="baklava" />
   </main>
 </template>
-, onBeforeMount , watch
 
 <script>
   import NavBar from '@/components/NavBar.vue';

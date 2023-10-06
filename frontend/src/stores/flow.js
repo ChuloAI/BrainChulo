@@ -12,16 +12,17 @@ export const useFlowStore = defineStore('flow', {
       let flows = response;
 
       if (flows.length < 1) {
-        return await this.addFlow();
+        await this.addFlow();
+        return await this.fetchFlows();
       }
 
-      this.allFlows = flows.map((flow) => {
+      this.allFlows = await Promise.all(flows.map(async (flow) => {
         return {
           id: flow.id,
           label: flow.name,
           state: flow.state,
         };
-      });
+      }));
 
       return this.allFlows;
     },
