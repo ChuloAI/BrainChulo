@@ -1,5 +1,6 @@
 import requests
-HOST = '86.242.95.136:449'  # API details
+import os
+HOST = os.getenv("HOST")  # API details
 URI = f'http://{HOST}/api/v1/generate'
 
 def questions_listing(question, document):

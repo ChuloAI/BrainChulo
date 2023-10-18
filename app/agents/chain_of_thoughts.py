@@ -157,7 +157,7 @@ class ChainOfThoughtsAgent(BaseAgent):
             print(Fore.CYAN + Style.BRIGHT  + "The questions are:" + str(questions_listing_round) + Style.RESET_ALL)
             questions_answer_round = questions_answering(self.question, str(context), str(questions_listing_round))
             print(Fore.CYAN + Style.BRIGHT  + "The answers to the questions are:" + str(questions_answer_round) + Style.RESET_ALL)
-            api_matching_round = api_data_matching(self.question, str(questions_answer_round), str(questions_listing_round))
+            api_matching_round = api_data_matching(self.question, str(questions_answer_round))
             print(Fore.CYAN + Style.BRIGHT  + str(api_matching_round) + Style.RESET_ALL)
 
             return api_matching_round
