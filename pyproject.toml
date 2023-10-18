@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "brainchulo"
+version = "0.1.0"
+description = ""
+authors = ["gavroche", "paolorechia", "karajan"]
+
+
+[tool.poetry.dependencies]
+python = "^3.11.4"  # for example, specify the python version you are using
+langchain = "*"
+python-dotenv = "*"
+chromadb = "*"
+bs4 = "*"
+fastapi = { version = "*", extras = ["all"] }
+uvicorn = "*"
+pydantic = "*"
+pyparsing = "*"
+sqlmodel = "*"
+colorama = "*"
+sentence_transformers = "*"
+alembic = "*"
+protobuf = "3.20"
